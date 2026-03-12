@@ -132,7 +132,13 @@ class CV3SpeakerSim(OfflineModel):
                     elif stream == self.process.stderr:
                         err = self.process.stderr.readline().strip()
                         if err:
-                            logger.error(f"Process stderr: {err}")
+                            # Classify subprocess stderr by content level
+                            if any(kw in err for kw in ["INFO", "DEBUG", "Loading", "Building", "loading", "building", "done", "loaded", "%|", "it/s]"]):
+                                logger.debug(f"Process stderr: {err}")
+                            elif any(kw in err for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning", "deprecated", "pkg_resources"]):
+                                logger.warning(f"Process stderr: {err}")
+                            else:
+                                logger.error(f"Process stderr: {err}")
 
             except BlockingIOError as e:
                 logger.error(f"BlockingIOError occurred: {str(e)}")

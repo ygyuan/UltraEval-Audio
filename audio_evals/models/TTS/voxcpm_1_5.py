@@ -19,7 +19,7 @@ class VoxCPM(OfflineModel):
         path: str,
         vc_mode: bool,
         denoise: bool,
-        denoise_path: str = "iic/speech_zipenhancer_ans_multiloss_16k_base",
+        denoise_path: str = "./init_model/iic/speech_zipenhancer_ans_multiloss_16k_base",
         sample_params: Dict = None,
         *args,
         **kwargs,
@@ -78,6 +78,12 @@ class VoxCPM(OfflineModel):
                     elif stream == self.process.stderr:
                         err = self.process.stderr.readline().strip()
                         if err:
-                            logger.error(f"Process stderr: {err}")
+                            # Classify subprocess stderr by content level
+                            if any(kw in err for kw in ["INFO", "DEBUG", "Loading", "Building", "loading", "building", "done", "loaded", "%|", "it/s]"]):
+                                logger.debug(f"Process stderr: {err}")
+                            elif any(kw in err for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning", "deprecated", "pkg_resources"]):
+                                logger.warning(f"Process stderr: {err}")
+                            else:
+                                logger.error(f"Process stderr: {err}")
             except BlockingIOError as e:
                 logger.error(f"BlockingIOError occurred: {str(e)}")

@@ -79,9 +79,9 @@ class WhisperModel(OfflineModel):
                         err = self.process.stderr.readline().strip()
                         if err:
                             # Classify subprocess stderr by content level
-                            if any(kw in err for kw in ["INFO:", "DEBUG:"]):
+                            if any(kw in err for kw in ["INFO", "DEBUG", "Loading", "Building", "loading", "building", "done", "loaded", "%|", "it/s]"]):
                                 logger.debug(f"Process stderr: {err}")
-                            elif any(kw in err for kw in ["WARNING:", "FutureWarning", "UserWarning", "DeprecationWarning", "attention_mask", "pad token"]):
+                            elif any(kw in err for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning", "deprecated", "pkg_resources", "attention_mask", "pad token"]):
                                 logger.warning(f"Process stderr: {err}")
                             else:
                                 logger.error(f"Process stderr: {err}")
@@ -156,9 +156,9 @@ class SeedTTSWhisperModel(OfflineModel):
                         err = self.process.stderr.readline().strip()
                         if err:
                             # Classify subprocess stderr by content level
-                            if any(kw in err for kw in ["INFO:", "DEBUG:"]):
+                            if any(kw in err for kw in ["INFO", "DEBUG", "Loading", "Building", "loading", "building", "done", "loaded", "%|", "it/s]"]):
                                 logger.debug(f"Process stderr: {err}")
-                            elif any(kw in err for kw in ["WARNING:", "FutureWarning", "UserWarning", "DeprecationWarning", "attention_mask", "pad token"]):
+                            elif any(kw in err for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning", "deprecated", "pkg_resources", "attention_mask", "pad token"]):
                                 logger.warning(f"Process stderr: {err}")
                             else:
                                 logger.error(f"Process stderr: {err}")
@@ -229,9 +229,9 @@ class CV3WhisperModel(OfflineModel):
                         err = self.process.stderr.readline().strip()
                         if err:
                             # Classify subprocess stderr by content level
-                            if any(kw in err for kw in ["INFO:", "DEBUG:"]):
+                            if any(kw in err for kw in ["INFO", "DEBUG", "Loading", "Building", "loading", "building", "done", "loaded", "%|", "it/s]"]):
                                 logger.debug(f"Process stderr: {err}")
-                            elif any(kw in err for kw in ["WARNING:", "FutureWarning", "UserWarning", "DeprecationWarning", "attention_mask", "pad token"]):
+                            elif any(kw in err for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning", "deprecated", "pkg_resources", "attention_mask", "pad token"]):
                                 logger.warning(f"Process stderr: {err}")
                             else:
                                 logger.error(f"Process stderr: {err}")

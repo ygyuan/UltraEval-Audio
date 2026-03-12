@@ -160,7 +160,13 @@ class DNSMOS(OfflineModel):
                     if read_stream is self.process.stderr:
                         error_output = self.process.stderr.readline().strip()
                         if error_output:
-                            logger.error(f"DNSMOS stderr: {error_output}")
+                            # Classify subprocess stderr by content level
+                            if any(kw in error_output for kw in ["INFO", "DEBUG", "Loading", "Building", "loading", "building", "done", "loaded", "%|", "it/s]"]):
+                                logger.debug(f"DNSMOS stderr: {error_output}")
+                            elif any(kw in error_output for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning", "deprecated", "pkg_resources"]):
+                                logger.warning(f"DNSMOS stderr: {error_output}")
+                            else:
+                                logger.error(f"DNSMOS stderr: {error_output}")
                             # Continue reading stdout in case a result is still produced
                             # Or raise immediately: raise RuntimeError(f"DNSMOS error: {error_output}")
 

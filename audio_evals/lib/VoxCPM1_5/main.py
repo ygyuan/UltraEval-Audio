@@ -48,7 +48,7 @@ if __name__ == "__main__":
         "--denoise_path",
         type=str,
         required=False,
-        default="iic/speech_zipenhancer_ans_multiloss_16k_base",
+        default="./init_model/iic/speech_zipenhancer_ans_multiloss_16k_base",
         help="Path to denoising model",
     )
     args = parser.parse_args()

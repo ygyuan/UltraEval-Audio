@@ -144,7 +144,13 @@ class GLMTTS(OfflineModel):
                     if read_stream is self.process.stderr:
                         error_output = self.process.stderr.readline().strip()
                         if error_output:
-                            logger.error(f"GLM-TTS stderr: {error_output}")
+                            # Classify subprocess stderr by content level
+                            if any(kw in error_output for kw in ["INFO", "DEBUG", "Loading checkpoint", "Building prefix dict", "loading fst", "done", "%|"]):
+                                logger.debug(f"GLM-TTS stderr: {error_output}")
+                            elif any(kw in error_output for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning", "pkg_resources is deprecated"]):
+                                logger.warning(f"GLM-TTS stderr: {error_output}")
+                            else:
+                                logger.error(f"GLM-TTS stderr: {error_output}")
                     elif read_stream is self.process.stdout:
                         result = self.process.stdout.readline().strip()
                         if result:

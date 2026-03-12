@@ -44,13 +44,20 @@ if __name__ == "__main__":
         "--vc_mode", action="store_true", default=False, help="Enable voice clone mode"
     )
     parser.add_argument("--denoise", action="store_true", help="Enable denoising")
+    parser.add_argument(
+        "--denoise_path",
+        type=str,
+        required=False,
+        default="./init_model/iic/speech_zipenhancer_ans_multiloss_16k_base",
+        help="Path to denoising model",
+    )
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
     logger.info(f"Loading VoxCPM model from {args.path}, denoise: {args.denoise}")
 
-    model = VoxCPM.from_pretrained(args.path, load_denoiser=args.denoise)
+    model = VoxCPM.from_pretrained(args.path, load_denoiser=args.denoise, zipenhancer_model_id=args.denoise_path)
     logger.info("VoxCPM successfully loaded")
 
     # 从环境变量获取 ENABLE_RTF 设置，默认为0

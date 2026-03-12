@@ -39,6 +39,9 @@ class Model(ABC):
 
 
 class OfflineModel(Model, ABC):
+    # Cache for pre-check results to avoid repeated warnings for the same repo_id
+    _precheck_cache: Dict[str, str] = {}
+    _precheck_cache_lock = threading.Lock()
 
     def __init__(self, is_chat: bool, sample_params: Dict[str, any] = None):
         super().__init__(is_chat, sample_params)
@@ -61,9 +64,21 @@ class OfflineModel(Model, ABC):
 
             # Pre-check: if target path already contains the complete set of files with
             # matching sizes, skip downloading to avoid redundant work.
+            # Check pre-check cache to avoid repeated warnings for the same repo_id
+            cache_key = f"hf:{repo_id}"
+            with OfflineModel._precheck_cache_lock:
+                if cache_key in OfflineModel._precheck_cache:
+                    cached_path = OfflineModel._precheck_cache[cache_key]
+                    logger.debug(
+                        f"Using cached pre-check result for {repo_id}: {cached_path}"
+                    )
+                    return cached_path
+
             try:
                 if os.path.isdir(local_dir):
                     if os.environ.get("IGNORE_WEIGHT_CHECK", "") == "1":
+                        with OfflineModel._precheck_cache_lock:
+                            OfflineModel._precheck_cache[cache_key] = local_dir
                         return local_dir
                     api = HfApi()
                     info = api.repo_info(repo_id=repo_id, repo_type=repo_type)
@@ -91,6 +106,8 @@ class OfflineModel(Model, ABC):
                             logger.info(
                                 f"Model already present locally, skip download: {local_dir}"
                             )
+                    with OfflineModel._precheck_cache_lock:
+                        OfflineModel._precheck_cache[cache_key] = local_dir
                     return local_dir
             except Exception as precheck_error:
                 # If local directory exists but pre-check failed (e.g. network unreachable),
@@ -99,6 +116,8 @@ class OfflineModel(Model, ABC):
                     logger.warning(
                         f"Model pre-check failed but local directory exists, using it: {local_dir} (reason: {precheck_error})"
                     )
+                    with OfflineModel._precheck_cache_lock:
+                        OfflineModel._precheck_cache[cache_key] = local_dir
                     return local_dir
                 logger.debug(
                     f"Model pre-check failed, proceeding to download: {precheck_error}",
@@ -142,9 +161,21 @@ class OfflineModel(Model, ABC):
 
             # Pre-check: if target path already contains the complete set of files with
             # matching sizes, skip downloading to avoid redundant work.
+            # Check pre-check cache to avoid repeated warnings for the same repo_id
+            cache_key = f"ms:{repo_id}"
+            with OfflineModel._precheck_cache_lock:
+                if cache_key in OfflineModel._precheck_cache:
+                    cached_path = OfflineModel._precheck_cache[cache_key]
+                    logger.debug(
+                        f"Using cached pre-check result for {repo_id}: {cached_path}"
+                    )
+                    return cached_path
+
             try:
                 if os.path.isdir(local_dir):
                     if os.environ.get("IGNORE_WEIGHT_CHECK", "") == "1":
+                        with OfflineModel._precheck_cache_lock:
+                            OfflineModel._precheck_cache[cache_key] = local_dir
                         return local_dir
                     from modelscope.hub.api import HubApi
 
@@ -175,6 +206,8 @@ class OfflineModel(Model, ABC):
                             logger.info(
                                 f"Model already present locally, skip download: {local_dir}"
                             )
+                    with OfflineModel._precheck_cache_lock:
+                        OfflineModel._precheck_cache[cache_key] = local_dir
                     return local_dir
             except Exception as precheck_error:
                 # If local directory exists but pre-check failed (e.g. network unreachable),
@@ -183,6 +216,8 @@ class OfflineModel(Model, ABC):
                     logger.warning(
                         f"Model pre-check failed but local directory exists, using it: {local_dir} (reason: {precheck_error})"
                     )
+                    with OfflineModel._precheck_cache_lock:
+                        OfflineModel._precheck_cache[cache_key] = local_dir
                     return local_dir
                 logger.debug(
                     f"Model pre-check failed, proceeding to download: {precheck_error}",

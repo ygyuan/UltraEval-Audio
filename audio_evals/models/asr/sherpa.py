@@ -65,4 +65,11 @@ class SherpaOnnx(OfflineModel):
                 if read is self.process.stderr:
                     error_output = self.process.stderr.readline()
                     if error_output:
-                        logger.error(f"stderr: {error_output.strip()}")
+                        err_stripped = error_output.strip()
+                        # Classify subprocess stderr by content level
+                        if any(kw in err_stripped for kw in ["INFO", "DEBUG", "Loading", "Building", "loading", "building", "done", "loaded", "%|", "it/s]"]):
+                            logger.debug(f"stderr: {err_stripped}")
+                        elif any(kw in err_stripped for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning", "deprecated", "pkg_resources"]):
+                            logger.warning(f"stderr: {err_stripped}")
+                        else:
+                            logger.error(f"stderr: {err_stripped}")

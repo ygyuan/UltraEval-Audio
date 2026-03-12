@@ -40,9 +40,9 @@ class Paraformer(OfflineModel):
             if wlist:
                 self.process.stdin.write(f"{prefix}{audio}\n")
                 self.process.stdin.flush()
-                print("already write in")
+                logger.debug("Paraformer prompt written to stdin")
                 break
-            print("waiting for write")
+            logger.debug("Paraformer waiting for stdin to be writable")
         while True:
             reads, _, _ = select.select(
                 [self.process.stdout, self.process.stderr], [], [], 1.0
@@ -62,4 +62,11 @@ class Paraformer(OfflineModel):
                 if read is self.process.stderr:
                     error_output = self.process.stderr.readline()
                     if error_output:
-                        print(f"stderr: {error_output.strip()}")
+                        err = error_output.strip()
+                        # Classify subprocess stderr by content level
+                        if any(kw in err for kw in ["INFO", "DEBUG"]):
+                            logger.debug(f"Paraformer stderr: {err}")
+                        elif any(kw in err for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning"]):
+                            logger.warning(f"Paraformer stderr: {err}")
+                        else:
+                            logger.error(f"Paraformer stderr: {err}")

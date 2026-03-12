@@ -99,7 +99,13 @@ class SFTMiniCPMoAudio(OfflineModel):
                     if read_stream is self.process.stderr:
                         error_output = self.process.stderr.readline().strip()
                         if error_output:
-                            logger.error(f"Encodec stderr: {error_output}")
+                            # Classify subprocess stderr by content level
+                            if any(kw in error_output for kw in ["INFO", "DEBUG", "Loading", "Building", "loading", "building", "done", "loaded", "%|", "it/s]"]):
+                                logger.debug(f"Encodec stderr: {error_output}")
+                            elif any(kw in error_output for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning", "deprecated", "pkg_resources"]):
+                                logger.warning(f"Encodec stderr: {error_output}")
+                            else:
+                                logger.error(f"Encodec stderr: {error_output}")
                     elif read_stream is self.process.stdout:
                         result = self.process.stdout.readline().strip()
                         logger.debug(f"Received from Encodec process: {result}")

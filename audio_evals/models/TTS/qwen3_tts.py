@@ -131,9 +131,9 @@ class Qwen3TTS(OfflineModel):
                         err = self.process.stderr.readline().strip()
                         if err:
                             # Classify subprocess stderr by content level
-                            if any(kw in err for kw in ["INFO:", "DEBUG:"]):
+                            if any(kw in err for kw in ["INFO", "DEBUG", "Loading", "Building", "loading", "building", "done", "loaded", "%|", "it/s]"]):
                                 logger.debug(f"Process stderr: {err}")
-                            elif any(kw in err for kw in ["WARNING:", "FutureWarning", "UserWarning", "DeprecationWarning", "Setting `pad_token_id`"]):
+                            elif any(kw in err for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning", "deprecated", "pkg_resources", "Setting `pad_token_id`"]):
                                 logger.warning(f"Process stderr: {err}")
                             else:
                                 logger.error(f"Process stderr: {err}")
