@@ -98,3 +98,4 @@ coverage/
 *.bak
 *.old
 init_model
+third_party
