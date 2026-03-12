@@ -2,12 +2,43 @@
 # part of the code is borrowed from https://github.com/lawlict/ECAPA-TDNN
 
 import os
+import sys
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchaudio.transforms as trans
 
-# from .utils import UpstreamExpert
+
+def _load_wavlm_upstream():
+    """
+    Load s3prl WavLM UpstreamExpert by directly importing the wavlm module,
+    bypassing the problematic s3prl.hub full import that triggers Python 3.12
+    compatibility issues (roberta_model.py @dataclass mutable default error).
+
+    Strategy:
+      1. Try direct import from s3prl package (if pip-installed)
+      2. Try import from torch.hub cache (if previously downloaded via torch.hub.load)
+      3. Fall back to torch.hub.load (may trigger network download)
+    """
+    # Strategy 1: direct import from installed s3prl package
+    try:
+        from s3prl.upstream.wavlm.expert import UpstreamExpert
+        return UpstreamExpert
+    except ImportError:
+        pass
+
+    # Strategy 2: import from torch.hub cache
+    local_cache_path = os.path.expanduser("~/.cache/torch/hub/s3prl_s3prl_main")
+    if os.path.exists(local_cache_path) and local_cache_path not in sys.path:
+        sys.path.insert(0, local_cache_path)
+        try:
+            from s3prl.upstream.wavlm.expert import UpstreamExpert
+            return UpstreamExpert
+        except ImportError:
+            pass
+
+    # Strategy 3: fall back to torch.hub.load (original approach)
+    return None
 
 
 """ Res2Conv1d + BatchNorm1d + ReLU
@@ -268,18 +299,26 @@ class ECAPA_TDNN(nn.Module):
             )
         else:
             if config_path is None:
-                torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
-                # 优先从本地缓存加载，避免联网检查 GitHub
-                local_cache_path = os.path.expanduser("~/.cache/torch/hub/s3prl_s3prl_main")
-                if os.path.exists(local_cache_path):
-                    self.feature_extract = torch.hub.load(local_cache_path, "wavlm_large", source='local')
+                UpstreamExpert = _load_wavlm_upstream()
+                if UpstreamExpert is not None:
+                    # Direct import succeeded, create UpstreamExpert without torch.hub
+                    self.feature_extract = UpstreamExpert(
+                        ckpt="/apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/huggingface/converted_ckpts/wavlm_large.pt"
+                    )
                 else:
-                    # 本地没有缓存，联网下载
-                    self.feature_extract = torch.hub.load("s3prl/s3prl", "wavlm_large")
-                # self.feature_extract = torch.hub.load('/data/luoyuanZ/eval_1030/f2d5200177fd6a33b278b7b76b454f25cd8ee866d55c122e69fccf6c7467d37d.wavlm_large.pt')
-                # print(self.feature_extract)
+                    # Fallback: use torch.hub.load (may require network)
+                    import torchaudio
+                    if not hasattr(torchaudio, 'set_audio_backend'):
+                        torchaudio.set_audio_backend = lambda backend: None
+                    torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
+                    local_cache_path = os.path.expanduser("~/.cache/torch/hub/s3prl_s3prl_main")
+                    if os.path.exists(local_cache_path):
+                        self.feature_extract = torch.hub.load(local_cache_path, "wavlm_large", source='local')
+                    else:
+                        self.feature_extract = torch.hub.load("s3prl/s3prl", "wavlm_large")
             else:
-                self.feature_extract = UpstreamExpert(config_path)
+                from s3prl.upstream.wavlm.expert import UpstreamExpert
+                self.feature_extract = UpstreamExpert(ckpt=config_path)
             if len(self.feature_extract.model.encoder.layers) == 24 and hasattr(
                 self.feature_extract.model.encoder.layers[23].self_attn,
                 "fp32_attention",

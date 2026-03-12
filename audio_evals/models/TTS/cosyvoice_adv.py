@@ -82,8 +82,12 @@ class CosyVoice(OfflineModel):
 
 @isolated(
     "audio_evals/lib/CosyVoiceOffical/main.py",
-    pre_command="mkdir -p ./third_party && ([ ! -d './third_party/CosyVoice' ] && "
-    "git clone https://github.com/FunAudioLLM/CosyVoice.git ./third_party/CosyVoice&& cd ./third_party/CosyVoice&& git submodule update --init --recursive && cd ../../) || true && pwd",
+    pre_command="mkdir -p ./third_party && "
+    "if [ ! -d './third_party/CosyVoice' ]; then "
+    "git clone https://github.com/FunAudioLLM/CosyVoice.git ./third_party/CosyVoice && "
+    "cd ./third_party/CosyVoice && git submodule update --init --recursive && cd ../../ || "
+    "{ echo 'ERROR: Failed to clone CosyVoice repo. In offline environment, please manually clone it to ./third_party/CosyVoice'; exit 1; }; "
+    "fi && pwd",
 )
 class CosyVoiceLast(OfflineModel):
     def __init__(self, path: str, *args, **kwargs):

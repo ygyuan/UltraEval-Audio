@@ -54,7 +54,7 @@ class WhisperModel(OfflineModel):
                 prompt['kwargs'] = kwargs
                 self.process.stdin.write(f"{prefix}{json.dumps(prompt)}\n")
                 self.process.stdin.flush()
-                print("already write in")
+                logger.debug("whisper prompt written to stdin")
                 break
         while True:
             rlist, _, _ = select.select(
@@ -78,7 +78,13 @@ class WhisperModel(OfflineModel):
                     elif stream == self.process.stderr:
                         err = self.process.stderr.readline().strip()
                         if err:
-                            logger.error(f"Process stderr: {err}")
+                            # Classify subprocess stderr by content level
+                            if any(kw in err for kw in ["INFO:", "DEBUG:"]):
+                                logger.debug(f"Process stderr: {err}")
+                            elif any(kw in err for kw in ["WARNING:", "FutureWarning", "UserWarning", "DeprecationWarning", "attention_mask", "pad token"]):
+                                logger.warning(f"Process stderr: {err}")
+                            else:
+                                logger.error(f"Process stderr: {err}")
             except BlockingIOError as e:
                 logger.error(f"BlockingIOError occurred: {str(e)}")
 
@@ -125,7 +131,7 @@ class SeedTTSWhisperModel(OfflineModel):
                 prompt.update(kwargs)
                 self.process.stdin.write(f"{prefix}{json.dumps(prompt)}\n")
                 self.process.stdin.flush()
-                print("already write in")
+                logger.debug("whisper prompt written to stdin")
                 break
         while True:
             rlist, _, _ = select.select(
@@ -149,7 +155,13 @@ class SeedTTSWhisperModel(OfflineModel):
                     elif stream == self.process.stderr:
                         err = self.process.stderr.readline().strip()
                         if err:
-                            logger.error(f"Process stderr: {err}")
+                            # Classify subprocess stderr by content level
+                            if any(kw in err for kw in ["INFO:", "DEBUG:"]):
+                                logger.debug(f"Process stderr: {err}")
+                            elif any(kw in err for kw in ["WARNING:", "FutureWarning", "UserWarning", "DeprecationWarning", "attention_mask", "pad token"]):
+                                logger.warning(f"Process stderr: {err}")
+                            else:
+                                logger.error(f"Process stderr: {err}")
             except BlockingIOError as e:
                 logger.error(f"BlockingIOError occurred: {str(e)}")
 
@@ -192,7 +204,7 @@ class CV3WhisperModel(OfflineModel):
                 prompt.update(kwargs)
                 self.process.stdin.write(f"{prefix}{json.dumps(prompt)}\n")
                 self.process.stdin.flush()
-                print("already write in")
+                logger.debug("whisper prompt written to stdin")
                 break
         while True:
             rlist, _, _ = select.select(
@@ -216,6 +228,12 @@ class CV3WhisperModel(OfflineModel):
                     elif stream == self.process.stderr:
                         err = self.process.stderr.readline().strip()
                         if err:
-                            logger.error(f"Process stderr: {err}")
+                            # Classify subprocess stderr by content level
+                            if any(kw in err for kw in ["INFO:", "DEBUG:"]):
+                                logger.debug(f"Process stderr: {err}")
+                            elif any(kw in err for kw in ["WARNING:", "FutureWarning", "UserWarning", "DeprecationWarning", "attention_mask", "pad token"]):
+                                logger.warning(f"Process stderr: {err}")
+                            else:
+                                logger.error(f"Process stderr: {err}")
             except BlockingIOError as e:
                 logger.error(f"BlockingIOError occurred: {str(e)}")

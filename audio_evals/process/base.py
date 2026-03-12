@@ -64,7 +64,7 @@ class JsonExtract(Process):
             try:
                 d = json.loads(answer.strip())
             except Exception as e:
-                logger.warning(f"load json `{answer}` fail: {str(e)}")
+                logger.debug(f"load json `{answer}` fail: {str(e)}")
                 return answer
         elif isinstance(answer, dict):
             d = answer

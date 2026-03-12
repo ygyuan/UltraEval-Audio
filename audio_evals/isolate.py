@@ -31,16 +31,42 @@ def isolated(
 
             # 创建虚拟环境
             if not os.path.exists(env_path):
-                res = subprocess.run(["uv", "venv", env_path, "--python", "3.10"])
+                # Try uv first, fall back to standard venv
+                uv_available = subprocess.run(
+                    ["which", "uv"], capture_output=True
+                ).returncode == 0
+                if uv_available:
+                    res = subprocess.run(["uv", "venv", env_path, "--python", "3.10"])
+                else:
+                    import sys
+                    res = subprocess.run([sys.executable, "-m", "venv", env_path])
                 if res.returncode != 0:
                     raise RuntimeError(
                         f"Failed to create virtual environment: {res.stderr}"
                     )
 
             # 安装依赖
+            uv_available = subprocess.run(
+                ["which", "uv"], capture_output=True
+            ).returncode == 0
+            # Create a constraint file to limit setuptools version in pip's build isolation
+            constraint_file = os.path.join(env_path, "build_constraints.txt")
+            with open(constraint_file, "w") as f:
+                f.write("setuptools<81\n")
+
+            if uv_available:
+                install_cmd = f"source {env_path}/bin/activate &&{pre_command + '&& ' if pre_command else ''} uv pip install setuptools\\<81 && uv pip install -r {requirements_path}"
+            else:
+                # Replace "uv pip" with "pip" in pre_command if uv is not available
+                actual_pre_command = pre_command.replace("uv pip", "pip") if pre_command else ""
+                install_cmd = (
+                    f"source {env_path}/bin/activate &&"
+                    f"{actual_pre_command + '&& ' if actual_pre_command else ''}"
+                    f" pip install --upgrade 'setuptools<81' &&"
+                    f" PIP_CONSTRAINT={constraint_file} pip install -r {requirements_path}"
+                )
             result = subprocess.run(
-                # setuptools<81 is a workaround for the bug in uv pip install
-                f"source {env_path}/bin/activate &&{pre_command + '&& ' if pre_command else ''} uv pip install setuptools\<81 && uv pip install -r {requirements_path}",
+                install_cmd,
                 shell=True,
                 check=True,
                 executable="/bin/bash",

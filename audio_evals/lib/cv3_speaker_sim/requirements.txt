@@ -2,7 +2,8 @@ addict
 datasets==2.16.0
 editdistance>=0.5.2
 funasr
-jiwer
+jiwer==4.0.0
+rapidfuzz==3.14.3
 kaldiio
 librosa
 numpy

@@ -20,7 +20,7 @@ MODEL_LIST = [
 
 def init_model(model_name, checkpoint=None):
     if model_name == "wavlm_large":
-        config_path = None
+        config_path = "./init_model/converted_ckpts/wavlm_large.pt"
         model = ECAPA_TDNN_SMALL(
             feat_dim=1024, feat_type="wavlm_large", config_path=config_path
         )
@@ -97,12 +97,12 @@ if __name__ == "__main__":
             retry = 3
             while retry:
                 print("{}{}".format(prefix, str(sim)), flush=True)
-                rlist, _, _ = select.select([sys.stdin], [], [], 1)
+                rlist, _, _ = select.select([sys.stdin], [], [], 3)
                 if rlist:
                     finish = sys.stdin.readline().strip()
                     if finish == "{}close".format(prefix):
                         break
-                print("not found close signal, will emit again", flush=True)
+                print("not found close signal, will emit again", flush=True, file=sys.stderr)
                 retry -= 1
         except Exception as e:
             print("Error:{}".format(e), flush=True)

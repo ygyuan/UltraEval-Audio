@@ -3,7 +3,8 @@ numpy==1.26
 omegaconf
 pyyaml
 s3prl
-torch==2.2.0
+torch>=2.4.0
 torchaudio
 tqdm
 transformers
+num2words

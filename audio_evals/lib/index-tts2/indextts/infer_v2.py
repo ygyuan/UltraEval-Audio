@@ -129,11 +129,20 @@ class IndexTTS2:
                 )
                 self.use_cuda_kernel = False
 
-        self.extract_features = SeamlessM4TFeatureExtractor.from_pretrained(
-            "facebook/w2v-bert-2.0"
-        )
+        # Try loading SeamlessM4TFeatureExtractor from local paths first, fallback to online
+        w2v_local_path = "init_model/facebook/w2v-bert-2.0"
+        if w2v_local_path:
+            self.extract_features = SeamlessM4TFeatureExtractor.from_pretrained(w2v_local_path)
+            print(">> SeamlessM4TFeatureExtractor loaded from local:", w2v_local_path)
+        else:
+            self.extract_features = SeamlessM4TFeatureExtractor.from_pretrained(
+                "facebook/w2v-bert-2.0"
+            )
         self.semantic_model, self.semantic_mean, self.semantic_std = (
-            build_semantic_model(os.path.join(self.model_dir, self.cfg.w2v_stat))
+            build_semantic_model(
+                os.path.join(self.model_dir, self.cfg.w2v_stat),
+                w2v_model_path=w2v_local_path if w2v_local_path else None,
+            )
         )
         self.semantic_model = self.semantic_model.to(self.device)
         self.semantic_model.eval()
@@ -141,9 +150,14 @@ class IndexTTS2:
         self.semantic_std = self.semantic_std.to(self.device)
 
         semantic_codec = build_semantic_codec(self.cfg.semantic_codec)
-        semantic_code_ckpt = hf_hub_download(
-            "amphion/MaskGCT", filename="semantic_codec/model.safetensors"
-        )
+        local_semantic_ckpt = "init_model/amphion/MaskGCT/semantic_codec/model.safetensors"
+        if local_semantic_ckpt:
+            semantic_code_ckpt = local_semantic_ckpt
+            print(">> semantic_codec checkpoint loaded from local:", local_semantic_ckpt)
+        else:
+            semantic_code_ckpt = hf_hub_download(
+                "amphion/MaskGCT", filename="semantic_codec/model.safetensors"
+            )
         safetensors.torch.load_model(semantic_codec, semantic_code_ckpt)
         self.semantic_codec = semantic_codec.to(self.device)
         self.semantic_codec.eval()
@@ -166,10 +180,15 @@ class IndexTTS2:
         self.s2mel.eval()
         print(">> s2mel weights restored from:", s2mel_path)
 
-        # load campplus_model
-        campplus_ckpt_path = hf_hub_download(
-            "funasr/campplus", filename="campplus_cn_common.bin"
-        )
+        # load campplus_model - try local paths first, fallback to online
+        local_campplus_path = "init_model/funasr/campplus/campplus_cn_common.bin"
+        if local_campplus_path:
+            campplus_ckpt_path = local_campplus_path
+            print(">> campplus checkpoint loaded from local:", local_campplus_path)
+        else:
+            campplus_ckpt_path = hf_hub_download(
+                "funasr/campplus", filename="campplus_cn_common.bin"
+            )
         campplus_model = CAMPPlus(feat_dim=80, embedding_size=192)
         campplus_model.load_state_dict(
             torch.load(campplus_ckpt_path, map_location="cpu")
@@ -179,7 +198,7 @@ class IndexTTS2:
         print(">> campplus_model weights restored from:", campplus_ckpt_path)
 
         # bigvgan_name = self.cfg.vocoder.name
-        bigvgan_name = self.cfg.vocoder.name
+        bigvgan_name = "./init_model/nvidia/bigvgan_v2_22khz_80band_256x"
         self.bigvgan = bigvgan.BigVGAN.from_pretrained(
             bigvgan_name, use_cuda_kernel=self.use_cuda_kernel
         )

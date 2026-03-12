@@ -158,7 +158,7 @@ def merge_data4view(
     real_eval = eval_df.groupby("id").apply(concat_gdf).apply(pd.Series)
     real_eval = real_eval.reset_index()
     df = pd.merge(quiz, real_eval, on="id", how="left")
-    df = df.applymap(clean_illegal_chars)
+    df = df.map(clean_illegal_chars)
     df.to_excel(save_name, index=False)
 
 

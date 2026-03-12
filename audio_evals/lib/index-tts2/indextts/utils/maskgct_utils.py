@@ -87,8 +87,9 @@ class JsonHParams:
         return self.__dict__.__repr__()
 
 
-def build_semantic_model(path_="./models/tts/maskgct/ckpt/wav2vec2bert_stats.pt"):
-    semantic_model = Wav2Vec2BertModel.from_pretrained("facebook/w2v-bert-2.0")
+def build_semantic_model(path_="./models/tts/maskgct/ckpt/wav2vec2bert_stats.pt", w2v_model_path=None):
+    model_name_or_path = w2v_model_path if w2v_model_path else "facebook/w2v-bert-2.0"
+    semantic_model = Wav2Vec2BertModel.from_pretrained(model_name_or_path)
     semantic_model.eval()
     stat_mean_var = torch.load(path_)
     semantic_mean = stat_mean_var["mean"]

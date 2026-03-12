@@ -1,2 +1,3 @@
+Cython==3.0.11
 -r ../../../third_party/GLM-TTS/requirements.txt
 transformers==4.52.1

@@ -130,7 +130,13 @@ class Qwen3TTS(OfflineModel):
                     elif stream == self.process.stderr:
                         err = self.process.stderr.readline().strip()
                         if err:
-                            logger.error(f"Process stderr: {err}")
+                            # Classify subprocess stderr by content level
+                            if any(kw in err for kw in ["INFO:", "DEBUG:"]):
+                                logger.debug(f"Process stderr: {err}")
+                            elif any(kw in err for kw in ["WARNING:", "FutureWarning", "UserWarning", "DeprecationWarning", "Setting `pad_token_id`"]):
+                                logger.warning(f"Process stderr: {err}")
+                            else:
+                                logger.error(f"Process stderr: {err}")
             except BlockingIOError as e:
                 logger.error(f"BlockingIOError occurred: {str(e)}")
                 continue

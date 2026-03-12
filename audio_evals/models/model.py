@@ -93,7 +93,13 @@ class OfflineModel(Model, ABC):
                             )
                     return local_dir
             except Exception as precheck_error:
-                # Any failure in pre-check should not block downloading; proceed gracefully.
+                # If local directory exists but pre-check failed (e.g. network unreachable),
+                # use the existing local directory instead of attempting to download again.
+                if os.path.isdir(local_dir):
+                    logger.warning(
+                        f"Model pre-check failed but local directory exists, using it: {local_dir} (reason: {precheck_error})"
+                    )
+                    return local_dir
                 logger.debug(
                     f"Model pre-check failed, proceeding to download: {precheck_error}",
                     exc_info=True,
@@ -171,7 +177,13 @@ class OfflineModel(Model, ABC):
                             )
                     return local_dir
             except Exception as precheck_error:
-                # Any failure in pre-check should not block downloading; proceed gracefully.
+                # If local directory exists but pre-check failed (e.g. network unreachable),
+                # use the existing local directory instead of attempting to download again.
+                if os.path.isdir(local_dir):
+                    logger.warning(
+                        f"Model pre-check failed but local directory exists, using it: {local_dir} (reason: {precheck_error})"
+                    )
+                    return local_dir
                 logger.debug(
                     f"Model pre-check failed, proceeding to download: {precheck_error}",
                     exc_info=True,

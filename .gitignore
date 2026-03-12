@@ -97,3 +97,4 @@ coverage/
 # 忽略其他可能的备份文件
 *.bak
 *.old
+init_model
