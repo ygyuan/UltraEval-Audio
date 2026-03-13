@@ -1,0 +1,16 @@
+# fish-speech Model Configuration
+# GitHub: https://github.com/fishaudio/fish-speech
+# fish-speech is a high-quality TTS system based on DualAR Transformer + DAC codec
+# supporting zero-shot voice cloning
+#
+# The fish-speech repo is automatically cloned to third_party/fish-speech via pre_command
+# ckpt_dir should point to a HuggingFace model ID or local path with model weights
+
+fishspeech:
+  class: audio_evals.models.TTS.fishspeech.fishspeech
+  args:
+    ckpt_dir: fishaudio/s2-pro
+    compile: False
+    half: False
+    env_path: envs/fishspeech
+    requirements_path: audio_evals/lib/fish-speech/requirements.txt

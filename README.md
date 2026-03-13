@@ -33,6 +33,8 @@ UltraEval-Audio — The world's first open-source framework supporting both spee
 
 # Changelog🔥
 
+- [2026/03/13]
+  - Support **[Fish-Speech](replication/fishspeech.md)** TTS evaluation and replication
 - [2026/02/03]
   - Support **[Qwen3-TTS](replication/qwen3_tts.md)** evaluation 
   - GPU parallel acceleration for faster evaluation/inference

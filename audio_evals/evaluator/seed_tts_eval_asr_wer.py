@@ -105,14 +105,25 @@ def _expand_contractions(text):
     return text
 
 
+# Ordinal suffix pattern: matches e.g. "18th", "1st", "2nd", "3rd", "21st", etc.
+_ORDINAL_RE = re.compile(r"(\d+)(?:st|nd|rd|th)\b", re.IGNORECASE)
+
+
 def _normalize_numbers(text, lang):
     """Normalize digits to words for fair WER comparison.
-    e.g. '50' -> 'fifty', '3' -> 'three'
+    e.g. '50' -> 'fifty', '3' -> 'three', '18th' -> 'eighteenth'
     """
     if not _has_num2words:
         return text
     try:
         n2w_lang = 'zh' if lang in ['zh', 'yue'] else 'en'
+        # 1. Convert ordinal numbers first (e.g. "18th" -> "eighteenth")
+        if n2w_lang != 'zh':
+            text = _ORDINAL_RE.sub(
+                lambda m: f" {num2words(int(m.group(1)), to='ordinal', lang=n2w_lang)} ",
+                text,
+            )
+        # 2. Convert cardinal numbers (e.g. "50" -> "fifty")
         text = re.sub(
             r"\d+",
             lambda m: f" {num2words(int(m.group(0)), lang=n2w_lang)} ",
@@ -123,9 +134,40 @@ def _normalize_numbers(text, lang):
     return text
 
 
+# Common British-to-American spelling patterns for unification
+_SPELLING_VARIANTS = [
+    # British -> American (normalize both sides to the same form)
+    (re.compile(r"isation"), "ization"),
+    (re.compile(r"ise\b"), "ize"),
+    (re.compile(r"yse\b"), "yze"),
+    (re.compile(r"ogue\b"), "og"),
+    (re.compile(r"ence\b"), "ense"),  # e.g. defence -> defense
+    (re.compile(r"colour"), "color"),
+    (re.compile(r"honour"), "honor"),
+    (re.compile(r"favour"), "favor"),
+    (re.compile(r"labour"), "labor"),
+    (re.compile(r"behaviour"), "behavior"),
+    (re.compile(r"neighbour"), "neighbor"),
+    (re.compile(r"grey"), "gray"),
+    (re.compile(r"catalogue"), "catalog"),
+    (re.compile(r"centre"), "center"),
+    (re.compile(r"metre"), "meter"),
+    (re.compile(r"theatre"), "theater"),
+    (re.compile(r"fibre"), "fiber"),
+]
+
+
+def _normalize_spelling(text):
+    """Normalize British/American spelling variants to a canonical form."""
+    for pattern, replacement in _SPELLING_VARIANTS:
+        text = pattern.sub(replacement, text)
+    return text
+
+
 def _normalize_en(text):
     """Comprehensive English text normalization for fair WER comparison.
-    Handles: apostrophe variants, contractions, numbers, punctuation, casing.
+    Handles: apostrophe variants, contractions, numbers, hyphens,
+             spelling variants, punctuation, casing.
     """
     text = text.strip()
     # 1. Normalize all apostrophe-like chars to ASCII apostrophe
@@ -134,14 +176,16 @@ def _normalize_en(text):
     text = text.lower()
     # 3. Expand contractions (must be after lowercase + apostrophe normalization)
     text = _expand_contractions(text)
-    # 4. Normalize numbers to words
+    # 4. Normalize numbers (including ordinals like "18th" -> "eighteenth")
     text = _normalize_numbers(text, "en")
-    # 5. Remove hyphens between words by joining them (e.g. "south-west" -> "southwest")
-    #    This ensures hyphenated and non-hyphenated forms match: "south-west" == "southwest"
-    text = re.sub(r"(\w)-(\w)", r"\1\2", text)
+    # 5. Replace hyphens with spaces (e.g. "real-time" -> "real time")
+    #    This ensures hyphenated and non-hyphenated forms match.
+    text = re.sub(r"-", " ", text)
     # 6. Remove all punctuation (including apostrophes)
     text = re.sub(r"[^\w\s]", " ", text)
-    # 6. Collapse whitespace
+    # 7. Normalize British/American spelling variants
+    text = _normalize_spelling(text)
+    # 8. Collapse whitespace
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
