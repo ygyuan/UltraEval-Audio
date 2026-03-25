@@ -16,7 +16,7 @@
 
 | task | dataset | measure | performance | eval_cli | note |
 |------|---------|---------|-------------|----------|------|
-| asr(en) | librispeech-test-clean | wer⬇️ | 1.36(avg: 1.22) | [1] | |
+| asr(en) | librispeech-test-clean | wer⬇️ | 1.31(avg: 1.22) | [1] | |
 | asr(en) | librispeech-dev-clean | wer⬇️ | 1.25(avg: 1.22) | [2] | |
 | asr(en) | librispeech-test-other | wer⬇️ | 2.27(avg: 2.48) | [3] | |
 | asr(en) | librispeech-dev-other | wer⬇️ | 2.57(avg: 2.48) | [4] | |

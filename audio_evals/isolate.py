@@ -36,7 +36,7 @@ def isolated(
                     ["which", "uv"], capture_output=True
                 ).returncode == 0
                 if uv_available:
-                    res = subprocess.run(["uv", "venv", env_path, "--python", "3.10"])
+                    res = subprocess.run(["uv", "venv", env_path, "--python", "3.10", "--allow-existing"])
                 else:
                     import sys
                     res = subprocess.run([sys.executable, "-m", "venv", env_path])

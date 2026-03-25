@@ -1,10 +1,13 @@
 import logging
 import os
+os.environ["HUGGINGFACE_HUB_DOWNLOAD_RETRY"] = "1"  # 只重试1次
+os.environ["HUGGINGFACE_HUB_DOWNLOAD_TIMEOUT"] = "30"  # 超时30秒
 from typing import Dict, List, Optional
 
 import soundfile as sf
 from datasets import load_dataset, DatasetDict, Dataset, load_from_disk
 
+from audio_evals.constants import DEFAULT_MODEL_PATH
 from audio_evals.dataset.dataset import Dataset as BaseDataset
 
 logger = logging.getLogger(__name__)
@@ -49,8 +52,20 @@ def load_audio_hf_dataset(name, subset=None, split="", local_path="", col_aliase
         try:
             ds = load_dataset(**load_args, trust_remote_code=True)
         except Exception as e:
-            logger.error(f"load args is {load_args}load dataset error: {e}")
-            raise e
+            logger.warning(f"load args is {load_args} load dataset from Hub failed: {e}")
+            # Fallback: try loading from local init_model directory
+            local_fallback = os.path.join(DEFAULT_MODEL_PATH, name)
+            if os.path.exists(local_fallback):
+                logger.info(f"Falling back to local dataset path: {local_fallback}")
+                fallback_args = {**load_args, "path": local_fallback}
+                try:
+                    ds = load_dataset(**fallback_args, trust_remote_code=True)
+                except Exception as e2:
+                    logger.error(f"Local fallback also failed: {e2}")
+                    raise e2
+            else:
+                logger.error(f"No local fallback found at {local_fallback}")
+                raise e
 
     for k, v in col_aliases.items():
         if v in ds.column_names:

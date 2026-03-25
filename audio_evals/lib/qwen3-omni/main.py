@@ -14,11 +14,17 @@ device = "cuda"
 
 
 def load_model(path, **kwargs):
+    try:
+        import flash_attn  # noqa: F401
+        attn_impl = "flash_attention_2"
+    except ImportError:
+        attn_impl = "sdpa"
+
     model = Qwen3OmniMoeForConditionalGeneration.from_pretrained(
         path,
         torch_dtype="auto",
         device_map="auto",
-        attn_implementation="flash_attention_2",
+        attn_implementation=attn_impl,
         **kwargs,
     )
 
@@ -129,14 +135,13 @@ if __name__ == "__main__":
                                 break
                         print("not found close signal, will emit again", flush=True)
             else:
-                text_ids, _ = model.generate(
+                output_ids = model.generate(
                     **inputs,
                     use_audio_in_video=USE_AUDIO_IN_VIDEO,
                     return_audio=False,
-                    thinker_return_dict_in_generate=True,
                 )
                 text = processor.batch_decode(
-                    text_ids.sequences[:, inputs["input_ids"].shape[1] :],
+                    output_ids[:, inputs["input_ids"].shape[1] :],
                     skip_special_tokens=True,
                     clean_up_tokenization_spaces=False,
                 )

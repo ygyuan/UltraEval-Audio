@@ -27,7 +27,7 @@ class CER(Evaluator):
         return {"cer%": compute_wer([label], [pred], language="zh") * 100}
 
 
-from jiwer import compute_measures
+from jiwer import process_words
 from zhon.hanzi import punctuation
 import string
 
@@ -57,9 +57,8 @@ def process_one(hypo, truth, lang):
     else:
         raise NotImplementedError
 
-    measures = compute_measures(truth, hypo)
-    ref_list = truth.split(" ")
-    wer = measures["wer"]
+    measures = process_words(truth, hypo)
+    wer = measures.wer
     return wer
 
 
