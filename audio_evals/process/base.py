@@ -1,4 +1,3 @@
-import ast
 import json
 import logging
 from abc import ABC, abstractmethod
@@ -21,12 +20,18 @@ class ContentExtract(Process):
                 answer = answer[7:-3].strip()
             elif answer.startswith("```"):
                 answer = answer[3:-3].strip()
-            return json.loads(answer)["content"]
+            d = json.loads(answer)
+            if isinstance(d, dict):
+                if "content" in d:
+                    return d["content"]
+                if "text" in d:
+                    return d["text"]
+            return d
+        except (json.JSONDecodeError, TypeError):
+            pass
         except Exception as e:
-            try:
-                return ast.literal_eval(answer)["content"]
-            except Exception as e:
-                logger.warning(f"process {answer} fail: {str(e)}")
+            logger.warning("ContentExtract json.loads failed for: %.100s, error: %s", answer, e)
+        # Fallback: return original text as-is (skip ast.literal_eval for non-Python expressions)
         return answer
 
 
@@ -73,6 +78,12 @@ class JsonExtract(Process):
         if self.extract_key is None:
             return d
 
+        if self.extract_key in d:
+            return d[self.extract_key]
         if self.default_value is not None:
-            return d.get(self.extract_key, self.default_value)
-        return d[self.extract_key]
+            return self.default_value
+        logger.warning(
+            "JsonExtract: key '%s' not found in parsed JSON (keys: %s), returning raw input",
+            self.extract_key, list(d.keys())
+        )
+        return answer

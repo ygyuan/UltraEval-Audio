@@ -2,6 +2,6 @@ KeSpeech:
   class: audio_evals.dataset.huggingface.Huggingface
   args:
     default_task: asr-zh
-    name: TwinkStart/kespeech
+    name: TwinkStart/Kespeech
     split: test
     ref_col: Text

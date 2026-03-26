@@ -95,11 +95,10 @@ if __name__ == "__main__":
                 text_ids, audio = model.generate(
                     **inputs,
                     speaker=config.speaker,
-                    thinker_return_dict_in_generate=True,
                     use_audio_in_video=USE_AUDIO_IN_VIDEO,
                 )
                 text = processor.batch_decode(
-                    text_ids.sequences[:, inputs["input_ids"].shape[1] :],
+                    text_ids[:, inputs["input_ids"].shape[1] :],
                     skip_special_tokens=True,
                     clean_up_tokenization_spaces=False,
                 )

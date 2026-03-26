@@ -52,9 +52,16 @@ class Qwen3Omni(OfflineModel):
     def _inference(self, prompt: PromptStruct, **kwargs):
         conversation = [self._parse_role_content(item) for item in prompt]
         import uuid
+        import time
 
         uid = str(uuid.uuid4())
         prefix = f"{uid}->"
+
+        # Check if subprocess is still alive before writing
+        if self.process.poll() is not None:
+            raise RuntimeError(
+                f"qwen3-omni subprocess has exited with code {self.process.returncode}"
+            )
 
         while True:
             _, wlist, _ = select.select([], [self.process.stdin], [], 60)
@@ -64,7 +71,23 @@ class Qwen3Omni(OfflineModel):
                 print("already write in")
                 break
 
+        max_wait_time = 300  # 5 minutes timeout
+        start_time = time.time()
         while True:
+            # Check if subprocess is still alive
+            if self.process.poll() is not None:
+                raise RuntimeError(
+                    f"qwen3-omni subprocess has exited with code {self.process.returncode} "
+                    f"while waiting for response"
+                )
+
+            # Check for overall timeout
+            elapsed = time.time() - start_time
+            if elapsed > max_wait_time:
+                raise RuntimeError(
+                    f"qwen3-omni inference timed out after {max_wait_time}s"
+                )
+
             reads, _, _ = select.select(
                 [self.process.stdout, self.process.stderr], [], [], 1.0
             )
@@ -76,10 +99,8 @@ class Qwen3Omni(OfflineModel):
                             self.process.stdin.write("{}close\n".format(prefix))
                             self.process.stdin.flush()
                             res = json.loads(result[len(prefix) :])
-                            logger.info("return output:", res)
                             res["text"] = res["text"].split("assistant")[-1].strip()
-                            if len(res) == 1:
-                                return res["text"]
+                            logger.info("return output: %s", json.dumps(res, ensure_ascii=False))
                             return json.dumps(res, ensure_ascii=False)
                         elif result.startswith("Error:"):
                             raise RuntimeError("qwen3-omni failed: {}".format(result))

@@ -256,4 +256,37 @@ qwen3-mmsu:
             value: "{{WavPath}}"
           - type: text
             value: "Choose the most suitable answer from options A, B, C, and D to respond the question in next line, **you should only choose A or B or C or D.** Do not provide any additional explanations or content.\n\nQuestion: {{question}}\n\nA. {{choice_a}}\nB. {{choice_b}}\nC. {{ choice_c | default('None') }}\nD. {{ choice_d | default('None') }}"
-          
+
+# Speech Emotion Recognition
+qwen3-omni-emotion:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Listen the audio and judge the emotion of the speaker, the answer must be one of [surprise,anger,neutral,joy,sadness,fear,disgust], answer without explain.'
+
+qwen3-omni-ravdess-emotion:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Listen the audio and judge the emotion of the speaker, the answer must be one of [neutral,calm,happy,sad,angry,fearful,disgust,surprised], answer without explain.'
+
+qwen3-omni-sentiment:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Listen the audio and judge the sentiment of the speaker, the answer must be one of [positive,negative,neutral], answer without explain.'
