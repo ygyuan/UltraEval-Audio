@@ -76,6 +76,8 @@ class NaiveMean(AggPolicy):
 
     def _agg(self, score_detail: List[Dict[str, any]]) -> Dict[str, float]:
         res = {}
+        if not score_detail:
+            return res
         if not self.need_score_col:
             for k, v in score_detail[0].items():
                 if isinstance(v, (int, float)):
@@ -84,6 +86,8 @@ class NaiveMean(AggPolicy):
                     print(f"ignore {k} as it is not a number, but {v}")
         for item in self.need_score_col:
             valid_l = [c[item] for c in score_detail if c.get(item) is not None]
+            if not valid_l:
+                continue
             if "%" in item:
                 res[item] = sum(valid_l) / len(valid_l)
             else:
@@ -104,7 +108,7 @@ class CER(AggPolicy):
             predl, refl = [item.lower() for item in predl], [
                 item.lower() for item in refl
             ]
-        return {"cer": cer(predl, refl)}
+        return {"cer": cer(refl, predl)}
 
 
 class Dump(AggPolicy):

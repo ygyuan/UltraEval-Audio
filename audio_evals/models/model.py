@@ -106,9 +106,9 @@ class OfflineModel(Model, ABC):
                             logger.info(
                                 f"Model already present locally, skip download: {local_dir}"
                             )
-                    with OfflineModel._precheck_cache_lock:
-                        OfflineModel._precheck_cache[cache_key] = local_dir
-                    return local_dir
+                            with OfflineModel._precheck_cache_lock:
+                                OfflineModel._precheck_cache[cache_key] = local_dir
+                            return local_dir
             except Exception as precheck_error:
                 # If local directory exists but pre-check failed (e.g. network unreachable),
                 # use the existing local directory instead of attempting to download again.
@@ -206,9 +206,9 @@ class OfflineModel(Model, ABC):
                             logger.info(
                                 f"Model already present locally, skip download: {local_dir}"
                             )
-                    with OfflineModel._precheck_cache_lock:
-                        OfflineModel._precheck_cache[cache_key] = local_dir
-                    return local_dir
+                            with OfflineModel._precheck_cache_lock:
+                                OfflineModel._precheck_cache[cache_key] = local_dir
+                            return local_dir
             except Exception as precheck_error:
                 # If local directory exists but pre-check failed (e.g. network unreachable),
                 # use the existing local directory instead of attempting to download again.

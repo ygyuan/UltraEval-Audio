@@ -74,7 +74,8 @@ if __name__ == "__main__":
             USE_AUDIO_IN_VIDEO = True
 
             text = processor.apply_chat_template(
-                conversation, add_generation_prompt=True, tokenize=False
+                conversation, add_generation_prompt=True, tokenize=False,
+                enable_thinking=False,
             )
             audios, images, videos = process_mm_info(
                 conversation, use_audio_in_video=USE_AUDIO_IN_VIDEO
@@ -96,7 +97,7 @@ if __name__ == "__main__":
                     **inputs,
                     speaker=config.speaker,
                     use_audio_in_video=USE_AUDIO_IN_VIDEO,
-                    thinker_max_new_tokens=2048,
+                    thinker_max_new_tokens=512,
                     talker_max_new_tokens=2048,
                 )
                 text = processor.batch_decode(

@@ -158,11 +158,12 @@ class VoiceBenchQaOpenEvaluator(Evaluator):
             try:
                 score = float(item)
             except Exception as e:
-                score = extract_rating(score)
-            scores.append(score)
+                score = extract_rating(item)
+            if score is not None:
+                scores.append(score)
 
         return {
-            "gpt_score": sum(scores) / len(scores),
+            "gpt_score": sum(scores) / len(scores) if scores else 0,
             "pred": pred,
             "ref": label,
         }

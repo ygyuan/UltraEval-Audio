@@ -26,6 +26,8 @@ class WeightedAverage(AggPolicy):
 
     def _agg(self, score_detail: List[Dict[str, any]]) -> Dict[str, float]:
         res = {}
+        if not score_detail:
+            return res
         if not self.need_score_col:
             for k, v in score_detail[0].items():
                 if isinstance(v, (int, float)) and k != self.weight_col:
@@ -34,7 +36,9 @@ class WeightedAverage(AggPolicy):
                     print(f"ignore {k} as it is not a number, but {v}")
         for item in self.need_score_col:
             valid_l = [c[item] for c in score_detail if c.get(item) is not None]
-            weight_l = [c[self.weight_col] for c in score_detail]
+            weight_l = [c[self.weight_col] for c in score_detail if c.get(item) is not None]
+            if not valid_l or sum(weight_l) == 0:
+                continue
             if "%" in item:
                 res[item] = float(
                     sum(np.array(valid_l) * np.array(weight_l)) / sum(weight_l)

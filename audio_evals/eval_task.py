@@ -1,8 +1,6 @@
 import json
 import traceback
-import threading
 from concurrent.futures import as_completed, ThreadPoolExecutor
-from functools import lru_cache
 from typing import Dict, List, Tuple, Union
 
 from tqdm import tqdm
@@ -214,12 +212,11 @@ class EvalTask:
         )
         final_res = self.agg(res)
         total_error = inference_error_count + eval_error_count
-        final_res["fail_rate(%d)"] = total_error / len(quiz) * 100
+        final_res[f"fail_rate({total_error})"] = total_error / len(quiz) * 100 if quiz else 0
         final_res["inference_fail_count"] = inference_error_count
         final_res["eval_fail_count"] = eval_error_count
         return final_res, res, answers
 
-    @lru_cache(maxsize=None)
     def run(
         self, limit=None, rand_size=None, max_workers=1, two_phase=False
     ) -> Tuple[ScoreUnit, List[ScoreUnit], List[str]]:
@@ -267,5 +264,5 @@ class EvalTask:
             quiz, self.recorder.name, self.recorder.name.replace(".jsonl", ".xlsx")
         )
         final_res = self.agg(res)
-        final_res["fail_rate(%d)"] = error_count / len(quiz) * 100
+        final_res[f"fail_rate({error_count})"] = error_count / len(quiz) * 100 if quiz else 0
         return final_res, res, answers

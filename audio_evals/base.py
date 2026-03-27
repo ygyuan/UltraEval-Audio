@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 
 class EarlyStop(Exception):
@@ -12,7 +12,7 @@ eg1: how are you
 eg2: [{'role': 'user', 'content': 'how are you'}]
 eg3: [{'role': 'user', 'contents': [{'type':'text', 'content': 'how are you'}, {'type':'image', 'content': '/mnt/a.git'}]]
 """
-PromptStruct = Union[str, Dict[str, any], List[Dict[str, Union[str, List[Dict[str, str]]]]]]
+PromptStruct = Union[str, Dict[str, Any], List[Dict[str, Union[str, List[Dict[str, str]]]]]]
 
 ScoreUnit = Dict[str, Union[int, float]]
 

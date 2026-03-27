@@ -10,7 +10,7 @@ class Evaluator(ABC):
 
     def __call__(self, pred, ref, **kwargs) -> Dict[str, any]:
         res = {"pred": pred, "ref": ref}
-        eval_kwargs = {k: v for k, v in kwargs.items() if k not in ["pred", "label"]}
+        eval_kwargs = {k: v for k, v in kwargs.items() if k not in ["pred", "ref"]}
         res.update(self._eval(pred, ref, **eval_kwargs))
         return res
 
@@ -27,7 +27,7 @@ class EM(Evaluator):
         if type(label) in [int, float]:
             try:
                 pred, label = float(pred), float(label)
-            except:
+            except (ValueError, TypeError):
                 return {"match": 0, "pred": pred, "ref": label}
         elif isinstance(label, str):
             pred, label = str(pred).strip(), label.strip()
@@ -70,6 +70,7 @@ class PrefixMatch(Evaluator):
         m = 1 if pred[:n] == label else 0
         if m == 0 and " " in label and " " not in pred:
             label = label.replace(" ", "")
+            n = len(label)
             m = 1 if pred[:n] == label else 0
 
         return {
