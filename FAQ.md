@@ -42,3 +42,15 @@ If this code runs successfully, you can proceed with the evaluation.
 3. AST 2zh: --prompt mini-cpm-omni-asr-zh
 4. AST 2en: --prompt mini-cpm-omni-ast-en
 5. emotion analysis: --prompt mini-cpm-omni-emotion_analysis
+
+## 5. The official evaluation prompts for MiniCPM-o 4.5 (9B)
+
+MiniCPM-o 4.5 uses the same prompt templates as MiniCPM-O 2.6:
+
+1. ASR zh: --prompt mini-cpm-omni-asr-zh
+2. ASR en: --prompt mini-cpm-omni-asr-en
+3. AST 2zh: --prompt mini-cpm-omni-asr-zh
+4. AST 2en: --prompt mini-cpm-omni-ast-en
+5. emotion analysis: --prompt mini-cpm-omni-emotion_analysis
+
+Model names: `MiniCPMo4_5-audio` (speech understanding), `MiniCPMo4_5-speech` (speech generation)

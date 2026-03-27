@@ -60,7 +60,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
             done
         done
     done
-    for dataset in speech-cmmlu speech-chatbot-alpaca-eval; do
+    for dataset in speech-web-questions speech-triviaqa speech-cmmlu; do
         for model in MiniCPMo4_5-speech; do
             for prompt in ""; do
                 [ ! -d res/${model}/${dataset} ] && \

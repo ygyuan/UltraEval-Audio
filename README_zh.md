@@ -33,6 +33,8 @@ UltraEval-Audio——全球首个同时支持语音理解和语音生成评估�
 
 # 更新日志🔥
 
+- [2026/03/27]
+  - 支持 **MiniCPM-o 4.5 (9B)** 评测：`--model MiniCPMo4_5-audio` 用于语音理解，`--model MiniCPMo4_5-speech` 用于语音生成
 - [2026/03/13]
   - 支持 **[Fish-Speech](replication/fishspeech.md)** 的评测和复现
 - [2026/02/03]
@@ -114,6 +116,7 @@ UltraEval-Audio——全球首个同时支持语音理解和语音生成评估�
 | **GPT-4o-Realtime**             |      **51.60**      |    **69.70**    |     **74.00**     |        70.05        |  **98.69**  |           4.29\|3.44\|4.26           |         **74.00**         |
 | **Qwen3-Omni-30B-A3B-Instruct** |           51.50           |         55.27         |          67.97          |        47.83        |       40.27       |      **4.44**\|3.45\|4.12      |              57.15              |
 | **Qwen2.5-Omni**                |           38.89           |         39.94         |          54.00          |   **73.72**   |       95.65       | 4.23\|**3.48**\|**4.27** |              63.68              |
+| **MiniCPM-o 4.5 (9B)**          |           -           |         -         |          -          |        -        |       -       |           -\|-\|-           |              -              |
 | **MiniCPM-o 2.6**               |           40.00           |         40.20         |          51.00          |        51.37        |       80.68       |           4.12\|3.39\|4.02           |              56.69              |
 | **Kimi-Audio-7B-Instruct**      |           33.69           |         38.20         |          34.40          |        71.25        |       97.42       |           2.94\|3.22\|3.62           |              56.69              |
 | **GLM-4-Voice**                 |           32.00           |         36.40         |          51.00          |        52.61        |       71.06       |           4.21\|3.46\|4.07           |              53.56              |
@@ -161,6 +164,12 @@ uv pip install -e .
 
 ```bash
 # 针对部分地区可能需要加速下载 需要设置：export HF_ENDPOINT=https://hf-mirror.com
+# 测试MiniCPM-o 4.5语音理解能力
+CUDA_VISIBLE_DEVICES=0 python audio_evals/main.py --dataset sample --prompt mini-cpm-omni-asr-zh --model MiniCPMo4_5-audio
+
+# 测试MiniCPM-o 4.5语音生成能力
+CUDA_VISIBLE_DEVICES=0 python audio_evals/main.py --dataset llama-questions-s2t --model MiniCPMo4_5-speech
+
 # 测试MiniCPM-o 2.6语音理解能力
 CUDA_VISIBLE_DEVICES=0 python audio_evals/main.py --dataset sample --prompt mini-cpm-omni-asr-zh --model MiniCPMo2_6-audio
 
