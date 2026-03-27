@@ -11,8 +11,8 @@ from audio_evals.isolate import isolated
 logger = logging.getLogger(__name__)
 
 
-@isolated("audio_evals/lib/minicpm/main.py")
-class MiniCPMo(OfflineModel):
+@isolated("audio_evals/lib/minicpm/main_4_5.py")
+class MiniCPMo_4_5(OfflineModel):
     def __init__(
         self,
         path: str,
@@ -21,7 +21,7 @@ class MiniCPMo(OfflineModel):
         *args,
         **kwargs,
     ):
-        if path == "openbmb/MiniCPM-o-2_6" and not os.path.exists(path):
+        if path == "openbmb/MiniCPM-o-4_5" and not os.path.exists(path):
             path = self._download_model(path)
 
         self.command_args = {
@@ -33,7 +33,6 @@ class MiniCPMo(OfflineModel):
 
     def _inference(self, prompt: PromptStruct, **kwargs) -> str:
         import uuid
-        import time
 
         uid = str(uuid.uuid4())
         prefix = f"{uid}->"
@@ -49,15 +48,7 @@ class MiniCPMo(OfflineModel):
                 print("already write in")
                 break
 
-        # Timeout for waiting for the result (5 minutes)
-        timeout = 300
-        start_time = time.time()
         while True:
-            elapsed = time.time() - start_time
-            if elapsed > timeout:
-                raise RuntimeError(
-                    f"mimicpm-o 2.6 timed out after {timeout}s waiting for result (uid={uid})"
-                )
             reads, _, _ = select.select(
                 [self.process.stdout, self.process.stderr], [], [], 1.0
             )
@@ -81,7 +72,7 @@ class MiniCPMo(OfflineModel):
                                 )
                                 continue
                             raise RuntimeError(
-                                "mimicpm-o 2.6 failed: {}".format(result)
+                                "minicpm-o 4.5 failed: {}".format(result)
                             )
                         else:
                             logger.info(result)

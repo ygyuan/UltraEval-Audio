@@ -96,6 +96,8 @@ if __name__ == "__main__":
                     **inputs,
                     speaker=config.speaker,
                     use_audio_in_video=USE_AUDIO_IN_VIDEO,
+                    thinker_max_new_tokens=2048,
+                    talker_max_new_tokens=2048,
                 )
                 text = processor.batch_decode(
                     text_ids[:, inputs["input_ids"].shape[1] :],
@@ -138,6 +140,7 @@ if __name__ == "__main__":
                     **inputs,
                     use_audio_in_video=USE_AUDIO_IN_VIDEO,
                     return_audio=False,
+                    thinker_max_new_tokens=2048,
                 )
                 text = processor.batch_decode(
                     output_ids[:, inputs["input_ids"].shape[1] :],

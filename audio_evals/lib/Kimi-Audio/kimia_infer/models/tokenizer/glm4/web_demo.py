@@ -30,9 +30,9 @@ if __name__ == "__main__":
     parser.add_argument("--host", type=str, default="0.0.0.0")
     parser.add_argument("--port", type=int, default="8888")
     parser.add_argument("--flow-path", type=str, default="./glm-4-voice-decoder")
-    parser.add_argument("--model-path", type=str, default="THUDM/glm-4-voice-9b")
+    parser.add_argument("--model-path", type=str, default="zai-org/glm-4-voice-9b")
     parser.add_argument(
-        "--tokenizer-path", type=str, default="THUDM/glm-4-voice-tokenizer"
+        "--tokenizer-path", type=str, default="zai-org/glm-4-voice-tokenizer"
     )
     args = parser.parse_args()
 

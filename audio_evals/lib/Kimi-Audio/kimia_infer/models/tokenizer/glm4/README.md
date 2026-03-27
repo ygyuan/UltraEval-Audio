@@ -1,6 +1,6 @@
 # GLM-4-Voice
 <p align="center">
-📄<a href="https://arxiv.org/abs/2412.02612" target="_blank"> Report </a> • 🤗 <a href="https://huggingface.co/THUDM/glm-4-voice-9b" target="_blank">HF Repo</a> • 🤖 <a href="https://modelscope.cn/studios/ZhipuAI/GLM-4-Voice-Demo" target="_blank">Demo</a> • 🐦 <a href="https://twitter.com/thukeg" target="_blank">Twitter</a>
+📄<a href="https://arxiv.org/abs/2412.02612" target="_blank"> Report </a> • 🤗 <a href="https://huggingface.co/zai-org/glm-4-voice-9b" target="_blank">HF Repo</a> • 🤖 <a href="https://modelscope.cn/studios/ZhipuAI/GLM-4-Voice-Demo" target="_blank">Demo</a> • 🐦 <a href="https://twitter.com/thukeg" target="_blank">Twitter</a>
 </p>
 
 Read this in [English](./README_en.md)
@@ -13,7 +13,7 @@ GLM-4-Voice 是智谱 AI 推出的端到端语音模型。GLM-4-Voice 能够直�
 GLM-4-Voice 由三个部分组成：
 * GLM-4-Voice-Tokenizer: 通过在 [Whisper](https://github.com/openai/whisper) 的 Encoder 部分增加 Vector Quantization 并在 ASR 数据上有监督训练，将连续的语音输入转化为离散的 token。每秒音频平均只需要用 12.5 个离散 token 表示。
 * GLM-4-Voice-Decoder: 基于 [CosyVoice](https://github.com/FunAudioLLM/CosyVoice) 的 Flow Matching 模型结构训练的支持流式推理的语音解码器，将离散化的语音 token 转化为连续的语音输出。最少只需要 10 个语音 token 即可开始生成，降低端到端对话延迟。
-* GLM-4-Voice-9B: 在 [GLM-4-9B](https://github.com/THUDM/GLM-4) 的基础上进行语音模态的预训练和对齐，从而能够理解和生成离散化的语音 token。
+* GLM-4-Voice-9B: 在 [GLM-4-9B](https://github.com/zai-org/GLM-4) 的基础上进行语音模态的预训练和对齐，从而能够理解和生成离散化的语音 token。
 
 预训练方面，为了攻克模型在语音模态下的智商和合成表现力两个难关，我们将 Speech2Speech 任务解耦合为“根据用户音频做出文本回复”和“根据文本回复和用户语音合成回复语音”两个任务，并设计两种预训练目标，分别基于文本预训练数据和无监督音频数据合成语音-文本交错数据以适配这两种任务形式。GLM-4-Voice-9B 在 GLM-4-9B 的基座模型基础之上，经过了数百万小时音频和数千亿 token 的音频文本交错数据预训练，拥有很强的音频理解和建模能力。
 
@@ -23,9 +23,9 @@ GLM-4-Voice 由三个部分组成：
 
 |         Model         |       Type       |                                                                     Download                                                                     |
 |:---------------------:|:----------------:|:------------------------------------------------------------------------------------------------------------------------------------------------:|
-| GLM-4-Voice-Tokenizer | Speech Tokenizer | [🤗 Huggingface](https://huggingface.co/THUDM/glm-4-voice-tokenizer) [🤖 ModelScope](https://modelscope.cn/models/ZhipuAI/glm-4-voice-tokenizer) |
-|    GLM-4-Voice-9B     |    Chat Model    |        [🤗 Huggingface](https://huggingface.co/THUDM/glm-4-voice-9b) [🤖 ModelScope](https://modelscope.cn/models/ZhipuAI/glm-4-voice-9b)        |
-|  GLM-4-Voice-Decoder  |  Speech Decoder  |   [🤗 Huggingface](https://huggingface.co/THUDM/glm-4-voice-decoder) [🤖 ModelScope](https://modelscope.cn/models/ZhipuAI/glm-4-voice-decoder)   |
+| GLM-4-Voice-Tokenizer | Speech Tokenizer | [🤗 Huggingface](https://huggingface.co/zai-org/glm-4-voice-tokenizer) [🤖 ModelScope](https://modelscope.cn/models/ZhipuAI/glm-4-voice-tokenizer) |
+|    GLM-4-Voice-9B     |    Chat Model    |        [🤗 Huggingface](https://huggingface.co/zai-org/glm-4-voice-9b) [🤖 ModelScope](https://modelscope.cn/models/ZhipuAI/glm-4-voice-9b)        |
+|  GLM-4-Voice-Decoder  |  Speech Decoder  |   [🤗 Huggingface](https://huggingface.co/zai-org/glm-4-voice-decoder) [🤖 ModelScope](https://modelscope.cn/models/ZhipuAI/glm-4-voice-decoder)   |
 
 ## Usage
 我们提供了可以直接启动的 Web Demo。用户可以输入语音或文本，模型会同时给出语音和文字回复。
@@ -36,7 +36,7 @@ GLM-4-Voice 由三个部分组成：
 
 首先下载仓库
 ```shell
-git clone --recurse-submodules https://github.com/THUDM/GLM-4-Voice
+git clone --recurse-submodules https://github.com/zai-org/GLM-4-Voice
 cd GLM-4-Voice
 ```
 然后安装依赖。也可以使用我们提供的镜像 `zhipuai/glm-4-voice:0.1` 以跳过这一步。
@@ -48,7 +48,7 @@ pip install -r requirements.txt
 ```shell
 # git 模型下载，请确保已安装 git-lfs
 git lfs install
-git clone https://huggingface.co/THUDM/glm-4-voice-decoder
+git clone https://huggingface.co/zai-org/glm-4-voice-decoder
 ```
 
 ### Launch Web Demo
@@ -56,13 +56,13 @@ git clone https://huggingface.co/THUDM/glm-4-voice-decoder
 1. 启动模型服务
 
 ```shell
-python model_server.py --host localhost --model-path THUDM/glm-4-voice-9b --port 10000 --dtype bfloat16 --device cuda:0
+python model_server.py --host localhost --model-path zai-org/glm-4-voice-9b --port 10000 --dtype bfloat16 --device cuda:0
 ```
 
 如果你需要使用 Int4 精度启动，请运行
 
 ```shell
-python model_server.py --host localhost --model-path THUDM/glm-4-voice-9b --port 10000 --dtype int4 --device cuda:0
+python model_server.py --host localhost --model-path zai-org/glm-4-voice-9b --port 10000 --dtype int4 --device cuda:0
 ```
 
 此命令会自动下载 `glm-4-voice-9b`。如果网络条件不好，也手动下载之后通过 `--model-path` 指定本地的路径。
@@ -70,7 +70,7 @@ python model_server.py --host localhost --model-path THUDM/glm-4-voice-9b --port
 2. 启动 web 服务
 
 ```shell
-python web_demo.py --tokenizer-path  THUDM/glm-4-voice-tokenizer --model-path THUDM/glm-4-voice-9b --flow-path ./glm-4-voice-decoder
+python web_demo.py --tokenizer-path  zai-org/glm-4-voice-tokenizer --model-path zai-org/glm-4-voice-9b --flow-path ./glm-4-voice-decoder
 ```
 
 即可在 http://127.0.0.1:8888 访问 web demo。
@@ -124,11 +124,11 @@ https://github.com/user-attachments/assets/d5ff0815-74f8-4738-b0f1-477cfc8dcc2d
 本项目的部分代码来自：
 * [CosyVoice](https://github.com/FunAudioLLM/CosyVoice)
 * [transformers](https://github.com/huggingface/transformers)
-* [GLM-4](https://github.com/THUDM/GLM-4)
+* [GLM-4](https://github.com/zai-org/GLM-4)
 
 ## 协议
 
-+ GLM-4 模型的权重的使用则需要遵循 [模型协议](https://huggingface.co/THUDM/glm-4-voice-9b/blob/main/LICENSE)。
++ GLM-4 模型的权重的使用则需要遵循 [模型协议](https://huggingface.co/zai-org/glm-4-voice-9b/blob/main/LICENSE)。
 
 + 本开源仓库的代码则遵循 [Apache 2.0](LICENSE) 协议。
 

@@ -163,3 +163,25 @@ mini-cpm-omni-ravdess_emotion_analysis:
           '
         - type: audio
           value: '{{WavPath}}'
+
+mini-cpm-omni-s2tt-zh2en:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Listen to the provided Chinese speech and produce a translation in English text.'
+
+mini-cpm-omni-s2tt-en2zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Listen to the provided English speech and produce a translation in Chinese text.'

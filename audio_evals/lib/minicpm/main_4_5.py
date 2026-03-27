@@ -1,12 +1,11 @@
 import argparse
-import collections
 import json
 import select
 import sys
 import tempfile
 
 import librosa
-from transformers import AutoModel, AutoConfig, AutoProcessor, AutoTokenizer
+from transformers import AutoModel, AutoProcessor
 import torch
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -18,7 +17,7 @@ if __name__ == "__main__":
         "--path", type=str, required=True, help="Path to checkpoint file"
     )
     parser.add_argument(
-        "--speech", action="store_true", default=False, help="Path to checkpoint file"
+        "--speech", action="store_true", default=False, help="Enable speech output mode"
     )
 
     config = parser.parse_args()
@@ -27,33 +26,20 @@ if __name__ == "__main__":
         trust_remote_code=True,
         attn_implementation="sdpa",  # sdpa or flash_attention_2
         torch_dtype=torch.bfloat16,
-        init_vision=True,
-        init_audio=True,
-        init_tts=True,
+        device_map="cuda",
     )
-    model = model.eval().cuda()
-    tokenizer = AutoTokenizer.from_pretrained(config.path, trust_remote_code=True)
-    model.init_tts()
-    model.tts.float()
+    model = model.eval()
+    processor = AutoProcessor.from_pretrained(config.path, trust_remote_code=True)
+
     if config.speech:
-        model.config.stream_input = True
         ref_audio_path = "assets/default.wav"
         ref_audio, _ = librosa.load(ref_audio_path, sr=16000, mono=True)
 
     print("Model loaded from checkpoint: {}".format(config.path))
 
-    # Buffer for lines read from stdin that are not close signals
-    pending_lines = collections.deque()
-
-    def read_next_line():
-        """Read next line from pending buffer or stdin."""
-        if pending_lines:
-            return pending_lines.popleft()
-        return input()
-
     while True:
         try:
-            prompt = read_next_line()
+            prompt = input()
             anchor = prompt.find("->")
             if anchor == -1:
                 print(
@@ -90,20 +76,19 @@ if __name__ == "__main__":
                         for line in content["contents"]:
                             if line["type"] == "audio":
                                 audio_file = line["value"]
+                audio_data, _ = librosa.load(audio_file, sr=16000, mono=True)
                 msgs.append(
                     {
                         "role": "user",
-                        "content": [librosa.load(audio_file, sr=16000, mono=True)[0]],
+                        "content": [audio_data],
                     }
                 )
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
                     res = model.chat(
                         msgs=msgs,
-                        tokenizer=tokenizer,
-                        use_tts_template=True,
+                        processor=processor,
                         generate_audio=True,
                         stream=False,
-                        stream_input=True,
                         use_tts=True,
                         output_audio_path=f.name,
                         **conversation,
@@ -123,8 +108,6 @@ if __name__ == "__main__":
                             finish = sys.stdin.readline().strip()
                             if finish == "{}close".format(prefix):
                                 break
-                            # Save non-close lines back to buffer
-                            pending_lines.append(finish)
                             print("not found close signal, will emit again", flush=True)
             else:
                 msgs = []
@@ -135,9 +118,8 @@ if __name__ == "__main__":
                             if line["type"] == "text":
                                 msg_line["content"].append(line["value"])
                             if line["type"] == "audio":
-                                msg_line["content"].append(
-                                    librosa.load(line["value"], sr=16000, mono=True)[0]
-                                )
+                                audio_data, _ = librosa.load(line["value"], sr=16000, mono=True)
+                                msg_line["content"].append(audio_data)
                         msgs.append(msg_line)
                     if content["role"] == "system":
                         msg_line = {"role": "system", "content": []}
@@ -147,8 +129,7 @@ if __name__ == "__main__":
                         msgs.append(msg_line)
                 res = model.chat(
                     msgs=msgs,
-                    tokenizer=tokenizer,
-                    use_tts_template=True,
+                    processor=processor,
                     **conversation,
                 )
                 retry = 3
@@ -163,8 +144,6 @@ if __name__ == "__main__":
                         finish = sys.stdin.readline().strip()
                         if finish == "{}close".format(prefix):
                             break
-                        # Save non-close lines back to buffer
-                        pending_lines.append(finish)
                         print("not found close signal, will emit again", flush=True)
         except Exception as e:
             import traceback

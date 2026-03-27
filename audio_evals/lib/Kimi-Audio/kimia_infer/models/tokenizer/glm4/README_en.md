@@ -1,6 +1,6 @@
 # GLM-4-Voice
 <p align="center">
-📄<a href="https://arxiv.org/abs/2412.02612" target="_blank"> Report </a> • 🤗 <a href="https://huggingface.co/THUDM/glm-4-voice-9b" target="_blank">HF Repo</a> • 🤖 <a href="https://modelscope.cn/studios/ZhipuAI/GLM-4-Voice-Demo" target="_blank">Demo</a> • 🐦 <a href="https://twitter.com/thukeg" target="_blank">Twitter</a>
+📄<a href="https://arxiv.org/abs/2412.02612" target="_blank"> Report </a> • 🤗 <a href="https://huggingface.co/zai-org/glm-4-voice-9b" target="_blank">HF Repo</a> • 🤖 <a href="https://modelscope.cn/studios/ZhipuAI/GLM-4-Voice-Demo" target="_blank">Demo</a> • 🐦 <a href="https://twitter.com/thukeg" target="_blank">Twitter</a>
 </p>
 
 GLM-4-Voice is an end-to-end voice model launched by Zhipu AI. GLM-4-Voice can directly understand and generate Chinese and English speech, engage in real-time voice conversations, and change attributes such as emotion, intonation, speech rate, and dialect based on user instructions.
@@ -10,16 +10,16 @@ GLM-4-Voice is an end-to-end voice model launched by Zhipu AI. GLM-4-Voice can d
 ![Model Architecture](./resources/architecture.jpeg)
 We provide the three components of GLM-4-Voice:
 * GLM-4-Voice-Tokenizer: Trained by adding vector quantization to the encoder part of [Whisper](https://github.com/openai/whisper), converting continuous speech input into discrete tokens. Each second of audio is converted into 12.5 discrete tokens.
-* GLM-4-Voice-9B: Pre-trained and aligned on speech modality based on [GLM-4-9B](https://github.com/THUDM/GLM-4), enabling understanding and generation of discretized speech.
+* GLM-4-Voice-9B: Pre-trained and aligned on speech modality based on [GLM-4-9B](https://github.com/zai-org/GLM-4), enabling understanding and generation of discretized speech.
 * GLM-4-Voice-Decoder: A speech decoder supporting streaming inference, retrained based on [CosyVoice](https://github.com/FunAudioLLM/CosyVoice), converting discrete speech tokens into continuous speech output. Generation can start with as few as 10 audio tokens, reducing conversation latency.
 
 ## Model List
 
 |         Model         |       Type       |                               Download                               |
 |:---------------------:|:----------------:|:--------------------------------------------------------------------:|
-| GLM-4-Voice-Tokenizer | Speech Tokenizer | [🤗 Huggingface](https://huggingface.co/THUDM/glm-4-voice-tokenizer) |
-|    GLM-4-Voice-9B     |    Chat Model    |    [🤗 Huggingface](https://huggingface.co/THUDM/glm-4-voice-9b)     |
-|  GLM-4-Voice-Decoder  |  Speech Decoder  |  [🤗 Huggingface](https://huggingface.co/THUDM/glm-4-voice-decoder)  |
+| GLM-4-Voice-Tokenizer | Speech Tokenizer | [🤗 Huggingface](https://huggingface.co/zai-org/glm-4-voice-tokenizer) |
+|    GLM-4-Voice-9B     |    Chat Model    |    [🤗 Huggingface](https://huggingface.co/zai-org/glm-4-voice-9b)     |
+|  GLM-4-Voice-Decoder  |  Speech Decoder  |  [🤗 Huggingface](https://huggingface.co/zai-org/glm-4-voice-decoder)  |
 
 ## Usage
 We provide a Web Demo that can be launched directly. Users can input speech or text, and the model will respond with both speech and text.
@@ -30,7 +30,7 @@ We provide a Web Demo that can be launched directly. Users can input speech or t
 
 First, download the repository
 ```shell
-git clone --recurse-submodules https://github.com/THUDM/GLM-4-Voice
+git clone --recurse-submodules https://github.com/zai-org/GLM-4-Voice
 cd GLM-4-Voice
 ```
 Then, install the dependencies. You can also use our pre-built docker image `zhipuai/glm-4-voice:0.1` to skip the step.
@@ -41,7 +41,7 @@ Since the Decoder model does not support initialization via `transformers`, the 
 
 ```shell
 # Git model download, please ensure git-lfs is installed
-git clone https://huggingface.co/THUDM/glm-4-voice-decoder
+git clone https://huggingface.co/zai-org/glm-4-voice-decoder
 ```
 
 ### Launch Web Demo
@@ -49,13 +49,13 @@ git clone https://huggingface.co/THUDM/glm-4-voice-decoder
 1. Start the model server
 
 ```shell
-python model_server.py --host localhost --model-path THUDM/glm-4-voice-9b --port 10000 --dtype bfloat16 --device cuda:0
+python model_server.py --host localhost --model-path zai-org/glm-4-voice-9b --port 10000 --dtype bfloat16 --device cuda:0
 ```
 
 If you need to launch with Int4 precision, run
 
 ```shell
-python model_server.py --host localhost --model-path THUDM/glm-4-voice-9b --port 10000 --dtype int4 --device cuda:0
+python model_server.py --host localhost --model-path zai-org/glm-4-voice-9b --port 10000 --dtype int4 --device cuda:0
 ```
 
 This command will automatically download `glm-4-voice-9b`. If network conditions are poor, you can manually download it and specify the local path using `--model-path`.
@@ -63,7 +63,7 @@ This command will automatically download `glm-4-voice-9b`. If network conditions
 2. Start the web service
 
 ```shell
-python web_demo.py --tokenizer-path  THUDM/glm-4-voice-tokenizer --model-path THUDM/glm-4-voice-9b --flow-path ./glm-4-voice-decoder
+python web_demo.py --tokenizer-path  zai-org/glm-4-voice-tokenizer --model-path zai-org/glm-4-voice-9b --flow-path ./glm-4-voice-decoder
 ```
 
 You can access the web demo at [http://127.0.0.1:8888](http://127.0.0.1:8888).
@@ -113,11 +113,11 @@ https://github.com/user-attachments/assets/d5ff0815-74f8-4738-b0f1-477cfc8dcc2d
 Some code in this project is from:
 * [CosyVoice](https://github.com/FunAudioLLM/CosyVoice)
 * [transformers](https://github.com/huggingface/transformers)
-* [GLM-4](https://github.com/THUDM/GLM-4)
+* [GLM-4](https://github.com/zai-org/GLM-4)
 
 ## License Agreement
 
-+ The use of GLM-4 model weights must follow the [Model License Agreement](https://huggingface.co/THUDM/glm-4-voice-9b/blob/main/LICENSE).
++ The use of GLM-4 model weights must follow the [Model License Agreement](https://huggingface.co/zai-org/glm-4-voice-9b/blob/main/LICENSE).
 
 + The code in this open-source repository is licensed under the [Apache 2.0](LICENSE) License.
 

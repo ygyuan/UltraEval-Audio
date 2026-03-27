@@ -3,11 +3,11 @@ A model worker with transformers libs executes the model.
 
 Run BF16 inference with:
 
-python model_server.py --host localhost --model-path THUDM/glm-4-voice-9b --port 10000 --dtype bfloat16 --device cuda:0
+python model_server.py --host localhost --model-path zai-org/glm-4-voice-9b --port 10000 --dtype bfloat16 --device cuda:0
 
 Run Int4 inference with:
 
-python model_server.py --host localhost --model-path THUDM/glm-4-voice-9b --port 10000 --dtype int4 --device cuda:0
+python model_server.py --host localhost --model-path zai-org/glm-4-voice-9b --port 10000 --dtype int4 --device cuda:0
 
 """
 
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     parser.add_argument("--dtype", type=str, default="bfloat16")
     parser.add_argument("--device", type=str, default="cuda:0")
     parser.add_argument("--port", type=int, default=10000)
-    parser.add_argument("--model-path", type=str, default="THUDM/glm-4-voice-9b")
+    parser.add_argument("--model-path", type=str, default="zai-org/glm-4-voice-9b")
     args = parser.parse_args()
 
     worker = ModelWorker(args.model_path, args.dtype, args.device)

@@ -21,3 +21,26 @@ MiniCPMo2_6-speech:
       sampling: false
       num_beams: 5
       max_new_tokens: 128
+MiniCPMo4_5-audio:
+  class: audio_evals.models.mini_cpm_4_5.MiniCPMo_4_5
+  args:
+    path: openbmb/MiniCPM-o-4_5
+    speech: false
+    env_path: envs/minicpmo4_5
+    requirements_path: audio_evals/lib/minicpm/requirements_4_5.txt
+    sample_params:
+      sampling: false
+      num_beams: 5
+      max_new_tokens: 128
+
+MiniCPMo4_5-speech:
+  class: audio_evals.models.mini_cpm_4_5.MiniCPMo_4_5
+  args:
+    path: openbmb/MiniCPM-o-4_5
+    speech: true
+    env_path: envs/minicpmo4_5
+    requirements_path: audio_evals/lib/minicpm/requirements_4_5.txt
+    sample_params:
+      sampling: false
+      num_beams: 5
+      max_new_tokens: 128

@@ -616,7 +616,7 @@ We would like to thank the following projects and individuals for their contribu
 * [Whisper](https://github.com/openai/whisper)
 * [Transformers](https://github.com/huggingface/transformers)
 * [BigVGAN](https://github.com/NVIDIA/BigVGAN)
-* [GLM-4-Voice](https://github.com/THUDM/GLM-4-Voice)
+* [GLM-4-Voice](https://github.com/zai-org/GLM-4-Voice)
 
 Thank you to all the open-source projects for their contributions to this project!
 

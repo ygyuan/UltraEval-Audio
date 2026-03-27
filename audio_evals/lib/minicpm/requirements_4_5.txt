@@ -1,0 +1,5 @@
+transformers==4.51.0
+accelerate
+torch>=2.3.0,<=2.8.0
+torchaudio<=2.8.0
+minicpmo-utils[all]>=1.0.5

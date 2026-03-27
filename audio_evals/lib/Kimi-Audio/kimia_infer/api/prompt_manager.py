@@ -16,7 +16,12 @@ from kimia_infer.utils.special_tokens import instantiate_extra_tokens
 
 class KimiAPromptManager:
     def __init__(self, model_path: str, kimia_token_offset: int):
-        self.audio_tokenizer = Glm4Tokenizer("THUDM/glm-4-voice-tokenizer")
+        # Try local path first, fallback to Hub ID
+        glm4_tokenizer_id = "zai-org/glm-4-voice-tokenizer"
+        glm4_local_path = os.path.join(os.path.dirname(os.path.dirname(model_path)), "zai-org", "glm-4-voice-tokenizer")
+        glm4_tokenizer_path = glm4_local_path if os.path.exists(glm4_local_path) else glm4_tokenizer_id
+        logger.info(f"Loading Glm4Tokenizer from {glm4_tokenizer_path}")
+        self.audio_tokenizer = Glm4Tokenizer(glm4_tokenizer_path)
         self.audio_tokenizer = self.audio_tokenizer.to(torch.cuda.current_device())
 
         if os.path.exists(model_path):

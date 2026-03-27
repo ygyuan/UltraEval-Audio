@@ -42,3 +42,36 @@ kimi-cocalsound:
         value: "Identify the human vocal sound in the audio.\nOptions:\n(A) Laughter\n(B) Sigh\n(C) Cough\n(D) Throat clearing\n(E) Sneeze\n(F) Sniff\n.Answer with the option's letter from the given choices directly and only give the best option."
       - type: audio
         value: "{{WavPath}}"
+
+kimi-s2tt-zh2en:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: text
+        value: 'Listen to the provided Chinese speech and produce a translation in English text.'
+      - type: audio
+        value: '{{WavPath}}'
+
+kimi-s2tt-en2zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: text
+        value: 'Listen to the provided English speech and produce a translation in Chinese text.'
+      - type: audio
+        value: '{{WavPath}}'
+
+kimi-emotion:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: text
+        value: 'Listen the audio and judge the emotion of the speaker, the answer must be one of [surprise,anger,neutral,joy,sadness,fear,disgust], answer without explain.'
+      - type: audio
+        value: '{{WavPath}}'
