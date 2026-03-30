@@ -68,7 +68,6 @@ if __name__ == "__main__":
                 continue
             prefix = prompt[:anchor].strip() + "->"
             conversation = json.loads(prompt[anchor + 2 :])
-            print(prompt[anchor + 2 :])
 
             # Set whether to use audio in video
             USE_AUDIO_IN_VIDEO = True
@@ -97,8 +96,8 @@ if __name__ == "__main__":
                     **inputs,
                     speaker=config.speaker,
                     use_audio_in_video=USE_AUDIO_IN_VIDEO,
-                    thinker_max_new_tokens=512,
-                    talker_max_new_tokens=2048,
+                    thinker_max_new_tokens=256,
+                    talker_max_new_tokens=512,
                 )
                 text = processor.batch_decode(
                     text_ids[:, inputs["input_ids"].shape[1] :],
@@ -141,7 +140,8 @@ if __name__ == "__main__":
                     **inputs,
                     use_audio_in_video=USE_AUDIO_IN_VIDEO,
                     return_audio=False,
-                    thinker_max_new_tokens=2048,
+                    thinker_max_new_tokens=256,
+                    talker_max_new_tokens=512,
                 )
                 text = processor.batch_decode(
                     output_ids[:, inputs["input_ids"].shape[1] :],

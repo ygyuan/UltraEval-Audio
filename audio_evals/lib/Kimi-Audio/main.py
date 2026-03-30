@@ -111,7 +111,10 @@ if __name__ == "__main__":
             
             # 清理显存，防止泄露
             del wav, text
-            torch.cuda.empty_cache()
+            try:
+                torch.cuda.empty_cache()
+            except Exception:
+                pass
             
         except Exception as e:
             import traceback
@@ -119,4 +122,7 @@ if __name__ == "__main__":
             traceback.print_exc()
             print(f"Error: {str(e)}", flush=True)
             # 异常时也清理显存
-            torch.cuda.empty_cache()
+            try:
+                torch.cuda.empty_cache()
+            except Exception:
+                pass

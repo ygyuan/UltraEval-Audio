@@ -43,28 +43,6 @@ kimi-cocalsound:
       - type: audio
         value: "{{WavPath}}"
 
-kimi-s2tt-zh2en:
-  class: audio_evals.prompt.base.Prompt
-  args:
-    template:
-    - role: user
-      contents:
-      - type: text
-        value: 'Listen to the provided Chinese speech and produce a translation in English text.'
-      - type: audio
-        value: '{{WavPath}}'
-
-kimi-s2tt-en2zh:
-  class: audio_evals.prompt.base.Prompt
-  args:
-    template:
-    - role: user
-      contents:
-      - type: text
-        value: 'Listen to the provided English speech and produce a translation in Chinese text.'
-      - type: audio
-        value: '{{WavPath}}'
-
 kimi-emotion:
   class: audio_evals.prompt.base.Prompt
   args:

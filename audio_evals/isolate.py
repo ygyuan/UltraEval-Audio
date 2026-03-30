@@ -112,6 +112,7 @@ def isolated(
                 f"source {env_path}/bin/activate && "
                 f"{cuda_env}"
                 f"export LD_LIBRARY_PATH={lib_path} && "
+                f"export PYTORCH_NVML_BASED_CUDA_CHECK=0 && "
                 f"{env_path}/bin/python -u {script_path} {args_str}"
             )
             logger.info(f"Running command: {command}")

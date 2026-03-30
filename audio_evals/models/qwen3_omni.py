@@ -1,13 +1,22 @@
 import json
 import logging
 import os
+import select
+import time
+import uuid
 from typing import Dict
+
 from audio_evals.base import PromptStruct
 from audio_evals.models.model import OfflineModel
 from audio_evals.isolate import isolated
-import select
 
 logger = logging.getLogger(__name__)
+
+# Timeout constants (seconds)
+WRITE_TIMEOUT = 60
+READ_POLL_TIMEOUT = 1.0
+INFERENCE_TIMEOUT = 900  # Max total time for a single inference call
+MODEL_LOAD_TIMEOUT = 600  # Max time to wait for model loading
 
 
 @isolated(
@@ -33,6 +42,7 @@ class Qwen3Omni(OfflineModel):
         if speech:
             self.command_args["speech"] = ""
 
+        self._ready = False
         super().__init__(is_chat=True, sample_params=sample_params)
 
     def _parse_content(self, content: Dict):
@@ -49,64 +59,98 @@ class Qwen3Omni(OfflineModel):
                 role_content["content"] = role_content.pop(k)
         return role_content
 
+    def _check_process_alive(self):
+        """Check if the subprocess is still running, raise if it has exited."""
+        if self.process.poll() is not None:
+            exit_code = self.process.returncode
+            raise RuntimeError(
+                f"Subprocess exited unexpectedly with code {exit_code}"
+            )
+
+    def _wait_for_ready(self):
+        """Wait for the subprocess to finish loading the model."""
+        if self._ready:
+            return
+        logger.info("Waiting for subprocess model to load...")
+        start_time = time.monotonic()
+        while True:
+            if time.monotonic() - start_time > MODEL_LOAD_TIMEOUT:
+                raise TimeoutError(
+                    f"Model loading timed out after {MODEL_LOAD_TIMEOUT}s"
+                )
+            self._check_process_alive()
+            reads, _, _ = select.select(
+                [self.process.stdout, self.process.stderr], [], [], READ_POLL_TIMEOUT
+            )
+            for read in reads:
+                if read is self.process.stdout:
+                    line = self.process.stdout.readline()
+                    if line and "Model loaded" in line:
+                        logger.info("Subprocess model loaded: %s", line.strip())
+                        self._ready = True
+                        return
+                    elif line:
+                        logger.debug("Subprocess stdout (loading): %s", line.strip())
+                if read is self.process.stderr:
+                    err = self.process.stderr.readline()
+                    if err:
+                        logger.debug("Subprocess stderr (loading): %s", err.strip())
+
     def _inference(self, prompt: PromptStruct, **kwargs):
+        self._wait_for_ready()
         conversation = [self._parse_role_content(item) for item in prompt]
-        import uuid
-        import time
 
         uid = str(uuid.uuid4())
         prefix = f"{uid}->"
+        start_time = time.monotonic()
 
-        # Check if subprocess is still alive before writing
-        if self.process.poll() is not None:
-            raise RuntimeError(
-                f"qwen3-omni subprocess has exited with code {self.process.returncode}"
-            )
-
+        # Write request to subprocess
         while True:
-            _, wlist, _ = select.select([], [self.process.stdin], [], 60)
+            self._check_process_alive()
+            _, wlist, _ = select.select([], [self.process.stdin], [], WRITE_TIMEOUT)
             if wlist:
                 self.process.stdin.write(f"{prefix}{json.dumps(conversation)}\n")
                 self.process.stdin.flush()
-                print("already write in")
+                logger.debug("Request written to subprocess")
                 break
+            if time.monotonic() - start_time > WRITE_TIMEOUT:
+                raise TimeoutError("Timed out waiting to write to subprocess stdin")
 
-        max_wait_time = 600  # 10 minutes timeout for speech generation
-        start_time = time.time()
+        # Read response from subprocess
         while True:
-            # Check if subprocess is still alive
-            if self.process.poll() is not None:
-                raise RuntimeError(
-                    f"qwen3-omni subprocess has exited with code {self.process.returncode} "
-                    f"while waiting for response"
+            if time.monotonic() - start_time > INFERENCE_TIMEOUT:
+                raise TimeoutError(
+                    f"Inference timed out after {INFERENCE_TIMEOUT}s"
                 )
-
-            # Check for overall timeout
-            elapsed = time.time() - start_time
-            if elapsed > max_wait_time:
-                raise RuntimeError(
-                    f"qwen3-omni inference timed out after {max_wait_time}s"
-                )
+            self._check_process_alive()
 
             reads, _, _ = select.select(
-                [self.process.stdout, self.process.stderr], [], [], 1.0
+                [self.process.stdout, self.process.stderr], [], [], READ_POLL_TIMEOUT
             )
             for read in reads:
                 if read is self.process.stdout:
                     result = self.process.stdout.readline()
-                    if result:
-                        if result.startswith(prefix):
-                            self.process.stdin.write("{}close\n".format(prefix))
-                            self.process.stdin.flush()
-                            res = json.loads(result[len(prefix) :])
-                            res["text"] = res["text"].split("assistant")[-1].strip()
-                            logger.info("return output: %s", json.dumps(res, ensure_ascii=False))
-                            return json.dumps(res, ensure_ascii=False)
-                        elif result.startswith("Error:"):
-                            raise RuntimeError("qwen3-omni failed: {}".format(result))
-                        else:
-                            logger.info(result)
+                    if not result:
+                        continue
+                    if result.startswith(prefix):
+                        # Send close signal to subprocess
+                        self.process.stdin.write(f"{prefix}close\n")
+                        self.process.stdin.flush()
+                        res = json.loads(result[len(prefix):])
+                        logger.info("Subprocess returned output: %s", res)
+                        # Clean up text: remove leading role marker if present
+                        text = res.get("text", "")
+                        if "\nassistant\n" in text:
+                            text = text.split("\nassistant\n", 1)[-1].strip()
+                        res["text"] = text
+                        if "audio" not in res:
+                            return res["text"]
+                        return json.dumps(res, ensure_ascii=False)
+                    elif result.startswith("Error:"):
+                        raise RuntimeError(f"qwen3-omni failed: {result.strip()}")
+                    else:
+                        logger.debug("Subprocess stdout: %s", result.strip())
                 if read is self.process.stderr:
                     error_output = self.process.stderr.readline()
                     if error_output:
-                        print(f"stderr: {error_output.strip()}")
+                        logger.debug("Subprocess stderr: %s", error_output.strip())
