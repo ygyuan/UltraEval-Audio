@@ -29,8 +29,11 @@ logger = logging.getLogger(__name__)
     "audio_evals/lib/StepAudio/serve.py",
     pre_command="mkdir -p ./third_party && "
     "([ ! -d './third_party/vllm-step-audio' ] && "
-    "git clone https://github.com/stepfun-ai/vllm.git ./third_party/vllm-step-audio && cd ../../) || true && "
-    "(python -c 'import vllm' 2>/dev/null || VLLM_USE_PRECOMPILED=1 uv pip install -e ./third_party/vllm-step-audio && cd ./third_party/vllm-step-audio && git checkout step-audio2-mini origin/step-audio2-mini && cd ../../)",
+    "  ([ -d './third_party/vllm' ] && ln -s vllm ./third_party/vllm-step-audio || "
+    "   git clone https://github.com/stepfun-ai/vllm.git ./third_party/vllm-step-audio)"
+    ") || true && "
+    "(cd ./third_party/vllm-step-audio && git checkout step-audio2-mini 2>/dev/null || git checkout -b step-audio2-mini origin/step-audio2-mini && cd ../../) && "
+    "(python -c 'import vllm' 2>/dev/null || VLLM_USE_PRECOMPILED=1 uv pip install -e ./third_party/vllm-step-audio)",
 )
 class StepAudioR1(OfflineModel):
     """

@@ -1,12 +1,12 @@
 qa_with_reference:
   class: audio_evals.evaluator.voice_bench.QaReferenceEvaluator
   args:
-    model_name: gpt4o-mini
+    model_name: mb-gpt4o-mini
 
 qa_open_5_rating:
   class: audio_evals.evaluator.voice_bench.VoiceBenchQaOpenEvaluator
   args:
-    model_name: gpt4o-mini
+    model_name: mb-gpt4o-mini
 
 ifeval_strict:
   class: audio_evals.evaluator.ifeval.IFEval

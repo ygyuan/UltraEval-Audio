@@ -16,10 +16,12 @@ class Speech2text(Process):
 
     def __call__(self, answer: str) -> str:
         # Try to extract text from JSON string (e.g. '{"text": "C"}')
+        fallback_text = None
         if isinstance(answer, str):
             try:
                 d = json.loads(answer.strip())
                 if isinstance(d, dict) and "text" in d:
+                    fallback_text = d["text"]
                     if "audio" not in d:
                         # No audio field, return text directly (skip ASR)
                         logger.info("Speech2text: no audio in JSON, returning text field: %s", d["text"][:100])
@@ -36,4 +38,14 @@ class Speech2text(Process):
             )
             return answer
         real_prompt = self.prompt.load(WavPath=answer)
-        return self.model.inference(real_prompt)
+        try:
+            return self.model.inference(real_prompt)
+        except Exception as e:
+            if fallback_text is not None:
+                logger.warning(
+                    "Speech2text: ASR failed on audio file %s (%s), "
+                    "falling back to text field: %s",
+                    answer, e, fallback_text[:100],
+                )
+                return fallback_text
+            raise

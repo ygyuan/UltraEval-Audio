@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import select
 import sys
 import tempfile
@@ -32,6 +33,8 @@ if __name__ == "__main__":
     processor = AutoProcessor.from_pretrained(config.path, trust_remote_code=True)
 
     if config.speech:
+        model.init_tts()
+        model.tts.float()
         ref_audio_path = "assets/default.wav"
         ref_audio, _ = librosa.load(ref_audio_path, sr=16000, mono=True)
 
@@ -93,13 +96,21 @@ if __name__ == "__main__":
                         output_audio_path=f.name,
                         **conversation,
                     )
+                    # res may be a str or an object with .text attribute
+                    res_text = res if isinstance(res, str) else res.text
+                    # Only include audio if the file was actually written with valid content
+                    audio_valid = os.path.exists(f.name) and os.path.getsize(f.name) > 0
+                    if audio_valid:
+                        result_dict = {"text": res_text, "audio": f.name}
+                    else:
+                        result_dict = {"text": res_text}
                     retry = 3
                     while retry:
                         retry -= 1
                         print(
                             prefix
                             + json.dumps(
-                                {"text": res.text, "audio": f.name}, ensure_ascii=False
+                                result_dict, ensure_ascii=False
                             ),
                             flush=True,
                         )

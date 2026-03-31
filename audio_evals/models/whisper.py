@@ -45,6 +45,13 @@ class WhisperModel(OfflineModel):
         prompt = self._process_prompt(prompt)
         import uuid
 
+        # Check if subprocess is still alive before attempting I/O
+        if self.process.poll() is not None:
+            raise RuntimeError(
+                f"WhisperModel subprocess has exited with code {self.process.returncode}. "
+                "It may have crashed while processing a previous request."
+            )
+
         uid = str(uuid.uuid4())
         prefix = f"{uid}->"
 
@@ -60,6 +67,13 @@ class WhisperModel(OfflineModel):
             rlist, _, _ = select.select(
                 [self.process.stdout, self.process.stderr], [], [], 1
             )
+
+            # Check if subprocess died while waiting for response
+            if not rlist and self.process.poll() is not None:
+                raise RuntimeError(
+                    f"WhisperModel subprocess exited unexpectedly with code {self.process.returncode} "
+                    "while processing a request."
+                )
 
             try:
                 for stream in rlist:
