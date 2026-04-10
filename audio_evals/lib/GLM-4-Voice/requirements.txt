@@ -1,0 +1,36 @@
+# conformer==0.3.2
+# deepspeed==0.14.2; sys_platform == 'linux'
+# diffusers==0.3.0
+# fastapi==0.83.0
+# # fastapi-cli==0.0.4
+# gdown==4.7.3
+# gradio==3.0.12
+# grpcio==1.48.0
+# grpcio-tools
+# huggingface_hub
+# hydra-core
+# HyperPyYAML
+# inflect
+# librosa
+# # lightning
+# matplotlib
+# modelscope
+# networkx
+# numpy
+# omegaconf
+# # onnxruntime-gpu; sys_platform == 'linux'
+# # onnxruntime; sys_platform == 'darwin' or sys_platform == 'windows'
+# # openai-whisper
+# # protobuf
+# pydantic
+# rich
+# Requests
+# safetensors
+# soundfile
+# tensorboard
+# transformers
+# uvicorn
+# wget
+# WeTextProcessing==1.0.3
+# torch==2.3.0
+# torchaudio==2.3.0

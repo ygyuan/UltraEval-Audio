@@ -24,6 +24,7 @@ import sys
 import threading
 import time
 import requests
+import importlib.util
 
 
 # Global process reference for cleanup
@@ -99,10 +100,20 @@ def find_available_port(start_port: int = 9999, max_tries: int = 100) -> int:
 
 def wait_for_server(port: int, timeout: int = 600) -> bool:
     """Wait for vLLM server to be ready."""
+    global _vllm_process
+
     health_url = f"http://localhost:{port}/health"
     start_time = time.time()
 
     while time.time() - start_time < timeout:
+        if _vllm_process is not None and _vllm_process.poll() is not None:
+            print(
+                f"[ERROR] vLLM process exited early with code {_vllm_process.returncode}",
+                file=sys.stderr,
+                flush=True,
+            )
+            return False
+
         try:
             response = requests.get(health_url, timeout=5)
             if response.status_code == 200:
@@ -169,6 +180,16 @@ def main():
     )
     args = parser.parse_args()
 
+    if importlib.util.find_spec("vllm.entrypoints.openai.api_server") is None:
+        print(
+            "[ERROR] Missing dependency: vllm is not installed in the isolated StepAudio environment. "
+            "Please install StepFun custom vLLM (step-audio2-mini branch), or ensure "
+            "audio_evals/lib/StepAudio/requirements.txt includes it.",
+            file=sys.stderr,
+            flush=True,
+        )
+        sys.exit(1)
+
     # Find available port
     port = find_available_port(args.start_port)
     print(f"[INFO] Found available port: {port}", file=sys.stderr, flush=True)
@@ -198,8 +219,6 @@ def main():
         "--gpu-memory-utilization",
         str(args.gpu_memory_utilization),
         "--trust-remote-code",
-        "--enable-log-requests",
-        "--interleave-mm-strings",
         "--chat-template",
         chat_template,
     ]

@@ -54,16 +54,41 @@ def isolated(
             with open(constraint_file, "w") as f:
                 f.write("setuptools<81\n")
 
+            pip_find_links = os.environ.get("ULTRAEVAL_PIP_FIND_LINKS", "").strip()
+            pip_no_index = os.environ.get("ULTRAEVAL_PIP_NO_INDEX", "").strip() == "1"
+            pip_index_url = os.environ.get("ULTRAEVAL_PIP_INDEX_URL", "").strip()
+            pip_extra_index_url = os.environ.get(
+                "ULTRAEVAL_PIP_EXTRA_INDEX_URL", ""
+            ).strip()
+
+            pip_option_parts = []
+            if pip_no_index:
+                pip_option_parts.append("--no-index")
+            if pip_find_links:
+                pip_option_parts.append(f"--find-links '{pip_find_links}'")
+            if pip_index_url:
+                pip_option_parts.append(f"--index-url '{pip_index_url}'")
+            if pip_extra_index_url:
+                pip_option_parts.append(
+                    f"--extra-index-url '{pip_extra_index_url}'"
+                )
+            pip_options = " ".join(pip_option_parts)
+
             if uv_available:
-                install_cmd = f"source {env_path}/bin/activate &&{pre_command + '&& ' if pre_command else ''} uv pip install setuptools\\<81 && uv pip install -r {requirements_path}"
+                install_cmd = (
+                    f"source {env_path}/bin/activate &&"
+                    f"{pre_command + '&& ' if pre_command else ''}"
+                    f" uv pip install {pip_options} setuptools\\<81 &&"
+                    f" uv pip install {pip_options} -r {requirements_path}"
+                )
             else:
                 # Replace "uv pip" with "pip" in pre_command if uv is not available
                 actual_pre_command = pre_command.replace("uv pip", "pip") if pre_command else ""
                 install_cmd = (
                     f"source {env_path}/bin/activate &&"
                     f"{actual_pre_command + '&& ' if actual_pre_command else ''}"
-                    f" pip install --upgrade 'setuptools<81' &&"
-                    f" PIP_CONSTRAINT={constraint_file} pip install -r {requirements_path}"
+                    f" pip install {pip_options} --upgrade 'setuptools<81' &&"
+                    f" PIP_CONSTRAINT={constraint_file} pip install {pip_options} -r {requirements_path}"
                 )
             result = subprocess.run(
                 install_cmd,
@@ -116,6 +141,8 @@ def isolated(
                 f"{env_path}/bin/python -u {script_path} {args_str}"
             )
             logger.info(f"Running command: {command}")
+            # Save the launch command for potential subprocess restart
+            self._launch_command = command
             self.process = subprocess.Popen(
                 command,
                 shell=True,

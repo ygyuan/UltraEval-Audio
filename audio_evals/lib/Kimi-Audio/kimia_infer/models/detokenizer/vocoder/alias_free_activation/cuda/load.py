@@ -22,11 +22,10 @@ def load():
         cc_flag.append("-gencode")
         cc_flag.append("arch=compute_80,code=sm_80")
 
-    # Build path: use per-process build directory to avoid race conditions
-    # when multiple subprocesses compile the CUDA extension simultaneously
     srcpath = pathlib.Path(__file__).parent.absolute()
-    buildpath = srcpath / "build" / f"pid_{os.getpid()}"
-    _create_build_dir(buildpath.parent)
+    build_root = srcpath / "build"
+    buildpath = build_root / "shared"
+    _create_build_dir(build_root)
     _create_build_dir(buildpath)
 
     # Helper function to build the kernels.

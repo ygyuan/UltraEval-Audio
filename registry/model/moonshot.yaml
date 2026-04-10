@@ -10,5 +10,14 @@ kimiaudio-speech:
   args:
     model_path: moonshotai/Kimi-Audio-7B-Instruct
     speech: True
+    sample_params:
+      audio_temperature: 0.4
+      audio_top_k: 8
+      audio_repetition_penalty: 1.1
+      max_new_tokens: 48
+      text_temperature: 0.0
+      text_top_k: 5
+      text_repetition_penalty: 1.1
+      text_repetition_window_size: 16
     env_path: envs/kimiaudio
     requirements_path: audio_evals/lib/Kimi-Audio/requirements.txt

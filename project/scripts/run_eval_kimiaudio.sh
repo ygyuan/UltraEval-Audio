@@ -54,7 +54,8 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
         for model in kimiaudio-speech; do
             for prompt in ""; do
                 # [ ! -d res/${model}/${dataset} ] && \
-                    CUDA_VISIBLE_DEVICES="6,7" python audio_evals/main.py --dataset ${dataset} --model ${model} --use_model_pool --workers 4
+                    # CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7" python audio_evals/main.py --dataset ${dataset} --model ${model} --use_model_pool --workers 8      
+                    python audio_evals/main.py --dataset ${dataset} --model ${model}
             done
         done
     done

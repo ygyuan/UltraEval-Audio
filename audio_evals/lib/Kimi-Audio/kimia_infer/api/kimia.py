@@ -10,7 +10,6 @@ from kimia_infer.models.detokenizer import get_audio_detokenizer
 from .prompt_manager import KimiAPromptManager
 from kimia_infer.utils.sampler import KimiASampler
 
-
 class KimiAudio(object):
     def __init__(self, model_path: str, load_detokenizer: bool = True):
         logger.info(f"Loading kimi-audio main model")
@@ -34,18 +33,24 @@ class KimiAudio(object):
             cache_path = cached_assets_path(
                 library_name="transformers", namespace=model_path
             )
+        self.cache_path = cache_path
 
         if load_detokenizer:
             logger.info(f"Loading detokenizer")
             # need to compile extension moudules for the first time, it may take several minutes.
             self.detokenizer = get_audio_detokenizer(cache_path)
         else:
-            # in this case, you're not allowed to generate audio(wav)
+            # in this case, audio detokenizer is initialized lazily on first speech request
             self.detokenizer = None
 
         self.extra_tokens = self.prompt_manager.extra_tokens
         self.kimia_text_audiodelaytokens = 6
         self.eod_ids = [self.extra_tokens.msg_end, self.extra_tokens.media_end]
+
+    def _ensure_detokenizer(self):
+        if self.detokenizer is None:
+            logger.info("Lazy loading detokenizer")
+            self.detokenizer = get_audio_detokenizer(self.cache_path)
 
     def _generate_loop(
         self,
@@ -236,10 +241,13 @@ class KimiAudio(object):
         generated_text_tokens = []
 
         if output_type == "both":
-            max_new_tokens = int(12.5 * 120) - audio_input_ids.shape[1]
+            if max_new_tokens == -1:
+                max_new_tokens = int(12.5 * 120) - audio_input_ids.shape[1]
         else:
             if max_new_tokens == -1:
                 max_new_tokens = 7500 - audio_input_ids.shape[1]
+
+        max_new_tokens = max(1, int(max_new_tokens))
 
         audio_input_ids = audio_input_ids.to(torch.cuda.current_device())
         text_input_ids = text_input_ids.to(torch.cuda.current_device())
@@ -277,7 +285,8 @@ class KimiAudio(object):
             t for t in generated_text_tokens if t < self.kimia_token_offset
         ]
         generated_text = self.detokenize_text(generated_text_tokens)
-        if self.detokenizer is not None and output_type == "both":
+        if output_type == "both":
+            self._ensure_detokenizer()
             generated_wav = self.detokenize_audio(generated_wav_tokens)
         else:
             generated_wav = None

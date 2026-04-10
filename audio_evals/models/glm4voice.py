@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import tempfile
 from typing import Dict, List, Union
@@ -62,40 +63,77 @@ def save_audio_response(response, output_file, sample_rate, volume=1.0, cut_gree
             cut_moshi_greetings(output_file, output_file)
         return output_file, text
     else:
+        response_text = response.text.strip()
+        if response_text:
+            raise Exception(f"下载失败，状态码: {response.status_code}, 响应内容: {response_text[:500]}")
         raise Exception(f"下载失败，状态码: {response.status_code}")
+
+
+def prepare_audio_file(audio_file, target_sample_rate=24000):
+    _, file_extension = os.path.splitext(audio_file)
+    if file_extension.lower() == ".wav":
+        audio = AudioSegment.from_file(audio_file)
+        if audio.frame_rate == target_sample_rate and audio.channels == 1:
+            return None, audio_file
+    audio = AudioSegment.from_file(audio_file)
+    audio = audio.set_frame_rate(target_sample_rate).set_channels(1)
+    temp_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+    temp_file.close()
+    audio.export(temp_file.name, format="wav")
+    return temp_file.name, temp_file.name
 
 
 class GLM4Voice(APIModel):
     def __init__(
-        self, url: Union[str, List[str]], sr: int, volume: float = 1.0, cut_greeting: bool = False, sample_params: Dict[str, any] = None
+        self,
+        url: Union[str, List[str]],
+        sr: int,
+        volume: float = 1.0,
+        cut_greeting: bool = False,
+        sample_params: Dict[str, any] = None,
+        *args,
+        env_path: str = None,
+        requirements_path: str = None,
+        **kwargs,
     ):
         super().__init__(True, sample_params)
         self.url = url if isinstance(url, list) else [url]
         self.sr = sr
         self.volume = volume
         self.cut_greeting = cut_greeting
+        self.env_path = env_path
+        self.requirements_path = requirements_path
 
     def _inference(self, prompt: PromptStruct, **kwargs) -> str:
 
         audio_file = ""
+        text_prompt = ""
         for content in prompt:
-            if content["role"] == "user":
-                for line in content["contents"]:
-                    if line["type"] == "audio":
-                        audio_file = line["value"]
-                        break
+            if content["role"] != "user":
+                continue
+            for line in content["contents"]:
+                if line["type"] == "audio" and not audio_file:
+                    audio_file = line["value"]
+                elif line["type"] == "text":
+                    text_prompt += line["value"]
 
-        audio_base64 = get_base64_from_file(audio_file)
-        headers = {
-            'Content-Type': 'application/json'
-        }
-        data = {
-            'prompt': '',
-            'audio': audio_base64
-        }
-        # 随机选择一个 URL
-        url = random.choice(self.url)
-        response = requests.post(url, headers=headers, data=json.dumps(data), stream=True)
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-            audio, text = save_audio_response(response, f.name, self.sr, self.volume, self.cut_greeting)
-            return json.dumps({"audio": audio, "text": text}, ensure_ascii=False)
+        temp_audio_file = None
+        try:
+            temp_audio_file, normalized_audio_file = prepare_audio_file(audio_file)
+            audio_base64 = get_base64_from_file(normalized_audio_file)
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            data = {
+                'prompt': text_prompt,
+                'audio': audio_base64
+            }
+            # 随机选择一个 URL
+            url = random.choice(self.url)
+            response = requests.post(url, headers=headers, data=json.dumps(data), stream=True)
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                audio, text = save_audio_response(response, f.name, self.sr, self.volume, self.cut_greeting)
+                return json.dumps({"audio": audio, "text": text}, ensure_ascii=False)
+        finally:
+            if temp_audio_file and os.path.exists(temp_audio_file):
+                os.remove(temp_audio_file)

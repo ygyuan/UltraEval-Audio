@@ -1,11 +1,11 @@
-# Step-Audio-R1 Prompts
-# Based on examples from Step-Audio-R1/examples-vllm_r1.py
+# Step-Audio-2-mini Prompts
+# Based on examples from Step-Audio-2-mini documentation and Step-Audio-R1.1 prompts
 
 # ============================================================================
 # Audio Understanding Tasks
 # ============================================================================
 
-step_audio_r1_mmau:
+step_audio_2_mini_mmau:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -16,7 +16,7 @@ step_audio_r1_mmau:
           - type: audio
             value: "{{WavPath}}"
 
-step_audio_r1_mmsu:
+step_audio_2_mini_mmsu:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -31,7 +31,7 @@ step_audio_r1_mmsu:
 # Math Audio Question Answering
 # ============================================================================
 
-step_audio_r1_spoken_mqa:
+step_audio_2_mini_spoken_mqa:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -42,7 +42,7 @@ step_audio_r1_spoken_mqa:
           - type: audio
             value: "{{WavPath}}"
 
-step_audio_r1_big_bench_audio:
+step_audio_2_mini_big_bench_audio:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -57,7 +57,7 @@ step_audio_r1_big_bench_audio:
 # Audio Reasoning Tasks
 # ============================================================================
 
-step_audio_r1_mmar:
+step_audio_2_mini_mmar:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -72,7 +72,7 @@ step_audio_r1_mmar:
 # Wild Speech Processing (ASR)
 # ============================================================================
 
-step_audio_r1_wild_speech:
+step_audio_2_mini_wild_speech:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -85,7 +85,7 @@ step_audio_r1_wild_speech:
 # Universal Audio Caption
 # ============================================================================
 
-step_audio_r1_uac:
+step_audio_2_mini_uac:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -102,7 +102,7 @@ step_audio_r1_uac:
 # Music and Song Analysis
 # ============================================================================
 
-step_audio_r1_song_appreciation:
+step_audio_2_mini_song_appreciation:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -121,7 +121,7 @@ step_audio_r1_song_appreciation:
 # Speaker Analysis
 # ============================================================================
 
-step_audio_r1_speaker_trait_inference:
+step_audio_2_mini_speaker_trait_inference:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -140,7 +140,7 @@ step_audio_r1_speaker_trait_inference:
 # Generic Audio Understanding with Question
 # ============================================================================
 
-step_audio_r1_audio_qa:
+step_audio_2_mini_audio_qa:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -152,7 +152,7 @@ step_audio_r1_audio_qa:
             value: "{{WavPath}}"
 
 # Text-first variant
-step_audio_r1_audio_qa_text_first:
+step_audio_2_mini_audio_qa_text_first:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -164,7 +164,7 @@ step_audio_r1_audio_qa_text_first:
             value: "{{WavPath}}"
 
 # Audio-first variant
-step_audio_r1_audio_qa_audio_first:
+step_audio_2_mini_audio_qa_audio_first:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -179,7 +179,7 @@ step_audio_r1_audio_qa_audio_first:
 # Simple Audio Processing (No Instructions)
 # ============================================================================
 
-step_audio_r1_simple_audio:
+step_audio_2_mini_simple_audio:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -192,7 +192,7 @@ step_audio_r1_simple_audio:
 # Audio Understanding with System Prompt
 # ============================================================================
 
-step_audio_r1_audio_with_system:
+step_audio_2_mini_audio_with_system:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -205,7 +205,7 @@ step_audio_r1_audio_with_system:
           - type: audio
             value: "{{WavPath}}"
 
-step_audio_r1_audio_qa_with_system:
+step_audio_2_mini_audio_qa_with_system:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -221,11 +221,26 @@ step_audio_r1_audio_qa_with_system:
             value: "{{WavPath}}"
 
 # ============================================================================
+# Step-Audio-2-mini Specific Prompts
+# ============================================================================
+
+step_audio_2_mini_mmau_prompt:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      - role: user
+        contents:
+          - type: text
+            value: "{{question}}\nPlease choose the answer from the following options, do not provide any additional explanations or content: \n{% for choice in choices %}{{ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[loop.index0] }}. {{ choice }}\n{% endfor %}"
+          - type: audio
+            value: "{{WavPath}}"
+
+# ============================================================================
 # ASR (Automatic Speech Recognition) Tasks
 # ============================================================================
 
 # Chinese ASR - following official examples.py: system="请记录下你所听到的语音内容。"
-step_audio_r1_asr_zh:
+step_audio_2_mini_asr_zh:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -239,7 +254,7 @@ step_audio_r1_asr_zh:
             value: "{{WavPath}}"
 
 # English ASR
-step_audio_r1_asr_en:
+step_audio_2_mini_asr_en:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -256,8 +271,8 @@ step_audio_r1_asr_en:
 # Speech Translation Tasks
 # ============================================================================
 
-# Speech to Chinese translation - following official examples.py
-step_audio_r1_s2tt_zh:
+# Speech to Chinese translation - following official examples.py: system="请仔细聆听这段语音，然后将其内容翻译成中文。"
+step_audio_2_mini_s2tt_zh:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -271,7 +286,7 @@ step_audio_r1_s2tt_zh:
             value: "{{WavPath}}"
 
 # Speech to English translation
-step_audio_r1_s2tt_en:
+step_audio_2_mini_s2tt_en:
   class: audio_evals.prompt.base.Prompt
   args:
     template:

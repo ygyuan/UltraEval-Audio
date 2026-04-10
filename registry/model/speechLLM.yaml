@@ -1,10 +1,3 @@
-glm-4-voice:
-  class: audio_evals.models.glm4voice.GLM4Voice
-  args:
-    url: http://127.0.0.1:10000/generate_stream
-    sr: 22500
-    volume: 32767
-
 speech-gpt:
   class: audio_evals.models.glm4voice.GLM4Voice
   args:

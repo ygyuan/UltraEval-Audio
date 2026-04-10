@@ -9,7 +9,7 @@ import time
 
 import torch
 import soundfile as sf
-from voxcpm_1_5 import VoxCPM
+from voxcpm import VoxCPM
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -55,14 +55,14 @@ if __name__ == "__main__":
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
-    logger.info(f"Loading VoxCPM model from {args.path}, denoise: {args.denoise}")
+    logger.info(f"Loading VoxCPM2 model from {args.path}, denoise: {args.denoise}")
 
     model = VoxCPM.from_pretrained(
-        args.path, load_denoiser=args.denoise, zipenhancer_model_id=args.denoise_path
+        args.path, load_denoiser=args.denoise
     )
-    logger.info("VoxCPM successfully loaded")
+    logger.info("VoxCPM2 successfully loaded")
 
-    # 从环境变量获取 ENABLE_RTF 设置，默认为0
+    # Read ENABLE_RTF setting from environment variable, default is 0
     enable_rtf = int(os.environ.get("ENABLE_RTF", "0"))
     logger.info(f"ENABLE_RTF: {enable_rtf}")
 
@@ -82,31 +82,33 @@ if __name__ == "__main__":
             x = json.loads(prompt[anchor + 2 :])
 
             with torch.no_grad():
-                # 记录开始时间用于RTF计算
+                # Record start time for RTF calculation
                 start_time = time.time()
 
                 wav = model.generate(
                     text=x.pop("text"),
                     prompt_wav_path=x.pop("prompt_audio", None),
                     prompt_text=x.pop("prompt_text", None),
+                    reference_wav_path=x.pop("prompt_audio", None),
                     **x,
                 )
                 wav = to_numpy(wav)
 
-                # 记录结束时间
+                # Record end time
                 end_time = time.time()
                 inference_time = end_time - start_time
 
+                # VoxCPM2 outputs at 44100 Hz sample rate
                 sample_rate = 44100
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
                     sf.write(f.name, wav, samplerate=sample_rate)
                     output_path = f.name
 
-                # 根据ENABLE_RTF设置返回不同格式
+                # Return different format based on ENABLE_RTF setting
                 if enable_rtf == 1:
-                    # 计算音频时长
+                    # Calculate audio duration
                     audio_duration = len(wav) / sample_rate
-                    # 计算RTF (Real Time Factor)
+                    # Calculate RTF (Real Time Factor)
                     rtf = inference_time / audio_duration if audio_duration > 0 else 0
                     result = json.dumps({"audio": output_path, "RTF": rtf})
                     logger.info(

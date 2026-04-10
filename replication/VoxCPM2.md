@@ -1,8 +1,8 @@
-# VoxCPM2 Evaluation Results
+# VoxCPM Evaluation Results
 
-**Model**: [VoxCPM2](../registry/model/voxcmp2.yaml)
+**Model**: [VoxCPM-0.5B](../registry/model/voxcpm.yaml)
 **Evaluation Date**: 2025/12/08
-**Paper/Repo**: [openbmb/VoxCPM2](https://huggingface.co/openbmb/VoxCPM2)
+**Paper/Repo**: [openbmb/VoxCPM-0.5B](https://huggingface.co/openbmb/VoxCPM-0.5B)
 
 **Metrics Legend**:
 - **WER⬇️**: Word Error Rate (lower is better)
@@ -34,14 +34,14 @@
 
 ## Evaluation Commands
 
-[1] `python audio_evals/main.py --dataset seed_tts_eval_en --model voxcpm2-vc`
+[1] `python audio_evals/main.py --dataset seed_tts_eval_en --model voxcpm-vc`
 
-[2] `python audio_evals/main.py --dataset seed_tts_eval_zh --model voxcpm2-vc`
+[2] `python audio_evals/main.py --dataset seed_tts_eval_zh --model voxcpm-vc`
 
-[3] `python audio_evals/main.py --dataset cv3_zero_shot_en --model voxcpm2-vc`
+[3] `python audio_evals/main.py --dataset cv3_zero_shot_en --model voxcpm-vc`
 
-[4] `python audio_evals/main.py --dataset cv3_zero_shot_zh --model voxcpm2-vc`
+[4] `python audio_evals/main.py --dataset cv3_zero_shot_zh --model voxcpm-vc`
 
-[5] `python audio_evals/main.py --dataset cv3_zero_shot_hard_en --model voxcpm2-vc`
+[5] `python audio_evals/main.py --dataset cv3_zero_shot_hard_en --model voxcpm-vc`
 
-[6] `python audio_evals/main.py --dataset cv3_zero_shot_hard_zh --model voxcpm2-vc`
+[6] `python audio_evals/main.py --dataset cv3_zero_shot_hard_zh --model voxcpm-vc`

@@ -6,7 +6,7 @@ editdistance
 gdown
 immutabledict
 jinja2
-jiwer==2.6.0
+jiwer==4.0.0
 langdetect
 librosa
 modelscope

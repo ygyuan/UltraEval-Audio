@@ -1,0 +1,29 @@
+voxcpm2-vc:
+  class: audio_evals.models.TTS.voxcpm2.VoxCPM2
+  args:
+    path: openbmb/VoxCPM2
+    vc_mode: True
+    denoise: True
+    env_path: envs/VoxCPM2
+    requirements_path: audio_evals/lib/VoxCPM2/requirements.txt
+
+voxcpm2-vc-no-denoise:
+  class: audio_evals.models.TTS.voxcpm2.VoxCPM2
+  args:
+    path: openbmb/VoxCPM2
+    vc_mode: True
+    denoise: False
+    env_path: envs/VoxCPM2
+    requirements_path: audio_evals/lib/VoxCPM2/requirements.txt
+    sample_params:
+      denoise: False
+      retry_badcase: False
+
+voxcpm2-tts:
+  class: audio_evals.models.TTS.voxcpm2.VoxCPM2
+  args:
+    path: openbmb/VoxCPM2
+    vc_mode: False
+    denoise: True
+    env_path: envs/VoxCPM2
+    requirements_path: audio_evals/lib/VoxCPM2/requirements.txt

@@ -1,7 +1,8 @@
 import logging
+logging.getLogger("huggingface_hub.utils._http").setLevel(logging.WARNING)
 import os
-os.environ["HUGGINGFACE_HUB_DOWNLOAD_RETRY"] = "1"  # 只重试1次
-os.environ["HUGGINGFACE_HUB_DOWNLOAD_TIMEOUT"] = "30"  # 超时30秒
+os.environ["HF_HUB_MAX_RETRY"] = "1"  # 只重试1次
+os.environ["HF_HUB_DOWNLOAD_TIMEOUT"] = "10"  # 超时10秒
 from typing import Dict, List, Optional
 
 import soundfile as sf

@@ -1,0 +1,57 @@
+# GLM-4-Voice Prompt Templates
+# Based on GLM-4-Voice instruction-following audio interaction style
+
+glm4voice-asr-zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: '请识别这段中文语音内容，并只输出识别结果。'
+
+glm4voice-asr-en:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Please transcribe the English speech and output only the transcription.'
+
+glm4voice-s2tt-zh2en:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: '请听这段中文语音，并将其翻译成英文文本，只输出翻译结果。'
+
+glm4voice-s2tt-en2zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Please listen to the English speech and translate it into Chinese text, output only the translation.'
+
+glm4voice-emotion:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Listen to the audio and identify the speaker emotion. The answer must be exactly one of [surprise, anger, neutral, joy, sadness, fear, disgust]. Output only the label.'

@@ -13,6 +13,7 @@ import logging
 import os
 import select
 import sys
+import threading
 import time
 from typing import Dict, Any, List
 
@@ -24,16 +25,8 @@ from audio_evals.models.model import OfflineModel
 
 logger = logging.getLogger(__name__)
 
-
 @isolated(
     "audio_evals/lib/StepAudio/serve.py",
-    pre_command="mkdir -p ./third_party && "
-    "([ ! -d './third_party/vllm-step-audio' ] && "
-    "  ([ -d './third_party/vllm' ] && ln -s vllm ./third_party/vllm-step-audio || "
-    "   git clone https://github.com/stepfun-ai/vllm.git ./third_party/vllm-step-audio)"
-    ") || true && "
-    "(cd ./third_party/vllm-step-audio && git checkout step-audio2-mini 2>/dev/null || git checkout -b step-audio2-mini origin/step-audio2-mini && cd ../../) && "
-    "(python -c 'import vllm' 2>/dev/null || VLLM_USE_PRECOMPILED=1 uv pip install -e ./third_party/vllm-step-audio)",
 )
 class StepAudioR1(OfflineModel):
     """
@@ -98,24 +91,42 @@ class StepAudioR1(OfflineModel):
         self.port = None
         self.client = None
         self._initialized = False
+        self._init_lock = threading.Lock()
+        self._init_error = None  # Cache initialization failure
+        self._stderr_buffer = []
 
         # Call parent init (this triggers isolated decorator's new_init)
         super().__init__(is_chat=True, sample_params=sample_params)
         # Note: self.process is set by @isolated decorator AFTER this __init__ returns
 
     def _ensure_initialized(self):
-        """Lazy initialization: wait for port and create client on first use."""
+        """Lazy initialization: wait for port and create client on first use (thread-safe)."""
         if self._initialized:
             return
 
-        # Wait for server to report port
-        self._wait_for_port()
+        with self._init_lock:
+            # Double-check after acquiring lock
+            if self._initialized:
+                return
 
-        # Initialize OpenAI client
-        api_url = f"http://localhost:{self.port}/v1/chat/completions"
-        self.client = StepAudioR1Client(api_url=api_url, model_name=self.model_name)
-        logger.info(f"Step-Audio-R1.1 client ready at {api_url}")
-        self._initialized = True
+            # If a previous initialization attempt failed, raise the cached error
+            if self._init_error is not None:
+                raise RuntimeError(
+                    f"Server initialization previously failed: {self._init_error}"
+                )
+
+            try:
+                # Wait for server to report port
+                self._wait_for_port()
+
+                # Initialize OpenAI client
+                api_url = f"http://localhost:{self.port}/v1/chat/completions"
+                self.client = StepAudioR1Client(api_url=api_url, model_name=self.model_name)
+                logger.info(f"Step-Audio-R1.1 client ready at {api_url}")
+                self._initialized = True
+            except Exception as e:
+                self._init_error = str(e)
+                raise
 
     def _wait_for_port(self):
         """Wait for and read the port number from the server process."""
@@ -139,11 +150,36 @@ class StepAudioR1(OfflineModel):
                 if read is self.process.stderr:
                     error_line = self.process.stderr.readline()
                     if error_line:
-                        logger.info(f"stderr: {error_line.strip()}")
+                        error_line = error_line.rstrip("\n")
+                        self._stderr_buffer.append(error_line)
+                        self._stderr_buffer = self._stderr_buffer[-200:]
+                        logger.info(f"stderr: {error_line}")
 
             # Check if process has exited
             if self.process.poll() is not None:
-                raise RuntimeError("Server process exited before reporting port")
+                # Collect remaining stderr output for diagnostics
+                stderr_output = ""
+                try:
+                    remaining_stderr = self.process.stderr.read()
+                    if remaining_stderr:
+                        stderr_output = remaining_stderr.strip()
+                except Exception:
+                    pass
+                exit_code = self.process.returncode
+                error_msg = (
+                    f"Server process exited before reporting port "
+                    f"(exit code: {exit_code})"
+                )
+                stderr_parts = []
+                if self._stderr_buffer:
+                    stderr_parts.append("\n".join(self._stderr_buffer))
+                if stderr_output:
+                    stderr_parts.append(stderr_output)
+                if stderr_parts:
+                    combined_stderr = "\n".join(stderr_parts)
+                    logger.error(f"Server stderr output:\n{combined_stderr}")
+                    error_msg += f"\nLast stderr output:\n{combined_stderr[-4000:]}"
+                raise RuntimeError(error_msg)
 
     def _convert_prompt_to_messages(self, prompt: PromptStruct) -> List[Dict]:
         """Convert PromptStruct to StepAudioR1 message format."""

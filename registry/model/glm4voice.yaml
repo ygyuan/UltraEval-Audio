@@ -1,0 +1,8 @@
+glm-4-voice:
+  class: audio_evals.models.glm4voice.GLM4Voice
+  args:
+    url: http://127.0.0.1:10001/generate_stream
+    sr: 22500
+    volume: 32767
+    # env_path: envs/glm4voice
+    # requirements_path: audio_evals/lib/GLM-4-Voice/requirements.txt

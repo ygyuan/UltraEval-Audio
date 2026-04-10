@@ -33,6 +33,8 @@ UltraEval-Audio — The world's first open-source framework supporting both spee
 
 # Changelog🔥
 
+- [2026/04/09]
+  - Support **[Step-Audio-2-mini](replication/step-audio-2-mini.md)** evaluation and replication
 - [2026/03/27]
   - Support **MiniCPM-o 4.5 (9B)** evaluation: `--model MiniCPMo4_5-audio` for speech understanding, `--model MiniCPMo4_5-speech` for speech generation
 - [2026/03/13]
@@ -102,6 +104,7 @@ UltraEval-Audio — The world's first open-source framework supporting both spee
 | **Gemini-2.5-Pro**              |                            5.30\|4.51 <br>2.84\|6.74                            |    **2.52**    |           9.42\|11.04           |         3.36         |        4.25        |                16.83                |           41.75           |           27.84           |      46.59      |               80.72               |
 | **Qwen2-Audio-7B**              |                            1.57\|3.50 <br>1.60\|3.88                            |         3.43         |            8.67\|7.03            |         1.52         |        5.89        |                8.09                |           45.30           |           24.84           |      42.87      |               82.14               |
 | **Qwen2-Audio-7B-Instruct**     |                            2.90\|5.50 <br>3.10\|5.70                            |         5.90         |           10.68\|8.39           |         2.60         |        6.90        |                10.30                |           39.50           |           22.90           |      17.40      |               78.29               |
+| **Step-Audio-2-mini**            |                            -\|- <br>-\|-                            |         3.45         |           -\|-           |         -         |        5.94\|8.04        |                6.28                |           49.20           |           24.46           |      55.48      |               -               |
 | **MiDaShengLM-7B**              |                            2.20\|4.75 <br>2.21\|5.16                            |        146.53        |           13.66\|29.13           |         1.23         |        3.28        |                16.56                |           38.52           |           22.68           |      53.96      |               68.50               |
 
 ## Audio Generation Leaderboard
@@ -119,6 +122,7 @@ UltraEval-Audio — The world's first open-source framework supporting both spee
 | **MiniCPM-o 4.5 (9B)**          |           -           |         -         |          -          |        -        |       -       |           -\|-\|-           |              -              |
 | **MiniCPM-o 2.6**               |           40.00           |         40.20         |          51.00          |        49.22        |       80.68       |           4.12\|3.39\|4.02           |              56.69              |
 | **Kimi-Audio-7B-Instruct**      |           33.69           |         38.20         |          34.40          |        66.98        |       97.42       |           2.94\|3.22\|3.62           |              56.69              |
+| **Step-Audio-2-mini**            |           41.78           |         41.11         |          -          |        72.08        |       -       |           -\|-\|-           |              -              |
 | **GLM-4-Voice**                 |           32.00           |         36.40         |          51.00          |        52.61        |       71.06       |           4.21\|3.46\|4.07           |              53.56              |
 
 ## Audio Codec Leaderboard

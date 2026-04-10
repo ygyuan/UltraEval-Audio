@@ -1,3 +1,4 @@
+import concurrent.futures
 import logging
 import os
 import sys
@@ -42,6 +43,9 @@ class OfflineModel(Model, ABC):
     # Cache for pre-check results to avoid repeated warnings for the same repo_id
     _precheck_cache: Dict[str, str] = {}
     _precheck_cache_lock = threading.Lock()
+    # Timeout (in seconds) for pre-check network requests.
+    # Override via environment variable MODEL_PRECHECK_TIMEOUT.
+    _precheck_timeout: int = int(os.environ.get("MODEL_PRECHECK_TIMEOUT", "30"))
 
     def __init__(self, is_chat: bool, sample_params: Dict[str, any] = None):
         super().__init__(is_chat, sample_params)
@@ -80,9 +84,16 @@ class OfflineModel(Model, ABC):
                         with OfflineModel._precheck_cache_lock:
                             OfflineModel._precheck_cache[cache_key] = local_dir
                         return local_dir
-                    api = HfApi()
-                    info = api.repo_info(repo_id=repo_id, repo_type=repo_type)
-                    siblings = getattr(info, "siblings", []) or []
+
+                    def _hf_precheck():
+                        api = HfApi()
+                        info = api.repo_info(repo_id=repo_id, repo_type=repo_type)
+                        return getattr(info, "siblings", []) or []
+
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                        future = executor.submit(_hf_precheck)
+                        siblings = future.result(timeout=OfflineModel._precheck_timeout)
+
                     if siblings:
                         all_files_present = True
                         for sibling in siblings:
@@ -177,11 +188,16 @@ class OfflineModel(Model, ABC):
                         with OfflineModel._precheck_cache_lock:
                             OfflineModel._precheck_cache[cache_key] = local_dir
                         return local_dir
-                    from modelscope.hub.api import HubApi
 
-                    api = HubApi()
-                    # 获取模型文件列表
-                    files_info = api.get_model_files(model_id=repo_id)
+                    def _ms_precheck():
+                        from modelscope.hub.api import HubApi
+                        api = HubApi()
+                        return api.get_model_files(model_id=repo_id)
+
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                        future = executor.submit(_ms_precheck)
+                        files_info = future.result(timeout=OfflineModel._precheck_timeout)
+
                     if files_info:
                         all_files_present = True
                         for file_info in files_info:
