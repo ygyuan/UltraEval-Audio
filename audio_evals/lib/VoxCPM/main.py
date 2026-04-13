@@ -57,7 +57,22 @@ if __name__ == "__main__":
     logger.info(f"Using device: {device}")
     logger.info(f"Loading VoxCPM model from {args.path}, denoise: {args.denoise}")
 
-    model = VoxCPM.from_pretrained(args.path, load_denoiser=args.denoise, zipenhancer_model_id=args.denoise_path)
+    # Resolve denoise_path to a local cache path to avoid online hub check.
+    denoise_model_id = args.denoise_path
+    if args.denoise and denoise_model_id and not os.path.exists(denoise_model_id):
+        from modelscope.utils.file_utils import get_modelscope_cache_dir
+        cache_root = os.path.join(get_modelscope_cache_dir(), "hub")
+        candidate = os.path.join(cache_root, denoise_model_id)
+        if os.path.isdir(candidate):
+            denoise_model_id = candidate
+            logger.info(f"Resolved denoise model to local cache: {denoise_model_id}")
+        else:
+            logger.warning(
+                f"Denoise model not found in local cache ({candidate}), "
+                f"will attempt online download from modelscope."
+            )
+
+    model = VoxCPM.from_pretrained(args.path, load_denoiser=args.denoise, zipenhancer_model_id=denoise_model_id)
     logger.info("VoxCPM successfully loaded")
 
     # 从环境变量获取 ENABLE_RTF 设置，默认为0

@@ -1,0 +1,19 @@
+omnivoice:
+  class: audio_evals.models.TTS.omnivoice.OmniVoiceTTS
+  args:
+    path: k2-fsa/OmniVoice
+    num_step: 32
+    guidance_scale: 2.0
+    t_shift: 0.1
+    env_path: envs/OmniVoice
+    requirements_path: audio_evals/lib/OmniVoice/requirements.txt
+
+omnivoice-fast:
+  class: audio_evals.models.TTS.omnivoice.OmniVoiceTTS
+  args:
+    path: k2-fsa/OmniVoice
+    num_step: 16
+    guidance_scale: 2.0
+    t_shift: 0.1
+    env_path: envs/OmniVoice
+    requirements_path: audio_evals/lib/OmniVoice/requirements.txt

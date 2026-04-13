@@ -57,8 +57,26 @@ if __name__ == "__main__":
     logger.info(f"Using device: {device}")
     logger.info(f"Loading VoxCPM2 model from {args.path}, denoise: {args.denoise}")
 
+    # Resolve denoise_path to a local cache path to avoid online hub check.
+    # modelscope's pipeline() will try to contact www.modelscope.cn if the
+    # model path does not exist locally, even when the model is already cached.
+    denoise_model_id = args.denoise_path
+    if args.denoise and denoise_model_id and not os.path.exists(denoise_model_id):
+        # Try to find the model in modelscope's default cache directory
+        from modelscope.utils.file_utils import get_modelscope_cache_dir
+        cache_root = os.path.join(get_modelscope_cache_dir(), "hub")
+        candidate = os.path.join(cache_root, denoise_model_id)
+        if os.path.isdir(candidate):
+            denoise_model_id = candidate
+            logger.info(f"Resolved denoise model to local cache: {denoise_model_id}")
+        else:
+            logger.warning(
+                f"Denoise model not found in local cache ({candidate}), "
+                f"will attempt online download from modelscope."
+            )
+
     model = VoxCPM.from_pretrained(
-        args.path, load_denoiser=args.denoise
+        args.path, load_denoiser=args.denoise, zipenhancer_model_id=denoise_model_id
     )
     logger.info("VoxCPM2 successfully loaded")
 
@@ -87,9 +105,9 @@ if __name__ == "__main__":
 
                 wav = model.generate(
                     text=x.pop("text"),
-                    prompt_wav_path=x.pop("prompt_audio", None),
-                    prompt_text=x.pop("prompt_text", None),
                     reference_wav_path=x.pop("prompt_audio", None),
+                    cfg_value=2.0,
+                    inference_timesteps=10,
                     **x,
                 )
                 wav = to_numpy(wav)

@@ -17,7 +17,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
         for model in step-audio-r1.1; do
             # [ ! -d res/${model}/${dataset} ] && \
                 CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7" python -m audio_evals.main --dataset ${dataset} --model ${model} --use_model_pool --workers 8 --prompt step_audio_r1_asr_zh 
-                exit 0
+                # exit 0
         done
     done
     # English ASR datasets - use step_audio_r1_asr_en prompt
