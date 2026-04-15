@@ -4,15 +4,15 @@ cd ${current_dir}
 #source ${current_dir}/.bashrc
 #conda activate GPTSoVits
 
-stage=3
-stop_stage=3
+stage=1
+stop_stage=1
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     echo "start stage ${stage}, stop stage ${stop_stage}"
     for dataset in seed_tts_eval_en; do
         for model in vibevioce_tts; do
             for prompt in qwen3-tts-voice-clone-english; do
-                [ ! -d res/${model}/${dataset} ] && \
+                # [ ! -d res/${model}/${dataset} ] && \
                     python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 8
             done
         done
@@ -20,7 +20,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     for dataset in seed_tts_eval_zh; do
         for model in vibevioce_tts; do
             for prompt in qwen3-tts-voice-clone-chinese; do
-                [ ! -d res/${model}/${dataset} ] && \
+                # [ ! -d res/${model}/${dataset} ] && \
                     python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 8
             done
         done

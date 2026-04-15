@@ -105,7 +105,7 @@ if __name__ == "__main__":
 
                 wav = model.generate(
                     text=x.pop("text"),
-                    reference_wav_path=x.pop("prompt_audio", None),
+                    prompt_wav_path=x.pop("prompt_audio", None),
                     cfg_value=2.0,
                     inference_timesteps=10,
                     **x,

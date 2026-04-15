@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import random
 import tempfile
@@ -13,6 +14,8 @@ import soundfile as sf
 import numpy as np
 from pydub import AudioSegment
 from pydub.silence import detect_silence
+
+logger = logging.getLogger(__name__)
 
 
 def cut_moshi_greetings(audio_file, output_file):
@@ -56,8 +59,14 @@ def save_audio_response(response, output_file, sample_rate, volume=1.0, cut_gree
                     sample_rate = data["sampleRate"]
                 audio_tensor.append(np.array(token_id))
         audio_tensor = np.concatenate(audio_tensor, axis=0)
-        audio_tensor *= int(volume)
-        audio_tensor = np.array(audio_tensor, dtype=np.int16)
+        # Handle both float32 waveform (range [-1.0, 1.0]) and int16 formats
+        if audio_tensor.dtype in (np.float32, np.float64) or (np.abs(audio_tensor).max() <= 1.0 + 1e-6 and len(audio_tensor) > 0):
+            audio_tensor = np.clip(audio_tensor, -1.0, 1.0).astype(np.float32)
+            audio_tensor *= float(volume)
+            audio_tensor = np.clip(audio_tensor, -32768, 32767).astype(np.int16)
+        else:
+            audio_tensor *= int(volume)
+            audio_tensor = np.array(audio_tensor, dtype=np.int16)
         sf.write(output_file, audio_tensor, sample_rate)
         if cut_greeting:
             cut_moshi_greetings(output_file, output_file)
@@ -94,6 +103,10 @@ class GLM4Voice(APIModel):
         *args,
         env_path: str = None,
         requirements_path: str = None,
+        asr_backend: str = "glm_native",
+        asr_model_path: str = "openai/whisper-large-v3",
+        asr_env_path: str = "envs/whisper",
+        asr_requirements_path: str = "audio_evals/lib/whisper/requirements.txt",
         **kwargs,
     ):
         super().__init__(True, sample_params)
@@ -103,6 +116,25 @@ class GLM4Voice(APIModel):
         self.cut_greeting = cut_greeting
         self.env_path = env_path
         self.requirements_path = requirements_path
+        self.asr_backend = asr_backend
+        self.asr_model_path = asr_model_path
+        self.asr_env_path = asr_env_path
+        self.asr_requirements_path = asr_requirements_path
+
+    def _looks_like_asr_prompt(self, text_prompt: str) -> bool:
+        normalized = text_prompt.strip().lower()
+        if not normalized:
+            return False
+        asr_keywords = [
+            "transcribe",
+            "transcription",
+            "请识别",
+            "识别这段",
+            "语音内容",
+            "转写",
+            "听写",
+        ]
+        return any(keyword in normalized for keyword in asr_keywords)
 
     def _inference(self, prompt: PromptStruct, **kwargs) -> str:
 
@@ -117,6 +149,16 @@ class GLM4Voice(APIModel):
                 elif line["type"] == "text":
                     text_prompt += line["value"]
 
+        if self._looks_like_asr_prompt(text_prompt):
+            if self.asr_backend != "glm_native":
+                raise ValueError(
+                    f"Unsupported GLM4Voice ASR backend: {self.asr_backend}. "
+                    "Please use asr_backend='glm_native' to run native GLM-4-Voice token-based ASR."
+                )
+            logger.info(
+                "Routing GLM4Voice ASR prompt to the native GLM-4-Voice token pipeline via the adapter server."
+            )
+
         temp_audio_file = None
         try:
             temp_audio_file, normalized_audio_file = prepare_audio_file(audio_file)
@@ -128,7 +170,6 @@ class GLM4Voice(APIModel):
                 'prompt': text_prompt,
                 'audio': audio_base64
             }
-            # 随机选择一个 URL
             url = random.choice(self.url)
             response = requests.post(url, headers=headers, data=json.dumps(data), stream=True)
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:

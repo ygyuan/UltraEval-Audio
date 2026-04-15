@@ -38,6 +38,9 @@ class VoxCPM2(OfflineModel):
     def _inference(self, prompt: PromptStruct, **kwargs):
         import uuid
 
+        # Ensure subprocess is alive before attempting I/O; auto-restart if dead
+        self.ensure_process_alive()
+
         uid = str(uuid.uuid4())
         prefix = f"{uid}->"
         prompt.update(kwargs)

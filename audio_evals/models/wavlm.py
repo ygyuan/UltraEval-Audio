@@ -70,20 +70,8 @@ class WavLM(OfflineModel):
         uid = str(uuid.uuid4())
         prefix = f"{uid}->"
 
-        # 检查进程状态，如果进程已终止则重新启动
-        if self.process.poll() is not None:
-            logger.error("Subprocess has terminated unexpectedly")
-            # 尝试读取子进程的错误输出以获取更多信息
-            try:
-                stdout, stderr = self.process.communicate(timeout=5)
-                if stderr:
-                    logger.error(f"Subprocess stderr: {stderr}")
-                if stdout:
-                    logger.info(f"Subprocess stdout: {stdout}")
-            except Exception as e:
-                logger.warning(f"Failed to read subprocess output: {e}")
-            
-            raise RuntimeError("Subprocess has terminated unexpectedly. This may be due to GPU memory issues, model loading failures, or other runtime errors.")
+        # Ensure subprocess is alive before attempting I/O; auto-restart if dead
+        self.ensure_process_alive()
 
         while True:
             _, wlist, _ = select.select([], [self.process.stdin], [], 60)

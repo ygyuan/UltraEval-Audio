@@ -1,5 +1,6 @@
 # GLM-4-Voice Prompt Templates
 # Based on GLM-4-Voice instruction-following audio interaction style
+# NOTE: text_prompt is used as the system prompt in ultraeval_adapter_server.py
 
 glm4voice-asr-zh:
   class: audio_evals.prompt.base.Prompt
@@ -10,7 +11,7 @@ glm4voice-asr-zh:
       - type: audio
         value: '{{WavPath}}'
       - type: text
-        value: '请识别这段中文语音内容，并只输出识别结果。'
+        value: 'User will provide you with a speech instruction. Do it step by step. First, think about the instruction and respond in a interleaved manner, with 13 text token followed by 26 audio tokens. Please transcribe the speech content in Chinese and output only the transcription result.'
 
 glm4voice-asr-en:
   class: audio_evals.prompt.base.Prompt
@@ -21,7 +22,7 @@ glm4voice-asr-en:
       - type: audio
         value: '{{WavPath}}'
       - type: text
-        value: 'Please transcribe the English speech and output only the transcription.'
+        value: 'User will provide you with a speech instruction. Do it step by step. First, think about the instruction and respond in a interleaved manner, with 13 text token followed by 26 audio tokens. Please transcribe the English speech and output only the transcription.'
 
 glm4voice-s2tt-zh2en:
   class: audio_evals.prompt.base.Prompt
@@ -32,7 +33,7 @@ glm4voice-s2tt-zh2en:
       - type: audio
         value: '{{WavPath}}'
       - type: text
-        value: '请听这段中文语音，并将其翻译成英文文本，只输出翻译结果。'
+        value: 'User will provide you with a speech instruction. Do it step by step. First, think about the instruction and respond in a interleaved manner, with 13 text token followed by 26 audio tokens. Please listen to the Chinese speech and translate it into English text, output only the translation.'
 
 glm4voice-s2tt-en2zh:
   class: audio_evals.prompt.base.Prompt
@@ -43,7 +44,7 @@ glm4voice-s2tt-en2zh:
       - type: audio
         value: '{{WavPath}}'
       - type: text
-        value: 'Please listen to the English speech and translate it into Chinese text, output only the translation.'
+        value: 'User will provide you with a speech instruction. Do it step by step. First, think about the instruction and respond in a interleaved manner, with 13 text token followed by 26 audio tokens. Please listen to the English speech and translate it into Chinese text, output only the translation.'
 
 glm4voice-emotion:
   class: audio_evals.prompt.base.Prompt
@@ -54,4 +55,4 @@ glm4voice-emotion:
       - type: audio
         value: '{{WavPath}}'
       - type: text
-        value: 'Listen to the audio and identify the speaker emotion. The answer must be exactly one of [surprise, anger, neutral, joy, sadness, fear, disgust]. Output only the label.'
+        value: 'User will provide you with a speech instruction. Do it step by step. First, think about the instruction and respond in a interleaved manner, with 13 text token followed by 26 audio tokens. Listen to the audio and identify the speaker emotion. The answer must be exactly one of [surprise, anger, neutral, joy, sadness, fear, disgust]. Output only the label.'

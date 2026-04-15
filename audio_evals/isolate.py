@@ -173,6 +173,74 @@ def isolated(
 
             self.check_process_status = lambda: check_process_status(self)
 
+            def restart_process(self_ref):
+                """Restart the subprocess using the saved launch command.
+
+                This is used to recover from subprocess crashes (e.g., GPU OOM,
+                segfault, or other unexpected terminations).
+                """
+                logger.warning("Restarting subprocess...")
+                # Terminate old process if still running
+                if self_ref.process.poll() is None:
+                    self_ref.process.terminate()
+                    try:
+                        self_ref.process.wait(timeout=10)
+                    except subprocess.TimeoutExpired:
+                        self_ref.process.kill()
+                        self_ref.process.wait(timeout=5)
+
+                # Start a new subprocess with the same command
+                self_ref.process = subprocess.Popen(
+                    self_ref._launch_command,
+                    shell=True,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    executable="/bin/bash",
+                )
+                logger.info("Subprocess restarted successfully (pid=%d)", self_ref.process.pid)
+
+            self.restart_process = lambda: restart_process(self)
+
+            def ensure_process_alive(self_ref):
+                """Check if subprocess is alive; restart it if it has terminated.
+
+                Returns:
+                    True if the process was already alive, False if it was
+                    restarted (caller may want to log this).
+
+                Raises:
+                    RuntimeError: If the subprocess cannot be restarted.
+                """
+                if self_ref.process.poll() is None:
+                    return True  # Process is alive
+
+                exit_code = self_ref.process.returncode
+                logger.error(
+                    f"Subprocess has terminated unexpectedly (exit code: {exit_code}). "
+                    f"Attempting automatic restart..."
+                )
+                # Drain remaining output for diagnostics
+                try:
+                    stdout, stderr = self_ref.process.communicate(timeout=5)
+                    if stdout:
+                        logger.error(f"Dead process STDOUT:\n{stdout[-2000:]}")
+                    if stderr:
+                        logger.error(f"Dead process STDERR:\n{stderr[-2000:]}")
+                except Exception as e:
+                    logger.warning(f"Could not read dead process output: {e}")
+
+                try:
+                    self_ref.restart_process()
+                    return False  # Process was dead but has been restarted
+                except Exception as e:
+                    raise RuntimeError(
+                        f"Failed to restart subprocess after crash (exit code: {exit_code}): {e}"
+                    )
+
+            self.ensure_process_alive = lambda: ensure_process_alive(self)
+
             # 注册清理函数
             def cleanup():
                 if self.process.poll() is None:

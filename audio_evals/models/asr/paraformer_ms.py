@@ -33,6 +33,9 @@ class Paraformer(OfflineModel):
         audio = prompt["audio"]
         import uuid
 
+        # Ensure subprocess is alive before attempting I/O; auto-restart if dead
+        self.ensure_process_alive()
+
         uid = str(uuid.uuid4())
         prefix = f"{uid}->"
         while True:
