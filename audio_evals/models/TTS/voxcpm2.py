@@ -17,20 +17,16 @@ class VoxCPM2(OfflineModel):
     def __init__(
         self,
         path: str,
-        vc_mode: bool,
-        denoise: bool,
-        denoise_path: str = "./init_model/iic/speech_zipenhancer_ans_multiloss_16k_base",
+        denoise: bool = False,
+        denoise_path: str = "iic/speech_zipenhancer_ans_multiloss_16k_base",
         sample_params: Dict = None,
         *args,
         **kwargs,
     ):
-
         if not os.path.exists(path):
             path = self._download_model(path)
 
         self.command_args = {"path": path, "denoise_path": denoise_path}
-        if vc_mode:
-            self.command_args["vc_mode"] = ""
         if denoise:
             self.command_args["denoise"] = ""
         super().__init__(is_chat=True, sample_params=sample_params)
@@ -38,12 +34,20 @@ class VoxCPM2(OfflineModel):
     def _inference(self, prompt: PromptStruct, **kwargs):
         import uuid
 
-        # Ensure subprocess is alive before attempting I/O; auto-restart if dead
-        self.ensure_process_alive()
-
         uid = str(uuid.uuid4())
         prefix = f"{uid}->"
         prompt.update(kwargs)
+
+        # Voice Design: embed instruction as parenthesized prefix per VoxCPM2 format
+        if "instruction" in prompt:
+            instruction = (
+                prompt.pop("instruction")
+                .replace("(", "")
+                .replace(")", "")
+                .replace("\n", " ")
+                .strip()
+            )
+            prompt["text"] = f"({instruction}){prompt['text']}"
 
         while True:
             _, wlist, _ = select.select([], [self.process.stdin], [], 180)
@@ -81,12 +85,6 @@ class VoxCPM2(OfflineModel):
                     elif stream == self.process.stderr:
                         err = self.process.stderr.readline().strip()
                         if err:
-                            # Classify subprocess stderr by content level
-                            if any(kw in err for kw in ["INFO", "DEBUG", "Loading", "Building", "loading", "building", "done", "loaded", "%|", "it/s]"]):
-                                logger.debug(f"Process stderr: {err}")
-                            elif any(kw in err for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning", "deprecated", "pkg_resources"]):
-                                logger.warning(f"Process stderr: {err}")
-                            else:
-                                logger.error(f"Process stderr: {err}")
+                            logger.error(f"Process stderr: {err}")
             except BlockingIOError as e:
                 logger.error(f"BlockingIOError occurred: {str(e)}")

@@ -1,4 +1,4 @@
-torch==2.5.1
-torchaudio==2.5.1
-torchcodec
-voxcpm
+soundfile
+torch==2.8.0
+torchaudio==2.8.0
+voxcpm==2.0.0
