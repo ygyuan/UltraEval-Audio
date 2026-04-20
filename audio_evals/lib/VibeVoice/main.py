@@ -134,11 +134,16 @@ if __name__ == "__main__":
             formatted_text = f"Speaker 1: {text}"
 
             # Prepare voice samples (reference audio for voice cloning)
+            # Convert relative path to absolute path so subprocess can find it
+            if prompt_audio and not os.path.isabs(prompt_audio):
+                prompt_audio = os.path.abspath(prompt_audio)
             voice_samples = None
             if prompt_audio and os.path.exists(prompt_audio):
                 voice_samples = [[prompt_audio]]
+                logger.info(f"Using voice sample: {prompt_audio}")
             else:
                 voice_samples = None
+                logger.warning(f"Voice sample not found or not provided: {prompt_audio}")
 
             # Record start time for RTF calculation
             start_time = time.time()
@@ -199,16 +204,16 @@ if __name__ == "__main__":
                     result = output_path
 
                 # Output result with retry mechanism
-                retry = 3
+                retry = 10
                 while retry:
                     retry -= 1
                     print(f"{prefix}{result}", flush=True)
-                    rlist, _, _ = select.select([sys.stdin], [], [], 1)
+                    rlist, _, _ = select.select([sys.stdin], [], [], 5)
                     if rlist:
                         finish = sys.stdin.readline().strip()
                         if finish == f"{prefix}close":
                             break
-                    print("not found close signal, will emit again", flush=True)
+                    print("not found close signal, will emit again", flush=True, file=sys.stderr)
             else:
                 print(f"{prefix}Error: No audio output generated", flush=True)
 

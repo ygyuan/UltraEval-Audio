@@ -1,0 +1,7 @@
+mimo-audio:
+  class: audio_evals.models.mimo_audio.MiMoAudio
+  args:
+    model_path: XiaomiMiMo/MiMo-Audio-7B-Instruct
+    tokenizer_path: XiaomiMiMo/MiMo-Audio-Tokenizer
+    env_path: envs/mimo-audio
+    requirements_path: audio_evals/lib/MiMo-Audio/requirements.txt

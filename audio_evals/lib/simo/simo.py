@@ -94,10 +94,10 @@ if __name__ == "__main__":
             prefix = prompt[:anchor].strip() + "->"
             wavs = prompt[anchor + 2 :].split(",")
             sim = verification(wavs[0], wavs[1], model=model)
-            retry = 3
+            retry = 10
             while retry:
                 print("{}{}".format(prefix, str(sim)), flush=True)
-                rlist, _, _ = select.select([sys.stdin], [], [], 3)
+                rlist, _, _ = select.select([sys.stdin], [], [], 5)
                 if rlist:
                     finish = sys.stdin.readline().strip()
                     if finish == "{}close".format(prefix):

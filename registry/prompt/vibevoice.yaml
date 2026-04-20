@@ -1,0 +1,18 @@
+# VibeVoice TTS prompt configurations for voice cloning evaluation
+# VibeVoice only needs text and prompt_audio (reference audio for voice cloning).
+# It does NOT use prompt_text or language fields.
+# Reference: https://github.com/microsoft/VibeVoice
+
+vibevoice-voice-clone-chinese:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      prompt_audio: "{{WavPath}}"
+
+vibevoice-voice-clone-english:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      prompt_audio: "{{WavPath}}"

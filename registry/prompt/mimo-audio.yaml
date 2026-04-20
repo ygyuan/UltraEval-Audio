@@ -1,0 +1,60 @@
+# MiMo-Audio Prompt Templates
+# Based on MiMo-Audio-7B-Instruct evaluation settings
+
+# ASR Tasks - Automatic Speech Recognition
+mimo-audio-asr-zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: '请将这段中文语音转换为纯文本。'
+
+mimo-audio-asr-en:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Transcribe the English audio into text.'
+
+# Speech Translation Tasks (S2TT)
+mimo-audio-s2tt-zh2en:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Listen to the provided Chinese speech and produce a translation in English text.'
+
+mimo-audio-s2tt-en2zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Listen to the provided English speech and produce a translation in Chinese text.'
+
+# Speech Emotion Recognition
+mimo-audio-emotion:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Listen the audio and judge the emotion of the speaker, the answer must be one of [surprise,anger,neutral,joy,sadness,fear,disgust], answer without explain.'
