@@ -1,128 +1,192 @@
 import argparse
 import json
+import os
+import re
 import select
 import sys
+import tempfile
+import uuid
 
-import librosa
-import torch
-from transformers import AutoTokenizer, AutoModel
+# Make the offline MiMo-Audio repo importable.
+# The official repo layout is:
+#   <repo_root>/src/mimo_audio/mimo_audio.py  (uses relative imports)
+#   <repo_root>/src/mimo_audio_tokenizer/__init__.py
+# The official example uses `from src.mimo_audio.mimo_audio import MimoAudio`,
+# which requires <repo_root> to be on sys.path.
+_DEFAULT_REPO_ROOT = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "..", "..", "..", "init_model", "XiaomiMimo", "MiMo-Audio",
+)
+_REPO_ROOT = os.environ.get("MIMO_AUDIO_REPO", _DEFAULT_REPO_ROOT)
+_REPO_ROOT = os.path.abspath(_REPO_ROOT)
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
+try:
+    from src.mimo_audio.mimo_audio import MimoAudio  # type: ignore
+    # The official ASR prompt uses a randomly-sampled template string from these
+    # two lists. On some inputs the model echoes that template verbatim instead
+    # of transcribing; we filter those out below.
+    from src.mimo_audio.templates import (  # type: ignore
+        asr_en_templates,
+        asr_zh_templates,
+    )
+except ImportError as e:
+    print(
+        "Error: failed to import MimoAudio from offline repo at "
+        f"{_REPO_ROOT}. Make sure the MiMo-Audio source repo exists there, "
+        "or set env MIMO_AUDIO_REPO to its path. Original error: " + str(e),
+        file=sys.stderr,
+        flush=True,
+    )
+    raise
 
 
-device = "cuda"
+# Where to dump intermediate wav files produced by spoken_dialogue_sft.
+_TMP_WAV_DIR = os.environ.get(
+    "MIMO_AUDIO_TMP_WAV_DIR",
+    os.path.join(tempfile.gettempdir(), "mimo_audio_s2s"),
+)
+os.makedirs(_TMP_WAV_DIR, exist_ok=True)
 
 
-def load_audio(audio_path, sr=24000):
-    """Load and resample audio to target sample rate."""
-    audio, _ = librosa.load(audio_path, sr=sr, mono=True)
-    return audio
+_ASR_TEMPLATE_ECHOES = {t.strip() for t in (asr_en_templates + asr_zh_templates)}
+
+_THINK_BLOCK_RE = re.compile(r"<think>.*?</think>", flags=re.DOTALL)
+_LEADING_ROLE_RE = re.compile(r"^(?:<\|im_start\|>)?\s*assistant\s*\n", flags=re.IGNORECASE)
 
 
-def encode_audio(audio_tokenizer, audio_path, device="cuda"):
-    """Encode audio file into discrete tokens using MiMo-Audio-Tokenizer."""
-    audio = load_audio(audio_path, sr=24000)
-    audio_tensor = torch.tensor(audio, dtype=torch.float32).unsqueeze(0).to(device)
-    with torch.no_grad():
-        audio_codes = audio_tokenizer.encode(audio_tensor)
-    # audio_codes shape: (batch, n_codebooks, time)
-    # Use the first codebook for the LLM input
-    return audio_codes[0, 0, :].cpu().tolist()
+def _clean_text(text: str) -> str:
+    """Strip residual template / role / thinking tokens from model output."""
+    if not isinstance(text, str):
+        return "" if text is None else str(text)
+    text = _THINK_BLOCK_RE.sub("", text)
+    text = _LEADING_ROLE_RE.sub("", text)
+    text = text.replace("<|im_end|>", "")
+    text = text.replace("<|endoftext|>", "")
+    text = text.replace("<|empty|>", "")
+    text = text.replace("<|eot|>", "")
+    text = text.replace("<|eostm|>", "")
+    return text.strip()
 
 
-def build_chat_input(tokenizer, audio_tokenizer, messages, device="cuda"):
-    """Build input_ids for MiMo-Audio-7B-Instruct from chat messages.
+def _postprocess_asr(raw: str) -> str:
+    """Post-process ASR output to drop pathological 'template echo' cases."""
+    cleaned = _clean_text(raw)
+    if cleaned in _ASR_TEMPLATE_ECHOES:
+        # Model copied the ASR instruction instead of transcribing -> fail-soft.
+        return ""
+    return cleaned
 
-    Format follows the Qwen2 chat template:
-    <|im_start|>system\nYou are a helpful assistant.<|im_end|>\n
-    <|im_start|>user\n<|sosp|>...audio_tokens...<|eosp|>text<|im_end|>\n
-    <|im_start|>assistant\n
+
+def _extract_audio_and_text(conversation):
+    """Extract the audio path and text instruction from a single-turn prompt.
+
+    The conversation comes from `audio_evals.models.mimo_audio.MiMoAudio`
+    (see `_parse_role_content` / `_parse_content`), so each item looks like:
+        {"role": "user", "content": [
+            {"type": "audio", "audio": "/path/to.wav"},
+            {"type": "text",  "text": "..."},
+        ]}
     """
-    im_start_id = tokenizer.convert_tokens_to_ids("<|im_start|>")
-    im_end_id = tokenizer.convert_tokens_to_ids("<|im_end|>")
-    sosp_id = tokenizer.convert_tokens_to_ids("<|sosp|>")
-    eosp_id = tokenizer.convert_tokens_to_ids("<|eosp|>")
-    nl_id = tokenizer.encode("\n", add_special_tokens=False)[0]
-
-    input_ids = []
-
-    # System message
-    system_ids = tokenizer.encode("system\nYou are a helpful assistant.", add_special_tokens=False)
-    input_ids.extend([im_start_id] + system_ids + [im_end_id, nl_id])
-
-    for msg in messages:
-        role = msg["role"]
-        contents = msg.get("contents", msg.get("content", []))
+    audio_path = None
+    text = ""
+    for msg in conversation:
+        contents = msg.get("content", msg.get("contents", []))
         if isinstance(contents, str):
-            contents = [{"type": "text", "value": contents}]
-
-        role_ids = tokenizer.encode(f"{role}\n", add_special_tokens=False)
-        input_ids.extend([im_start_id] + role_ids)
-
-        for content in contents:
-            ctype = content.get("type", "text")
-            cvalue = content.get("value", content.get(ctype, ""))
-
-            if ctype == "text":
-                text_ids = tokenizer.encode(cvalue, add_special_tokens=False)
-                input_ids.extend(text_ids)
-            elif ctype == "audio":
-                audio_tokens = encode_audio(audio_tokenizer, cvalue, device=device)
-                input_ids.append(sosp_id)
-                input_ids.extend(audio_tokens)
-                input_ids.append(eosp_id)
-
-        input_ids.extend([im_end_id, nl_id])
-
-    # Generation prompt
-    assistant_ids = tokenizer.encode("assistant\n", add_special_tokens=False)
-    input_ids.extend([im_start_id] + assistant_ids)
-
-    return torch.tensor([input_ids], dtype=torch.long).to(device)
+            text = (text + "\n" + contents) if text else contents
+            continue
+        for c in contents:
+            ctype = c.get("type", "text")
+            # Accept both {"type": "...", "value": "..."} and
+            # {"type": "...", "<type>": "..."}.
+            cvalue = c.get(ctype, c.get("value", ""))
+            if ctype == "audio":
+                audio_path = cvalue
+            elif ctype == "text":
+                text = (text + "\n" + cvalue) if text else cvalue
+    return audio_path, (text or "").strip()
 
 
-def try_load_model_with_mimo_audio(model_path, tokenizer_path, device="cuda"):
-    """Try to load model using MiMo-Audio package first, fallback to transformers."""
-    try:
-        # Try importing MiMo-Audio package
-        from mimo_audio.model import MiMoAudioModel as MiMoModel
-        from mimo_audio.tokenizer import MiMoAudioTokenizer
+_ASR_KEYWORDS = (
+    "transcribe",
+    "transcription",
+    "转换为纯文本",
+    "转录",
+    "转写",
+    "语音转文字",
+    "语音识别",
+)
 
-        print("Using MiMo-Audio package for model loading", file=sys.stderr, flush=True)
-        audio_tokenizer = MiMoAudioTokenizer.from_pretrained(tokenizer_path).to(device).eval()
-        model = MiMoModel.from_pretrained(model_path, torch_dtype=torch.bfloat16, device_map="auto").eval()
-        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        return model, tokenizer, audio_tokenizer, "mimo_audio"
-    except ImportError:
-        pass
 
-    # Fallback: load with transformers trust_remote_code
-    print("Loading with transformers (trust_remote_code=True)", file=sys.stderr, flush=True)
-    audio_tokenizer = AutoModel.from_pretrained(
-        tokenizer_path, trust_remote_code=True
-    ).to(device).eval()
+def _guess_task(text, explicit_task=None):
+    """Decide which MimoAudio SFT interface to use for the current prompt."""
+    if explicit_task:
+        return explicit_task.lower().strip()
+    if not text:
+        # Prompts that only contain an audio turn (e.g. `direct-aqa`) are
+        # spoken-QA / spoken-dialogue tasks in this repo.
+        return "spoken_dialogue"
+    low = text.lower()
+    if any(k in low for k in _ASR_KEYWORDS):
+        return "asr"
+    return "audio_understanding"
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    model = AutoModel.from_pretrained(
-        model_path, trust_remote_code=True,
-        torch_dtype=torch.bfloat16, device_map="auto",
-    ).eval()
-    return model, tokenizer, audio_tokenizer, "transformers"
+
+def run_inference(model, conversation, explicit_task=None):
+    audio_path, text = _extract_audio_and_text(conversation)
+    if not audio_path:
+        raise ValueError("No audio content found in the prompt")
+
+    task = _guess_task(text, explicit_task=explicit_task)
+    print(f"[mimo-audio] dispatch task={task} audio={audio_path}",
+          file=sys.stderr, flush=True)
+
+    if task == "asr":
+        raw = model.asr_sft(audio_path)
+        return _postprocess_asr(raw)
+
+    if task == "spoken_dialogue":
+        # For S2S QA / spoken-dialogue evaluation tasks the upstream pipeline
+        # post-processes with `extract_audio` + `speech2text`, so we must
+        # return the path of a real wav file, not a free-form text reply.
+        out_wav = os.path.join(_TMP_WAV_DIR, f"{uuid.uuid4().hex}.wav")
+        try:
+            model.spoken_dialogue_sft(
+                audio_path,
+                output_audio_path=out_wav,
+                system_prompt=(
+                    "You are MiMo-Audio, a friendly AI assistant and your "
+                    "response needs to be concise."
+                ),
+                prompt_speech=None,
+                add_history=False,
+            )
+        except Exception:
+            # If S2S generation fails, fall back to text-only dialogue so the
+            # evaluator still receives a string instead of crashing the worker.
+            fallback = model.speech2text_dialogue_sft(audio_path, thinking=False)
+            return _clean_text(fallback)
+        return out_wav
+
+    # Default: audio understanding with the given text instruction.
+    # Covers S2TT / emotion recognition / generic audio QA.
+    return _clean_text(model.audio_understanding_sft(audio_path, text))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model_path", type=str, required=True,
-        help="Path to MiMo-Audio-7B-Instruct model"
+        help="Path to MiMo-Audio-7B-Instruct model (local dir or HF id)",
     )
     parser.add_argument(
         "--tokenizer_path", type=str, required=True,
-        help="Path to MiMo-Audio-Tokenizer"
+        help="Path to MiMo-Audio-Tokenizer (local dir or HF id)",
     )
     config = parser.parse_args()
 
-    model, tokenizer, audio_tokenizer, backend = try_load_model_with_mimo_audio(
-        config.model_path, config.tokenizer_path, device=device
-    )
+    model = MimoAudio(config.model_path, config.tokenizer_path)
     print("Model loaded from checkpoint: {}".format(config.model_path), flush=True)
 
     while True:
@@ -137,26 +201,22 @@ if __name__ == "__main__":
                 )
                 continue
             prefix = prompt[:anchor].strip() + "->"
-            conversation = json.loads(prompt[anchor + 2:])
+            payload = json.loads(prompt[anchor + 2:])
 
-            # Build input
-            input_ids = build_chat_input(
-                tokenizer, audio_tokenizer, conversation, device=device
-            )
+            # Payload can either be a bare conversation list, or a dict
+            # {"task": "...", "conversation": [...]} to explicitly pick a task.
+            explicit_task = None
+            if isinstance(payload, dict) and "conversation" in payload:
+                conversation = payload["conversation"]
+                explicit_task = payload.get("task")
+            else:
+                conversation = payload
 
-            # Generate
-            with torch.no_grad():
-                output_ids = model.generate(
-                    input_ids,
-                    max_new_tokens=512,
-                    do_sample=False,
-                    eos_token_id=tokenizer.convert_tokens_to_ids("<|im_end|>"),
-                    pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
-                )
-
-            # Decode generated part only
-            generated_ids = output_ids[0, input_ids.shape[1]:]
-            text = tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
+            text = run_inference(model, conversation, explicit_task=explicit_task)
+            if text is None:
+                text = ""
+            if not isinstance(text, str):
+                text = str(text)
 
             retry = 3
             while retry:
