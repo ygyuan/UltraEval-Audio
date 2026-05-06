@@ -55,6 +55,36 @@ _ASR_TEMPLATE_ECHOES = {t.strip() for t in (asr_en_templates + asr_zh_templates)
 _THINK_BLOCK_RE = re.compile(r"<think>.*?</think>", flags=re.DOTALL)
 _LEADING_ROLE_RE = re.compile(r"^(?:<\|im_start\|>)?\s*assistant\s*\n", flags=re.IGNORECASE)
 
+# Signals that the model drifted from ASR into a description / analysis response.
+# Timestamp-like markers such as "**00:10 - 00:22**" or "[00:00-00:10]".
+_TIMESTAMP_RE = re.compile(r"\b\d{1,2}:\d{2}\s*[-–]\s*\d{1,2}:\d{2}\b")
+# Bulleted markdown list openings that never appear in a real transcription.
+_MD_BULLET_RE = re.compile(r"(?:^|\n)\s*[*\-]\s+\*\*")
+# Typical "audio description" lead-ins in zh / en. Match case-insensitively for en.
+_ASR_DRIFT_PHRASES = (
+    "这是一段",
+    "这是一个",
+    "音频内容",
+    "音频中",
+    "音频如下",
+    "音频描述",
+    "音频片段",
+    "以下是",
+    "本段音频",
+    "the audio contains",
+    "the audio is",
+    "this is an audio",
+    "this audio",
+    "in this audio",
+    "here is a transcription",
+    "here's a transcription",
+    "here is the transcription",
+    "here's the transcription",
+)
+# ASR references in covered benchmarks are overwhelmingly < 300 chars. Anything
+# far beyond that is almost certainly a hallucinated description.
+_ASR_MAX_LEN = 500
+
 
 def _clean_text(text: str) -> str:
     """Strip residual template / role / thinking tokens from model output."""
@@ -70,11 +100,78 @@ def _clean_text(text: str) -> str:
     return text.strip()
 
 
+def _has_repetition_loop(text: str) -> bool:
+    """Detect degenerate repeat-until-max-tokens outputs.
+
+    Two complementary heuristics:
+    1. Any non-trivial substring (>=8 chars) that repeats >=4 times back to
+       back -> clear decoding loop.
+    2. Sentence-level duplication ratio: after splitting on common CJK/EN
+       sentence terminators, if the most common non-empty sentence accounts
+       for >=40% of all sentences AND appears at least 4 times -> loop.
+    """
+    if not text:
+        return False
+
+    # 1) back-to-back character-level loop, e.g. "abcabcabcabc".
+    #    Regex (.{8,}?)\1{3,} matches a substring >=8 chars repeated >=4 times.
+    if re.search(r"(.{8,}?)\1{3,}", text):
+        return True
+
+    # 2) sentence-level loop: split on CJK/EN sentence enders + newline.
+    parts = re.split(r"[。！？!?\.\n]+", text)
+    parts = [p.strip() for p in parts if p.strip()]
+    if len(parts) >= 5:
+        from collections import Counter
+        counts = Counter(parts)
+        top_sent, top_cnt = counts.most_common(1)[0]
+        if top_cnt >= 4 and top_cnt / len(parts) >= 0.4 and len(top_sent) >= 6:
+            return True
+    return False
+
+
+def _looks_like_description(text: str) -> bool:
+    """Return True if text looks like a free-form audio description, not ASR."""
+    if not text:
+        return False
+    # Timestamp markers -> description / summary.
+    if _TIMESTAMP_RE.search(text):
+        return True
+    # Multiple markdown bullet openings -> structured description.
+    if len(_MD_BULLET_RE.findall(text)) >= 2:
+        return True
+    low = text.lower()
+    # Lead-in phrases, but only trust them if they appear at the start so we
+    # do not accidentally filter legitimate long transcripts.
+    head = text[:30]
+    head_low = low[:60]
+    for phrase in _ASR_DRIFT_PHRASES:
+        if phrase in head or phrase in head_low:
+            return True
+    return False
+
+
 def _postprocess_asr(raw: str) -> str:
-    """Post-process ASR output to drop pathological 'template echo' cases."""
+    """Drop pathological ASR outputs (template echo, description drift, loops)."""
     cleaned = _clean_text(raw)
+    if not cleaned:
+        return ""
+    # 1) pure template echo (model copied the instruction).
     if cleaned in _ASR_TEMPLATE_ECHOES:
-        # Model copied the ASR instruction instead of transcribing -> fail-soft.
+        print("[mimo-audio] ASR filter: template-echo", file=sys.stderr, flush=True)
+        return ""
+    # 2) description drift (timestamps / bullet lists / lead-in phrases).
+    if _looks_like_description(cleaned):
+        print("[mimo-audio] ASR filter: description-drift", file=sys.stderr, flush=True)
+        return ""
+    # 3) repeat-until-max-tokens decoding loop.
+    if _has_repetition_loop(cleaned):
+        print("[mimo-audio] ASR filter: repetition-loop", file=sys.stderr, flush=True)
+        return ""
+    # 4) absurdly long output relative to typical ASR references.
+    if len(cleaned) > _ASR_MAX_LEN:
+        print(f"[mimo-audio] ASR filter: too-long(len={len(cleaned)})",
+              file=sys.stderr, flush=True)
         return ""
     return cleaned
 

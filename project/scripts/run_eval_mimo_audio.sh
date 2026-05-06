@@ -59,7 +59,8 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
         done
     done
     # Spoken QA datasets
-    for dataset in speech-web-questions speech-triviaqa speech-chatbot-alpaca-eval; do
+    # for dataset in speech-web-questions speech-triviaqa speech-chatbot-alpaca-eval; do
+    for dataset in speech-cmmlu; do
         for model in mimo-audio; do
                 CUDA_VISIBLE_DEVICES="0,1,2,3,4,5" python audio_evals/main.py --dataset ${dataset} --model ${model}
         done
