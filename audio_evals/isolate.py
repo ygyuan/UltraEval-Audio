@@ -91,7 +91,8 @@ def isolated(
                     f" PIP_CONSTRAINT={constraint_file} pip install {pip_options} -r {requirements_path}"
                 )
             result = subprocess.run(
-                install_cmd,
+                # setuptools<81 is a workaround for the bug in uv pip install
+                f"source {env_path}/bin/activate &&{pre_command + '&& ' if pre_command else ''} uv pip install setuptools\<81 && uv pip install --extra-index-url https://pypi.nvidia.com --index-strategy unsafe-best-match -r {requirements_path}",
                 shell=True,
                 check=True,
                 executable="/bin/bash",

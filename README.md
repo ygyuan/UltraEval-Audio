@@ -33,16 +33,8 @@ UltraEval-Audio — The world's first open-source framework supporting both spee
 
 # Changelog🔥
 
-- [2026/04/10]
-  - Support **[VoxCPM2](replication/VoxCPM2.md)** TTS evaluation and replication
-- [2026/04/09]
-  - Support **[Step-Audio-2-mini](replication/step-audio-2-mini.md)** evaluation and replication
-- [2026/03/27]
-  - Support **MiniCPM-o 4.5 (9B)** evaluation: `--model MiniCPMo4_5-audio` for speech understanding, `--model MiniCPMo4_5-speech` for speech generation
-- [2026/03/13]
-  - Support **[Fish-Speech](replication/fishspeech.md)** TTS evaluation and replication
 - [2026/02/03]
-  - Support **[Qwen3-TTS](replication/qwen3_tts.md)** evaluation 
+  - Support **[Qwen3-TTS](replication/qwen3_tts.md)** evaluation
   - GPU parallel acceleration for faster evaluation/inference
     - Usage: add `--use_model_pool` and `--workers <N>` to enable multi-GPU parallel inference, e.g.
       - `python audio_evals/main.py --dataset <dataset_name> --model <model_name> --use_model_pool --workers 4`
