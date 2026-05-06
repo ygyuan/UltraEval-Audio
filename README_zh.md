@@ -33,6 +33,19 @@ UltraEval-Audio——全球首个同时支持语音理解和语音生成评估�
 
 # 更新日志🔥
 
+<<<<<<< HEAD
+- [2026/04/10]
+  - 支持 **[VoxCPM2](replication/VoxCPM2.md)** TTS 评测与复现
+- [2026/04/09]
+  - 支持 **[Step-Audio-2-mini](replication/step-audio-2-mini.md)** 评测与复现
+- [2026/03/27]
+  - 支持 **MiniCPM-o 4.5 (9B)** 评测：`--model MiniCPMo4_5-audio` 用于语音理解，`--model MiniCPMo4_5-speech` 用于语音生成
+- [2026/03/13]
+  - 支持 **[Fish-Speech](replication/fishspeech.md)** 的评测和复现
+=======
+- [2026/04/20]
+  - 新增 **[Fish Speech S2 Pro](replication/fishaudio-s2-pro.md)** 评测复现，覆盖 Seed-TTS-Eval 以及 MiniMax 多语言 TTS Benchmark（22 种语言）
+>>>>>>> upstream/main
 - [2026/02/03]
   - 支持 **[Qwen3-TTS](replication/qwen3_tts.md)** 评测
   - GPU 并行加速，提升评测/推理速度
