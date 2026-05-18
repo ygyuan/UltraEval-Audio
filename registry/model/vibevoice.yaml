@@ -22,3 +22,49 @@ vibevioce_tts_7b:
     num_steps: 10
     env_path: envs/VibeVoice
     requirements_path: audio_evals/lib/VibeVoice/requirements.txt
+
+# VibeVoice ASR (speech-to-text) model.
+# Reference: https://github.com/microsoft/VibeVoice
+vibevoice-asr:
+  class: audio_evals.models.asr.vibevoice_asr.VibeVoiceASR
+  args:
+    path: init_model/microsoft/VibeVoice-ASR
+    # Use local Qwen2.5-7B tokenizer to avoid network access.
+    # Tokenizer files (tokenizer.json/vocab.json/merges.txt) of
+    # Qwen2.5-7B-Instruct are identical to the base Qwen2.5-7B.
+    language_model_pretrained_name: init_model/Qwen2.5-7B-Instruct
+    dtype: bfloat16
+    device: cuda
+    attn_implementation: auto
+    max_new_tokens: 32768
+    env_path: envs/VibeVoice-ASR
+    requirements_path: audio_evals/lib/VibeVoice/asr_requirements.txt
+
+# Chinese-constrained variant: passes context_info to the processor so the
+# model is guided to output Mandarin only.
+vibevoice-asr-zh:
+  class: audio_evals.models.asr.vibevoice_asr.VibeVoiceASR
+  args:
+    path: init_model/microsoft/VibeVoice-ASR
+    language_model_pretrained_name: init_model/Qwen2.5-7B-Instruct
+    dtype: bfloat16
+    device: cuda
+    attn_implementation: auto
+    max_new_tokens: 32768
+    language: zh
+    env_path: envs/VibeVoice-ASR
+    requirements_path: audio_evals/lib/VibeVoice/asr_requirements.txt
+
+# English-constrained variant.
+vibevoice-asr-en:
+  class: audio_evals.models.asr.vibevoice_asr.VibeVoiceASR
+  args:
+    path: init_model/microsoft/VibeVoice-ASR
+    language_model_pretrained_name: init_model/Qwen2.5-7B-Instruct
+    dtype: bfloat16
+    device: cuda
+    attn_implementation: auto
+    max_new_tokens: 32768
+    language: en
+    env_path: envs/VibeVoice-ASR
+    requirements_path: audio_evals/lib/VibeVoice/asr_requirements.txt

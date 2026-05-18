@@ -87,3 +87,31 @@ class JsonExtract(Process):
             self.extract_key, list(d.keys())
         )
         return answer
+
+
+class BracketedTagStrip(Process):
+    """
+    Strip bracketed structural tags from a string.
+
+    Some ASR models (e.g. VibeVoice-ASR) may emit non-speech / structural
+    tags such as ``[Music]``, ``[Lyric]``, ``[Vocal]``, ``[Singing]``,
+    ``[Background]``, ``[Speech]``, ``[Noise]``, ``[Silence]``,
+    ``[Applause]``, ``[Laughter]`` ...  These tags are not present in
+    the reference transcriptions of standard ASR benchmarks and inflate
+    CER artificially.
+
+    This process removes any ``[Xxx]`` / ``[Xxx Yyy]`` ASCII tag and
+    collapses the resulting whitespace.  Non-ASCII (e.g. Chinese) brackets
+    or content are left untouched.
+    """
+
+    import re as _re
+    _BRACKET_TAG_RE = _re.compile(r"\[\s*[A-Za-z][A-Za-z0-9 _\-/]*\s*\]")
+    _WS_RE = _re.compile(r"\s+")
+
+    def __call__(self, answer: str) -> str:
+        if not isinstance(answer, str) or not answer:
+            return answer
+        cleaned = self._BRACKET_TAG_RE.sub(" ", answer)
+        cleaned = self._WS_RE.sub(" ", cleaned).strip()
+        return cleaned

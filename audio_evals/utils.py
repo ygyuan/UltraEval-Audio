@@ -2,6 +2,7 @@ import base64
 import functools
 import glob
 import importlib
+import json
 import logging
 import os
 import re
@@ -138,13 +139,48 @@ def clean_illegal_chars(text):
     return text
 
 
+def _read_jsonl_robust(path: str) -> pd.DataFrame:
+    """Read a ``.jsonl`` file into a DataFrame without triggering ujson's
+    ``Value is too big!`` overflow on integers larger than int64.
+
+    ``pd.read_json(..., lines=True)`` goes through the ujson parser, which
+    rejects integers outside ``[-2**63, 2**63)``. Some datasets embed very
+    large numeric IDs (or raw 19+ digit strings that look numeric) inside
+    the recorder log; we therefore fall back to the Python ``json`` module
+    which handles arbitrary-precision ints natively.
+    """
+    records = []
+    with open(path, "r", encoding="utf-8") as f:
+        for lineno, line in enumerate(f, 1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                records.append(json.loads(line))
+            except json.JSONDecodeError as e:
+                logger.warning(
+                    "Skip malformed jsonl line %d in %s: %s", lineno, path, e
+                )
+    return pd.DataFrame(records)
+
+
 def merge_data4view(
     quiz: typing.List[dict], eval_df: typing.Union[pd.DataFrame, str], save_name
 ):
     quiz = pd.DataFrame(quiz)
     quiz["id"] = range(len(quiz))
     if isinstance(eval_df, str):
-        eval_df = pd.read_json(eval_df, lines=True)
+        try:
+            eval_df = pd.read_json(eval_df, lines=True)
+        except (ValueError, OverflowError) as e:
+            # ujson rejects ints outside int64 range with "Value is too big!".
+            # Fall back to the stdlib json parser, which handles big ints.
+            logger.warning(
+                "pd.read_json failed (%s); falling back to stdlib json for %s",
+                e,
+                eval_df,
+            )
+            eval_df = _read_jsonl_robust(eval_df)
 
     def concat_gdf(gdf):
         r = {}
@@ -159,7 +195,18 @@ def merge_data4view(
     real_eval = real_eval.reset_index()
     df = pd.merge(quiz, real_eval, on="id", how="left")
     df = df.map(clean_illegal_chars)
-    df.to_excel(save_name, index=False)
+    try:
+        df.to_excel(save_name, index=False)
+    except Exception as e:
+        # Don't let a visualisation-only failure (e.g. xlsx cell-size limit,
+        # illegal chars) wipe out the whole evaluation run.
+        logger.error("Failed to write xlsx view %s: %s", save_name, e)
+        fallback = os.path.splitext(save_name)[0] + ".csv"
+        try:
+            df.to_csv(fallback, index=False)
+            logger.warning("Wrote CSV fallback view to %s", fallback)
+        except Exception as e2:
+            logger.error("Also failed to write CSV fallback %s: %s", fallback, e2)
 
 
 def find_latest_jsonl(directory):

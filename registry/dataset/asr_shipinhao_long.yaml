@@ -1,0 +1,7 @@
+asr_shipinhao_long:
+  class: audio_evals.dataset.huggingface.Huggingface
+  args:
+    default_task: asr-zh
+    name: Yougen/test_20221118_shipinhaolong_2h
+    split: train
+    ref_col: Text

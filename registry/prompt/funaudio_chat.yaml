@@ -1,0 +1,93 @@
+# Fun-Audio-Chat prompt templates
+# Aligned with the upstream evaluation pipeline in
+#   init_model/FunAudioLLM/Fun-Audio-Chat/examples/infer_s2t.py
+# The subprocess recognises the instruction text to pick between the
+# text-only (S2T) and joint text+speech (S2M) generation modes.
+
+# ========== ASR ==========
+funaudio_chat-asr-zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: '请将这段中文语音转写为纯文本。'
+
+funaudio_chat-asr-en:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Please transcribe the English audio into text.'
+
+# ========== Speech Translation (S2TT) ==========
+funaudio_chat-s2tt-zh2en:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Listen to the provided Chinese speech and translate it into English text.'
+
+funaudio_chat-s2tt-en2zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Listen to the provided English speech and translate it into Chinese text.'
+
+# ========== Speech Emotion Recognition ==========
+funaudio_chat-emotion:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+      - type: text
+        value: 'Listen the audio and judge the emotion of the speaker, the answer must be one of [surprise,anger,neutral,joy,sadness,fear,disgust], answer without explain.'
+
+# ========== Spoken / Speech QA (S2S) ==========
+# These prompts are audio-only; the subprocess' `_guess_task` will fall
+# through to the S2S pipeline, which emits {"text": ..., "audio": "/path.wav"}.
+# Downstream eval tasks (``s2s-aqa`` / ``speech-choice-aqa-zh``) use
+# ``extract_audio`` + ``speech2text`` post-processing, so a real wav output
+# is required here.
+
+# Generic spoken QA (web-questions / trivia-qa): audio-only prompt so the
+# model answers with speech.
+funaudio_chat-speech-qa:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+
+# Spoken multiple-choice QA (CMMLU / HSK etc.): again audio-only so the
+# model speaks its choice; the post-process pipeline will ASR the answer
+# and pick the first option letter.
+funaudio_chat-speech-choice-qa-zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'

@@ -1,0 +1,7 @@
+asr_lianghui:
+  class: audio_evals.dataset.huggingface.Huggingface
+  args:
+    default_task: asr-zh
+    name: Yougen/test_20170312_lianghui_15h
+    split: train
+    ref_col: Text

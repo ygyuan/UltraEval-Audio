@@ -3,6 +3,13 @@ json_content:
   args: {}
 
 
+# Strip bracketed structural / non-speech tags such as [Music] / [Lyric] /
+# [Vocal] from ASR predictions (used together with VibeVoice-ASR).
+asr_strip_tags:
+  class: audio_evals.process.base.BracketedTagStrip
+  args: {}
+
+
 qwen_pretrain_asr_tractor_zh:
   class: audio_evals.process.qwen.QwenAudioASRExtract
   args:

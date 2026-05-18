@@ -1,0 +1,19 @@
+funaudio_chat:
+  class: audio_evals.models.funaudio_chat.FunAudioChat
+  args:
+    # Main model: accepts local path or HF/ModelScope repo id.
+    # If a local directory with this name does not exist, it will be
+    # auto-downloaded via HuggingFace (or ModelScope as a fallback).
+    model_path: FunAudioLLM/Fun-Audio-Chat-8B
+    # CosyVoice3 detokenizer used for S2S (spoken QA) tasks.
+    tts_model_path: FunAudioLLM/Fun-CosyVoice3-0.5B-2512
+    # Fun-Audio-Chat source repo; provides funaudiochat / utils / CosyVoice.
+    # NOTE: this MUST be a local directory (it is added to sys.path inside
+    # the subprocess), not an HF repo id. Clone the upstream repo to this
+    # path before running:
+    #   git clone https://github.com/FunAudioLLM/Fun-Audio-Chat \
+    #       init_model/FunAudioLLM/Fun-Audio-Chat
+    repo_root: init_model/FunAudioLLM/Fun-Audio-Chat
+    # Isolated python environment for the subprocess.
+    env_path: envs/funaudio_chat
+    requirements_path: audio_evals/lib/funaudio_chat/requirements.txt

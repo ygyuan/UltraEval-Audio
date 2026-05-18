@@ -1,0 +1,26 @@
+# NOTE: torch must match the host NVIDIA driver.  This box has CUDA driver
+# 12.2 (NVIDIA-SMI 535.x), so we pin torch to the 2.6.0 cu124 wheel which is
+# the newest version still runnable on driver 12.2.  Do NOT use torch>=2.6.0
+# unconstrained — pip will pull torch 2.10/2.11 cu130 wheels that require
+# driver >= 545 and abort with "NVIDIA driver on your system is too old".
+torch==2.6.0
+torchaudio==2.6.0
+transformers>=4.57.0
+accelerate
+diffusers
+tqdm
+numpy
+scipy
+librosa
+soundfile
+ml-collections
+absl-py
+av
+pydub
+requests
+protobuf
+sentencepiece
+tiktoken
+llvmlite>=0.40.0
+numba>=0.57.0
+-e ./init_model/microsoft/VibeVoice

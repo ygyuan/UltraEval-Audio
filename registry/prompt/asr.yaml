@@ -14,3 +14,17 @@ simple-asr:
   args:
     template:
       audio: "{{WavPath}}"
+
+# VibeVoice ASR doesn't need any text prompt; it consumes the audio directly
+# and returns a structured transcription.  We just pass the audio path.
+vibevoice-asr-zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      audio: "{{WavPath}}"
+
+vibevoice-asr-en:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      audio: "{{WavPath}}"
