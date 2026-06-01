@@ -1,0 +1,19 @@
+# PilotTTS prompt configurations for voice cloning evaluation.
+# PilotTTS only requires `text` and a reference audio (`prompt_audio`).
+# An optional `language` field can be used for multilingual / dialect synthesis.
+
+pilot-voice-clone-chinese:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      prompt_audio: "{{WavPath}}"
+      language: "zh"
+
+pilot-voice-clone-english:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      prompt_audio: "{{WavPath}}"
+      language: "en"

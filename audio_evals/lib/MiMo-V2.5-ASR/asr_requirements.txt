@@ -1,0 +1,34 @@
+# MiMo-V2.5-ASR isolated environment.
+# Reference: third_party/MiMo-V2.5-ASR/requirements.txt
+#
+# IMPORTANT: ``flash_attn`` is a hard import inside the MiMo-Audio-Tokenizer
+# (third_party/MiMo-V2.5-ASR/src/mimo_audio_tokenizer/modeling_audio_tokenizer.py)
+# and must be installed in this isolated env *manually* because:
+#   1) the host has no public-internet access, so the pre-built wheel hosted
+#      on github.com/Dao-AILab/flash-attention/releases is NOT reachable;
+#   2) the Tencent-Cloud PyPI mirror only ships the ``flash_attn`` source
+#      ``.tar.gz`` -- building it from source needs torch + ninja + nvcc +
+#      ``--no-build-isolation`` and takes ~30 min.
+#
+# Recommended manual install once this env is created (whichever applies):
+#   (a) Offline wheel (preferred):
+#         pip install /path/to/flash_attn-<ver>+cu12torch2.6...-cp310-cp310-linux_x86_64.whl
+#   (b) Source build with the local torch already in this env:
+#         pip install ninja packaging
+#         pip install flash_attn==2.7.4.post1 --no-build-isolation \
+#           -i https://mirrors.cloud.tencent.com/pypi/simple/
+#
+# torch is pinned to the cu124 wheel that is the latest version still
+# runnable on CUDA driver 12.2 (NVIDIA-SMI 535.x).
+torch==2.6.0
+torchaudio==2.6.0
+transformers==4.49.0
+accelerate>=1.9.0
+librosa>=0.11.0
+scipy>=1.16.1
+triton==3.2.0
+numpy
+soundfile
+# Prebuilt flash-attn wheel matching the pinned torch / python / CUDA combo.
+# Same wheel used by audio_evals/lib/MGM_Omni/requirements.txt.
+# flash_attn==2.8.3 --no-build-isolation

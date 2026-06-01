@@ -15,7 +15,7 @@ import uuid
 # which requires <repo_root> to be on sys.path.
 _DEFAULT_REPO_ROOT = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
-    "..", "..", "..", "init_model", "XiaomiMimo", "MiMo-Audio",
+    "..", "..", "..", "init_model", "XiaomiMiMo", "MiMo-Audio",
 )
 _REPO_ROOT = os.environ.get("MIMO_AUDIO_REPO", _DEFAULT_REPO_ROOT)
 _REPO_ROOT = os.path.abspath(_REPO_ROOT)

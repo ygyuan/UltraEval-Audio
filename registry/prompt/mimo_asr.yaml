@@ -1,0 +1,29 @@
+# MiMo-V2.5-ASR (XiaomiMiMo/MiMo-V2.5-ASR) prompt configurations.
+#
+# The MiMo-V2.5-ASR model wrapper (audio_evals/models/asr/mimo_asr.py)
+# only extracts the audio path from the prompt -- it does NOT use any
+# text instruction from the template.  The transcription target language
+# is controlled by the model's `language` argument (see
+# registry/model/mimo_asr.yaml) which is forwarded to
+# ``MimoAudio.asr_sft(audio, audio_tag=...)`` as one of
+# ``""`` / ``"<chinese>"`` / ``"<english>"``.
+#
+# Therefore these prompts only need to wrap the audio entry.
+
+mimo-asr-zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+
+mimo-asr-en:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'

@@ -1,0 +1,38 @@
+# MiMo-V2.5-ASR (XiaomiMiMo) ASR model configurations
+# Reference:
+#   https://github.com/XiaomiMiMo/MiMo-V2.5-ASR
+#   third_party/MiMo-V2.5-ASR/run_mimo_asr.py
+#
+# The actual model loading happens inside an isolated subprocess
+# (audio_evals/lib/MiMo-V2.5-ASR/asr_main.py) so that the heavy
+# / version-specific dependencies (transformers 4.49, torch 2.6, ...)
+# do not pollute the main UltraEval-Audio environment.
+
+# Generic MiMo-V2.5-ASR (no language constraint).
+mimo-asr:
+  class: audio_evals.models.asr.mimo_asr.MiMoASR
+  args:
+    path: init_model/XiaomiMiMo/MiMo-V2.5-ASR
+    tokenizer_path: init_model/XiaomiMiMo/MiMo-Audio-Tokenizer
+    env_path: envs/MiMo-V2.5-ASR
+    requirements_path: audio_evals/lib/MiMo-V2.5-ASR/asr_requirements.txt
+
+# Chinese-constrained variant (used by run_eval_mimo_asr_nano.sh stage 1/3).
+mimo-asr-zh:
+  class: audio_evals.models.asr.mimo_asr.MiMoASR
+  args:
+    path: init_model/XiaomiMiMo/MiMo-V2.5-ASR
+    tokenizer_path: init_model/XiaomiMiMo/MiMo-Audio-Tokenizer
+    language: zh
+    env_path: envs/MiMo-V2.5-ASR
+    requirements_path: audio_evals/lib/MiMo-V2.5-ASR/asr_requirements.txt
+
+# English-constrained variant (used by run_eval_mimo_asr_nano.sh stage 2).
+mimo-asr-en:
+  class: audio_evals.models.asr.mimo_asr.MiMoASR
+  args:
+    path: init_model/XiaomiMiMo/MiMo-V2.5-ASR
+    tokenizer_path: init_model/XiaomiMiMo/MiMo-Audio-Tokenizer
+    language: en
+    env_path: envs/MiMo-V2.5-ASR
+    requirements_path: audio_evals/lib/MiMo-V2.5-ASR/asr_requirements.txt

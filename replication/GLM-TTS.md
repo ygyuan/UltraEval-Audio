@@ -17,8 +17,8 @@
 
 | task | dataset | WER/CER⬇️ | SIM⬆️ | eval_cli | note |
 |------|---------|-----------|-------|----------|------|
-| tts | seed_tts_eval_en | 2.48 | 67.25 | [1] | |
-| tts | seed_tts_eval_zh | 1.06(1.03) | 75.98(76.1) | [2] | |
+| tts | seed_tts_eval_en | 2.12 | 67.27 | [1] | |
+| tts | seed_tts_eval_zh | 1.08(1.03) | 76.00(76.1) | [2] | |
 
 ---
 

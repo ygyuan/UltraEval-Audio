@@ -20,8 +20,8 @@ Update (2025/12/17): results may change as [FunAudioLLM/CosyVoice](https://githu
 
 | task | dataset | WER/CER⬇️ | SIM⬆️ | eval_cli | note |
 |------|---------|-----------|-------|----------|------|
-| tts | seed_tts_eval_en | 2.14(2.24) | 69.45(71.8) | [1] | |
-| tts | seed_tts_eval_zh | 1.14(1.21) | 77.55(78.0) | [2] | |
+| tts | seed_tts_eval_en | 1.59(2.24) | 69.48(71.8) | [1] | |
+| tts | seed_tts_eval_zh | 1.11(1.21) | 77.57(78.0) | [2] | |
 
 ---
 

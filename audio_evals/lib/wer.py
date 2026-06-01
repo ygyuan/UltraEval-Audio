@@ -61,4 +61,11 @@ def compute_wer(refs, hyps, language="13a"):
             print(f"pred_items:\n{pred_items}\n{len(ref_items)}\n{ref_items[0]}")
         distance += ed.eval(ref_items, pred_items)
         ref_length += len(ref_items)
+    if ref_length == 0:
+        # Reference is empty after normalization / tokenization (e.g. the
+        # ground-truth transcript is blank or contains only punctuation /
+        # filler that the normalizer strips).  WER / CER is undefined in
+        # that case, so raise a clear error instead of dividing by zero;
+        # callers (eval_task._run) catch it and skip the sample.
+        raise ValueError("empty reference: WER/CER is undefined when ref_length == 0")
     return distance / ref_length

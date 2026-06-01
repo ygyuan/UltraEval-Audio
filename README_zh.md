@@ -33,7 +33,20 @@ UltraEval-Audio——全球首个同时支持语音理解和语音生成评估�
 
 # 更新日志🔥
 
-<<<<<<< HEAD
+- [2026/05/22]
+  - 支持 **MiMo-V2.5-ASR** 评测：见 [mimo-asr](replication/mimo-asr.md)（`--model mimo-asr-en` / `--model mimo-asr-zh`）
+- [2026/05/19]
+  - 支持 **GLM-ASR** 评测：见 [GLM-ASR](replication/GLM-ASR.md)（`--model glm-asr-en` / `--model glm-asr-zh`）
+- [2026/05/18]
+  - 支持 **VibeVoice** 评测：见 [VibeVoice](replication/VibeVoice.md)（TTS + ASR-en/zh）
+- [2026/05/08]
+  - 支持 **FunAudio-Chat** 评测：见 [funaudio_chat](replication/funaudio_chat.md)
+- [2026/04/24]
+  - 支持 **MiMo-Audio** 评测：见 [mimo-audio](replication/mimo-audio.md)
+- [2026/04/20]
+  - 新增 **[Fish Speech S2 Pro](replication/fishaudio-s2-pro.md)** 评测复现，覆盖 Seed-TTS-Eval 以及 MiniMax 多语言 TTS Benchmark（22 种语言）
+- [2026/04/13]
+  - 支持 **OmniVoice** TTS 评测：见 [OmniVoice](replication/OmniVoice.md)
 - [2026/04/10]
   - 支持 **[VoxCPM2](replication/VoxCPM2.md)** TTS 评测与复现
 - [2026/04/09]
@@ -42,10 +55,6 @@ UltraEval-Audio——全球首个同时支持语音理解和语音生成评估�
   - 支持 **MiniCPM-o 4.5 (9B)** 评测：`--model MiniCPMo4_5-audio` 用于语音理解，`--model MiniCPMo4_5-speech` 用于语音生成
 - [2026/03/13]
   - 支持 **[Fish-Speech](replication/fishspeech.md)** 的评测和复现
-=======
-- [2026/04/20]
-  - 新增 **[Fish Speech S2 Pro](replication/fishaudio-s2-pro.md)** 评测复现，覆盖 Seed-TTS-Eval 以及 MiniMax 多语言 TTS Benchmark（22 种语言）
->>>>>>> upstream/main
 - [2026/02/03]
   - 支持 **[Qwen3-TTS](replication/qwen3_tts.md)** 评测
   - GPU 并行加速，提升评测/推理速度
@@ -126,9 +135,9 @@ UltraEval-Audio——全球首个同时支持语音理解和语音生成评估�
 | **GPT-4o-Realtime**             |      **51.60**      |    **69.70**    |     **74.00**     |        70.05        |  **98.69**  |           4.29\|3.44\|4.26           |         **74.00**         |
 | **Qwen3-Omni-30B-A3B-Instruct** |           51.50           |         55.27         |          67.97          |        47.83        |       40.27       |      **4.44**\|3.45\|4.12      |              57.15              |
 | **Qwen2.5-Omni**                |           38.89           |         39.94         |          54.00          |   **73.72**   |       95.65       | 4.23\|**3.48**\|**4.27** |              63.68              |
-| **MiniCPM-o 4.5 (9B)**          |           -           |         -         |          -          |        -        |       -       |           -\|-\|-           |              -              |
-| **MiniCPM-o 2.6**               |           40.00           |         40.20         |          51.00          |        51.37        |       80.68       |           4.12\|3.39\|4.02           |              56.69              |
-| **Kimi-Audio-7B-Instruct**      |           33.69           |         38.20         |          34.40          |        71.25        |       97.42       |           2.94\|3.22\|3.62           |              56.69              |
+| **MiniCPM-o 4.5 (9B)**          |           39.09           |         45.70         |          -          |        69.29        |       -       |           -\|-\|-           |              -              |
+| **MiniCPM-o 2.6**               |           40.00           |         40.20         |          51.00          |        50.28        |       80.68       |           4.12\|3.39\|4.02           |              56.69              |
+| **Kimi-Audio-7B-Instruct**      |           33.69           |         38.20         |          34.40          |        67.77        |       97.42       |           2.94\|3.22\|3.62           |              56.69              |
 | **Step-Audio-2-mini**            |           41.78           |         41.11         |          -          |        72.08        |       -       |           -\|-\|-           |              -              |
 | **GLM-4-Voice**                 |           32.00           |         36.40         |          51.00          |        52.61        |       71.06       |           4.21\|3.46\|4.07           |              53.56              |
 

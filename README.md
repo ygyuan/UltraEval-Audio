@@ -33,7 +33,20 @@ UltraEval-Audio — The world's first open-source framework supporting both spee
 
 # Changelog🔥
 
-<<<<<<< HEAD
+- [2026/05/22]
+  - Support **MiMo-V2.5-ASR** evaluation: see [mimo-asr](replication/mimo-asr.md) (`--model mimo-asr-en` / `--model mimo-asr-zh`)
+- [2026/05/19]
+  - Support **GLM-ASR** evaluation: see [GLM-ASR](replication/GLM-ASR.md) (`--model glm-asr-en` / `--model glm-asr-zh`)
+- [2026/05/18]
+  - Support **VibeVoice** evaluation: see [VibeVoice](replication/VibeVoice.md) (TTS + ASR-en/zh)
+- [2026/05/08]
+  - Support **FunAudio-Chat** evaluation: see [funaudio_chat](replication/funaudio_chat.md)
+- [2026/04/24]
+  - Support **MiMo-Audio** evaluation: see [mimo-audio](replication/mimo-audio.md)
+- [2026/04/20]
+  - Support **[Fish Speech S2 Pro](replication/fishaudio-s2-pro.md)** evaluation, including Seed-TTS-Eval and MiniMax multilingual TTS benchmarks (22 languages)
+- [2026/04/13]
+  - Support **OmniVoice** TTS evaluation: see [OmniVoice](replication/OmniVoice.md)
 - [2026/04/10]
   - Support **[VoxCPM2](replication/VoxCPM2.md)** TTS evaluation and replication
 - [2026/04/09]
@@ -42,10 +55,6 @@ UltraEval-Audio — The world's first open-source framework supporting both spee
   - Support **MiniCPM-o 4.5 (9B)** evaluation: `--model MiniCPMo4_5-audio` for speech understanding, `--model MiniCPMo4_5-speech` for speech generation
 - [2026/03/13]
   - Support **[Fish-Speech](replication/fishspeech.md)** TTS evaluation and replication
-=======
-- [2026/04/20]
-  - Support **[Fish Speech S2 Pro](replication/fishaudio-s2-pro.md)** evaluation, including Seed-TTS-Eval and MiniMax multilingual TTS benchmarks (22 languages)
->>>>>>> upstream/main
 - [2026/02/03]
   - Support **[Qwen3-TTS](replication/qwen3_tts.md)** evaluation
   - GPU parallel acceleration for faster evaluation/inference
@@ -126,9 +135,9 @@ UltraEval-Audio — The world's first open-source framework supporting both spee
 | **GPT-4o-Realtime**             |      **51.60**      |    **69.70**    |     **74.00**     |        70.05        |  **98.69**  |           4.29\|3.44\|4.26           |         **74.00**         |
 | **Qwen3-Omni-30B-A3B-Instruct** |           51.50           |         55.27         |          67.97          |        47.83        |       40.27       |      **4.44**\|3.45\|4.12      |              57.15              |
 | **Qwen2.5-Omni**                |           38.89           |         39.94         |          54.00          |   **73.72**   |       95.65       | 4.23\|**3.48**\|**4.27** |              63.68              |
-| **MiniCPM-o 4.5 (9B)**          |           -           |         -         |          -          |        -        |       -       |           -\|-\|-           |              -              |
-| **MiniCPM-o 2.6**               |           40.00           |         40.20         |          51.00          |        49.22        |       80.68       |           4.12\|3.39\|4.02           |              56.69              |
-| **Kimi-Audio-7B-Instruct**      |           33.69           |         38.20         |          34.40          |        66.98        |       97.42       |           2.94\|3.22\|3.62           |              56.69              |
+| **MiniCPM-o 4.5 (9B)**          |           39.09           |         45.70         |          -          |        69.29        |       -       |           -\|-\|-           |              -              |
+| **MiniCPM-o 2.6**               |           40.00           |         40.20         |          51.00          |        50.28        |       80.68       |           4.12\|3.39\|4.02           |              56.69              |
+| **Kimi-Audio-7B-Instruct**      |           33.69           |         38.20         |          34.40          |        67.77        |       97.42       |           2.94\|3.22\|3.62           |              56.69              |
 | **Step-Audio-2-mini**            |           41.78           |         41.11         |          -          |        72.08        |       -       |           -\|-\|-           |              -              |
 | **GLM-4-Voice**                 |           32.00           |         36.40         |          51.00          |        52.61        |       71.06       |           4.21\|3.46\|4.07           |              53.56              |
 

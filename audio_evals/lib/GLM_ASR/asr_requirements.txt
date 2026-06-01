@@ -1,0 +1,29 @@
+# GLM-ASR (e.g. GLM-ASR-Nano-2512) isolated environment.
+# Reference: init_model/zai-org/GLM-ASR-Nano-2512/README.md
+#
+# GLM-ASR-Nano-2512 ships as ``GlmAsrForConditionalGeneration`` which is
+# only registered in the transformers 5.x release line (``transformers/
+# models/glmasr``).  We therefore pin transformers to a 5.x release that
+# is verified to expose ``GlmAsrForConditionalGeneration`` and
+# ``GlmAsrProcessor.apply_transcription_request`` -- this lets pip pull a
+# regular wheel from the configured PyPI mirror instead of cloning from
+# GitHub (which is not always reachable from the build host).
+#
+# torch is pinned to a CUDA 12.4 wheel that is compatible with the host's
+# NVIDIA driver (>= 525).  Adjust if your environment differs.
+torch==2.6.0
+torchaudio==2.6.0
+torchcodec
+accelerate
+numpy
+scipy
+librosa
+soundfile
+tqdm
+sentencepiece
+tiktoken
+protobuf
+# ``GlmAsrForConditionalGeneration`` / ``apply_transcription_request`` are
+# available starting from transformers 5.x (verified on 5.8.1).  Stay on
+# the 5.x line to avoid potentially breaking 6.x changes.
+transformers>=5.8.1,<6.0

@@ -22,3 +22,24 @@ mini-omni:
   class: audio_evals.models.mini_omni.MiniOmni
   args:
     url: http://127.0.0.1:32213/chat
+
+glm-4-voice:
+  class: audio_evals.models.glm4voice.GLM4Voice
+  args:
+    # The ultraeval_adapter_server.py FastAPI service.
+    # Start it with:
+    #   python third_party/GLM-4-Voice/ultraeval_adapter_server.py \
+    #       --host 127.0.0.1 --port 10001 \
+    #       --glm-server-url http://127.0.0.1:10000/generate_stream \
+    #       --model-path     init_model/zai-org/glm-4-voice-9b \
+    #       --tokenizer-path init_model/zai-org/glm-4-voice-tokenizer \
+    #       --flow-path      init_model/zai-org/glm-4-voice-decoder
+    url: http://127.0.0.1:10001/generate_stream
+    sample_params:
+      # ASR / S2TT / Emotion are deterministic tasks.  The adapter server
+      # additionally forces temperature=0 / top_p=1 / max_new_tokens<=512
+      # for any text-only task, so these are mostly the S2S defaults.
+      temperature: 0.0
+      top_p: 1.0
+      max_new_tokens: 2000
+

@@ -1,0 +1,286 @@
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/fishspeech/seed_tts_eval_zh/2026-03-13_15-18-38-overall.json ===
+{'wer%': 0.9722336658943984, 'simo(%)': 73.27915314105478, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/fishspeech/seed_tts_eval_en/2026-03-13_15-18-17-overall.json ===
+{'wer%': 1.3943880108861728, 'simo(%)': 65.15159225091338, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/fishspeech/seed_tts_eval_en/2026-03-13_17-12-53-overall.json ===
+{'wer%': 1.1174442642733082, 'simo(%)': 65.15091124593336, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/glm-asr-zh/fleurs-zh/2026-05-19_14-33-34-overall.json ===
+{'wer(%)': 3.3659353246982113, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/glm-asr-zh/asr_shipinhao_long/2026-05-19_16-30-54-overall.json ===
+{'wer(%)': 4.343046578685345, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/glm-asr-zh/KeSpeech/2026-05-19_15-26-03-overall.json ===
+{'wer(%)': 9.18272415883174, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/glm-asr-zh/asr_badcase/2026-05-19_16-46-24-overall.json ===
+{'wer(%)': 17.159343558866023, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/glm-asr-zh/WenetSpeech-test-net/2026-05-19_14-36-57-overall.json ===
+{'wer(%)': 6.610750164779847, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/glm-asr-zh/asr_lianghui/2026-05-19_15-50-45-overall.json ===
+{'wer(%)': 6.142473407112925, 'fail_rate(4)': 0.03507233669443227}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/glm-asr-zh/asr_qunliao_eyi/2026-05-19_16-19-33-overall.json ===
+{'wer(%)': 9.514257856961846, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/glm-asr-zh/WenetSpeech-test-meeting/2026-05-19_15-10-09-overall.json ===
+{'wer(%)': 8.42524259506368, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/glm-asr-zh/asr_shipinhao_fangyan/2026-05-19_16-03-41-overall.json ===
+{'wer(%)': 42.803139306736426, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/indextts2/seed_tts_eval_zh/2026-03-12_12-46-45-overall.json ===
+{'wer%': 1.0420555263572933, 'simo(%)': 76.08940755671793, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/indextts2/seed_tts_eval_en/2026-03-12_16-36-48-overall.json ===
+{'wer%': 1.381149397747581, 'simo(%)': 70.3173737781232, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-speech/speech-cmmlu/2026-03-26_14-26-34-overall.json ===
+{'acc(%)': 51.82019626464071, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-speech/speech-triviaqa/2026-03-30_16-10-04-overall.json ===
+{'acc(%)': 49.70703125, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-speech/speech-web-questions/2026-03-27_17-47-08-overall.json ===
+{'acc(%)': 44.09448818897638, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-speech/speech-chatbot-alpaca-eval/2026-04-01_00-51-32-overall.json ===
+{'fail_rate(198)': 100.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo4_5-speech/speech-cmmlu/2026-03-30_19-25-24-overall.json ===
+{'acc(%)': 69.29408040519152, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo4_5-speech/speech-triviaqa/2026-03-30_20-14-50-overall.json ===
+{'acc(%)': 45.703125, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo4_5-speech/speech-web-questions/2026-03-30_19-49-00-overall.json ===
+{'acc(%)': 39.09404234367307, 'fail_rate(1)': 0.049212598425196846}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-tts-1.7b-base/seed_tts_eval_zh/2026-03-11_17-55-19-overall.json ===
+{'wer%': 0.9538961119857817, 'simo(%)': 76.87702978454014, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-tts-1.7b-base/seed_tts_eval_en/2026-03-11_16-42-43-overall.json ===
+{'wer%': 1.1960201122046927, 'simo(%)': 71.28584610353059, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-tts-1.7b-base/seed_tts_eval_en/2026-03-11_15-29-29-overall.json ===
+{'wer%': 1.577240964473339, 'simo(%)': 71.45478609839783, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/vibevoice-asr-zh/fleurs-zh/2026-05-18_13-39-56-overall.json ===
+{'wer(%)': 5.045965870708139, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/vibevoice-asr-zh/asr_shipinhao_long/2026-05-18_19-49-59-overall.json ===
+{'wer(%)': 9.70854508515157, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/vibevoice-asr-zh/KeSpeech/2026-05-18_12-33-50-overall.json ===
+{'wer(%)': 30.642558110032, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/vibevoice-asr-zh/asr_badcase/2026-05-18_20-41-32-overall.json ===
+{'wer(%)': 27.264626750754807, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/vibevoice-asr-zh/WenetSpeech-test-net/2026-05-18_10-36-13-overall.json ===
+{'wer(%)': 14.751961061254645, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/vibevoice-asr-zh/asr_lianghui/2026-05-18_17-56-57-overall.json ===
+{'wer(%)': 11.00450362247895, 'fail_rate(8743)': 76.65935992985533}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/vibevoice-asr-zh/asr_qunliao_eyi/2026-05-18_19-18-18-overall.json ===
+{'wer(%)': 12.93279328577135, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/vibevoice-asr-zh/WenetSpeech-test-meeting/2026-05-18_11-54-57-overall.json ===
+{'wer(%)': 18.432686110581592, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/vibevoice-asr-zh/asr_shipinhao_fangyan/2026-05-18_18-15-56-overall.json ===
+{'wer(%)': 60.24198822759974, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo2_6-audio/fleurs-zh/2026-03-26_15-49-54-overall.json ===
+{'wer(%)': 2.593473727494346, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo2_6-audio/fleurs-en_us/2026-03-26_16-14-12-overall.json ===
+{'wer(%)': 5.772864040305087, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo2_6-audio/tedlium-release1/2026-03-27_05-23-15-overall.json ===
+{'wer(%)': 3.1836532332318153, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo2_6-audio/sample/2026-03-18_15-23-25-overall.json ===
+{'wer(%)': 13.88888888888889, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo2_6-audio/KeSpeech/2026-03-27_01-04-13-overall.json ===
+{'wer(%)': 23.27854756635609, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo2_6-audio/WenetSpeech-test-net/2026-03-26_17-32-24-overall.json ===
+{'wer(%)': 7.267455195574966, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo2_6-audio/meld-emo/2026-03-27_14-38-42-overall.json ===
+{'acc(%)': 51.418711656441715, 'fail_rate(%d)': 0.07662835249042146}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo2_6-audio/covost2-en-zh/2026-03-27_07-26-13-overall.json ===
+{'bleu': 32.213846710253506, 'fail_rate(%d)': 0.012878300064391501}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo2_6-audio/covost2-zh-en/2026-03-27_05-53-13-overall.json ===
+{'bleu': 25.62699085861658, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo2_6-audio/WenetSpeech-test-meeting/2026-03-26_23-01-25-overall.json ===
+{'wer(%)': 15.743943066183746, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/vibevioce_tts/seed_tts_eval_zh/2026-04-20_14-15-56-overall.json ===
+{'cer%': 2.5773157975483927, 'simo(%)': 68.88079284404469, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/vibevioce_tts/seed_tts_eval_en/2026-04-20_11-12-46-overall.json ===
+{'wer%': 4.874692605729045, 'simo(%)': 59.62462187890196, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/voxcpm-vc/seed_tts_eval_zh/2026-03-12_17-18-57-overall.json ===
+{'wer%': 0.9865354479433287, 'simo(%)': 77.25353614676116, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/voxcpm-vc/seed_tts_eval_en/2026-03-12_17-30-50-overall.json ===
+{'wer%': 1.5312694862327216, 'simo(%)': 73.2038686887416, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/kimiaudio-speech/speech-cmmlu/2026-03-28_18-39-16-overall.json ===
+{'acc(%)': 67.77461221905666, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-tts-0.6b-base/seed_tts_eval_zh/2026-03-11_17-12-17-overall.json ===
+{'wer%': 1.0143561221195523, 'simo(%)': 76.56950781821496, 'fail_rate(%d)': 0.09900990099009901}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-tts-0.6b-base/seed_tts_eval_en/2026-03-11_16-07-54-overall.json ===
+{'wer%': 1.2141619793974365, 'simo(%)': 70.48304150034076, 'fail_rate(%d)': 0.4595588235294118}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-tts-0.6b-base/seed_tts_eval_en/2026-03-11_15-02-23-overall.json ===
+{'wer%': 1.8227472198601091, 'simo(%)': 70.82420513855622, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-asr-en/fleurs-en_us/2026-05-22_19-34-58-overall.json ===
+{'wer(%)': 2.2111818627107973, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-asr-en/tedlium-release1/2026-05-22_19-40-12-overall.json ===
+{'wer(%)': 2.415185211417239, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/omnivoice/seed_tts_eval_zh/2026-04-13_10-58-05-overall.json ===
+{'cer%': 0.8476820032242812, 'simo(%)': 76.82908584870914, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/omnivoice/seed_tts_eval_en/2026-04-13_10-09-01-overall.json ===
+{'wer%': 0.9751211819226524, 'simo(%)': 73.60153001020936, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-asr-zh/fleurs-zh/2026-05-22_16-52-59-overall.json ===
+{'wer(%)': 1.3481363996827915, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-asr-zh/asr_shipinhao_long/2026-05-22_21-21-39-overall.json ===
+{'wer(%)': 3.8017484992719384, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-asr-zh/KeSpeech/2026-05-22_18-47-19-overall.json ===
+{'wer(%)': 7.744245380093878, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-asr-zh/asr_badcase/2026-05-22_21-54-48-overall.json ===
+{'wer(%)': 15.60734646561643, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-asr-zh/WenetSpeech-test-net/2026-05-22_17-01-04-overall.json ===
+{'wer(%)': 5.374358082904181, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-asr-zh/asr_lianghui/2026-05-22_19-47-30-overall.json ===
+{'wer(%)': 5.365423874503062, 'fail_rate(4)': 0.03507233669443227}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-asr-zh/asr_qunliao_eyi/2026-05-22_20-58-10-overall.json ===
+{'wer(%)': 7.418208994970342, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-asr-zh/WenetSpeech-test-meeting/2026-05-22_18-17-51-overall.json ===
+{'wer(%)': 5.935749752639271, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-asr-zh/asr_shipinhao_fangyan/2026-05-22_20-21-04-overall.json ===
+{'wer(%)': 33.24656638325703, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-audio/fleurs-zh/2026-04-28_03-25-52-overall.json ===
+{'wer(%)': 7.366287778658913, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-audio/fleurs-en_us/2026-04-28_04-17-48-overall.json ===
+{'wer(%)': 21.51004128472465, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-audio/tedlium-release1/2026-04-28_03-51-03-overall.json ===
+{'wer(%)': 16.364473404632058, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-audio/speech-cmmlu/2026-04-28_04-36-33-overall.json ===
+{'acc(%)': 54.82747704969927, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-audio/KeSpeech/2026-04-28_01-35-31-overall.json ===
+{'wer(%)': 21.83971639203304, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-audio/WenetSpeech-test-net/2026-04-27_18-53-32-overall.json ===
+{'wer(%)': 11.941166955182297, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-audio/meld-emo/2026-04-24_02-17-16-overall.json ===
+{'acc(%)': 44.67432950191571, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-audio/covost2-en-zh/2026-04-24_01-00-46-overall.json ===
+{'bleu': 26.338758733442567, 'fail_rate(1)': 0.006439150032195751}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-audio/speech-triviaqa/2026-04-25_09-57-37-overall.json ===
+{'acc(%)': 33.88671875, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-audio/speech-web-questions/2026-04-24_20-48-56-overall.json ===
+{'acc(%)': 37.79527559055118, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-audio/covost2-zh-en/2026-04-24_00-22-28-overall.json ===
+{'bleu': 14.233365529535504, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/mimo-audio/WenetSpeech-test-meeting/2026-04-28_00-41-54-overall.json ===
+{'wer(%)': 9.839510543467407, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/funaudio_chat/fleurs-zh/2026-05-08_11-50-30-overall.json ===
+{'wer(%)': 12.952683055775841, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/funaudio_chat/fleurs-en_us/2026-05-08_12-21-48-overall.json ===
+{'wer(%)': 7.326289272969001, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/funaudio_chat/tedlium-release1/2026-05-08_12-04-51-overall.json ===
+{'wer(%)': 4.5258162759402225, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/funaudio_chat/speech-cmmlu/2026-05-08_16-30-39-overall.json ===
+{'acc(%)': 71.09844887622666, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/funaudio_chat/KeSpeech/2026-05-08_10-30-55-overall.json ===
+{'wer(%)': 12.67602159480146, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/funaudio_chat/WenetSpeech-test-net/2026-05-07_16-29-06-overall.json ===
+{'wer(%)': 21.773876177300703, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/funaudio_chat/meld-emo/2026-05-08_14-37-19-overall.json ===
+{'acc(%)': 39.6551724137931, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/funaudio_chat/covost2-en-zh/2026-05-08_13-17-01-overall.json ===
+{'bleu': 24.094124705679906, 'fail_rate(1)': 0.006439150032195751}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/funaudio_chat/speech-triviaqa/2026-05-08_15-55-37-overall.json ===
+{'acc(%)': 43.84765625, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/funaudio_chat/speech-web-questions/2026-05-08_14-49-37-overall.json ===
+{'acc(%)': 42.76574803149607, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/funaudio_chat/covost2-zh-en/2026-05-08_12-34-32-overall.json ===
+{'bleu': 10.003116207960437, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/funaudio_chat/WenetSpeech-test-meeting/2026-05-07_18-21-53-overall.json ===
+{'wer(%)': 12.610404582300772, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo2_6-speech/speech-cmmlu/2026-03-27_14-56-25-overall.json ===
+{'acc(%)': 50.28499050031665, 'fail_rate(%d)': 0.03165558721114277}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo2_6-speech/speech-triviaqa/2026-03-31_19-52-27-overall.json ===
+{'acc(%)': 41.2109375, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo2_6-speech/speech-web-questions/2026-03-31_10-46-04-overall.json ===
+{'acc(%)': 40.55118110236221, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/voxcpm2-vc/seed_tts_eval_zh/2026-04-10_13-22-13-overall.json ===
+{'cer%': 0.9917325582276787, 'simo(%)': 61.89591352302249, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/voxcpm2-vc/seed_tts_eval_en/2026-04-10_12-50-31-overall.json ===
+{'wer%': 1.1487830490587843, 'simo(%)': 54.587969004505254, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/vibevoice-asr-en/fleurs-en_us/2026-05-18_14-05-34-overall.json ===
+{'wer(%)': 6.094744944370583, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/vibevoice-asr-en/tedlium-release1/2026-05-18_13-51-58-overall.json ===
+{'wer(%)': 3.2969757064947944, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/glmtts/seed_tts_eval_zh/2026-03-12_16-26-00-overall.json ===
+{'wer%': 1.0802617001866213, 'simo(%)': 75.99622033610203, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/glmtts/seed_tts_eval_en/2026-03-12_16-05-52-overall.json ===
+{'wer%': 2.12409142822262, 'simo(%)': 67.27323033846915, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/cosyvoice3-latest/seed_tts_eval_zh/2026-03-11_19-20-50-overall.json ===
+{'wer%': 1.1138335838509712, 'simo(%)': 77.57373018430012, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/cosyvoice3-latest/seed_tts_eval_en/2026-03-11_17-51-44-overall.json ===
+{'wer%': 1.5931406981498895, 'simo(%)': 69.48087049976867, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/Step-Audio-2-mini/fleurs-zh/2026-04-08_15-02-48-overall.json ===
+{'wer(%)': 8.041824536669898, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/Step-Audio-2-mini/fleurs-en_us/2026-04-08_16-56-23-overall.json ===
+{'wer(%)': 5.94080190329578, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/Step-Audio-2-mini/tedlium-release1/2026-04-08_15-59-51-overall.json ===
+{'wer(%)': 3.4457114526524544, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/Step-Audio-2-mini/speech-cmmlu/2026-04-08_22-33-37-overall.json ===
+{'acc(%)': 72.07977207977207, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/Step-Audio-2-mini/KeSpeech/2026-04-08_11-32-04-overall.json ===
+{'wer(%)': 4.04162496652242, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/Step-Audio-2-mini/WenetSpeech-test-net/2026-04-07_14-17-11-overall.json ===
+{'wer(%)': 6.282880520728459, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/Step-Audio-2-mini/meld-emo/2026-04-08_21-57-38-overall.json ===
+{'acc(%)': 55.47892720306513, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/Step-Audio-2-mini/covost2-en-zh/2026-04-08_19-25-54-overall.json ===
+{'bleu': 49.20089086180295, 'fail_rate(1)': 0.006439150032195751}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/Step-Audio-2-mini/speech-triviaqa/2026-04-09_05-05-59-overall.json ===
+{'acc(%)': 41.11328125, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/Step-Audio-2-mini/speech-web-questions/2026-04-08_23-31-38-overall.json ===
+{'acc(%)': 41.781496062992126, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/Step-Audio-2-mini/covost2-zh-en/2026-04-08_17-42-51-overall.json ===
+{'bleu': 24.463920450212775, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/Step-Audio-2-mini/WenetSpeech-test-meeting/2026-04-08_09-06-31-overall.json ===
+{'wer(%)': 5.517278941205305, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-audio/fleurs-zh/2026-03-26_19-39-40-overall.json ===
+{'wer(%)': 2.6350616122106874, 'fail_rate(%d)': 0.21164021164021166}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-audio/fleurs-en_us/2026-03-25_11-38-33-overall.json ===
+{'wer(%)': 4.800223917150654, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-audio/tedlium-release1/2026-03-25_10-25-50-overall.json ===
+{'wer(%)': 2.843685813442878, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-audio/speech-cmmlu/2026-03-26_10-30-44-overall.json ===
+{'acc(%)': 81.8613485280152, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-audio/KeSpeech/2026-03-26_10-29-56-overall.json ===
+{'wer(%)': 5.699646194832471, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-audio/WenetSpeech-test-net/2026-03-25_10-38-18-overall.json ===
+{'wer(%)': 4.8180902921130215, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-audio/meld-emo/2026-03-25_15-37-43-overall.json ===
+{'acc(%)': 56.24521072796935, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-audio/covost2-en-zh/2026-03-25_18-37-10-overall.json ===
+{'bleu': 46.53296165028935, 'fail_rate(%d)': 0.006439150032195751}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-audio/librispeech-test-clean/2026-03-24_19-23-46-overall.json ===
+{'wer(%)': 1.316956283843701, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-audio/covost2-zh-en/2026-03-25_15-27-06-overall.json ===
+{'bleu': 29.47263913135663, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/qwen3-omni-audio/WenetSpeech-test-meeting/2026-03-26_00-08-44-overall.json ===
+{'wer(%)': 6.060564799433567, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo4_5-audio/fleurs-zh/2026-03-27_15-07-20-overall.json ===
+{'wer(%)': 2.4759890739272183, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo4_5-audio/fleurs-en_us/2026-03-30_12-52-05-overall.json ===
+{'wer(%)': 3.918550136449514, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo4_5-audio/tedlium-release1/2026-03-30_12-33-06-overall.json ===
+{'wer(%)': 2.6524541398116015, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo4_5-audio/KeSpeech/2026-03-30_11-47-31-overall.json ===
+{'wer(%)': 7.519064601158678, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo4_5-audio/WenetSpeech-test-net/2026-03-30_14-12-58-overall.json ===
+{'wer(%)': 6.23460843868002, 'fail_rate(1)': 0.00403648986841043}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo4_5-audio/meld-emo/2026-03-30_16-11-03-overall.json ===
+{'acc(%)': 54.406130268199234, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo4_5-audio/covost2-en-zh/2026-03-30_15-31-44-overall.json ===
+{'bleu': 43.257972611588954, 'fail_rate(1)': 0.006439150032195751}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo4_5-audio/covost2-zh-en/2026-03-30_15-06-05-overall.json ===
+{'bleu': 25.06893422378783, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/MiniCPMo4_5-audio/WenetSpeech-test-meeting/2026-03-30_11-11-07-overall.json ===
+{'wer(%)': 7.2442653159409245, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/kimiaudio/fleurs-zh/2026-03-28_04-30-17-overall.json ===
+{'wer(%)': 2.5435427497283167, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/kimiaudio/fleurs-zh/2026-03-27_11-54-29-overall.json ===
+{'wer(%)': 2.5435427497283167, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/kimiaudio/fleurs-en_us/2026-03-27_12-30-18-overall.json ===
+{'wer(%)': 5.206073752711497, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/kimiaudio/tedlium-release1/2026-03-28_04-59-15-overall.json ===
+{'wer(%)': 3.091578723705645, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/kimiaudio/KeSpeech/2026-03-27_23-50-16-overall.json ===
+{'wer(%)': 5.018465528663857, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/kimiaudio/WenetSpeech-test-net/2026-03-27_14-11-02-overall.json ===
+{'wer(%)': 5.469000866754067, 'fail_rate(%d)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/kimiaudio/meld-emo/2026-03-28_11-40-16-overall.json ===
+{'acc(%)': 45.28735632183908, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/kimiaudio/covost2-en-zh/2026-03-30_13-20-15-overall.json ===
+{'bleu': 35.0742591281363, 'fail_rate(1)': 0.006439150032195751}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/kimiaudio/covost2-zh-en/2026-03-30_10-49-50-overall.json ===
+{'bleu': 14.601843570376255, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/kimiaudio/WenetSpeech-test-meeting/2026-03-27_20-50-24-overall.json ===
+{'wer(%)': 6.367382878098818, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/glm-asr-en/fleurs-en_us/2026-05-19_15-44-10-overall.json ===
+{'wer(%)': 6.003778601917291, 'fail_rate(0)': 0.0}
+=== /apdcephfs_qy3/share_301069248/users/yougenyuan/workspace/github/UltraEval-Audio/res/glm-asr-en/tedlium-release1/2026-05-19_15-46-54-overall.json ===
+{'wer(%)': 3.102202705574049, 'fail_rate(0)': 0.0}

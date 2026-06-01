@@ -58,8 +58,8 @@
 
 | task | dataset | measure | performance | eval_cli | note |
 |------|---------|---------|-------------|----------|------|
-| speech-qa | Speech Web Questions | acc⬆️ | 51.50 | [18] | |
-| speech-qa | Speech TriviaQA | acc⬆️ | 55.27 | [19] | |
+| speech-qa | Speech Web Questions | acc⬆️ | 44.09 | [18] | |
+| speech-qa | Speech TriviaQA | acc⬆️ | 49.71 | [19] | |
 | speech-qa | Speech CMMLU | acc⬆️ | 51.82 | [20] | speech output mode |
 | speech-qa | SpeechHSK | acc⬆️ | 40.27 | [21] | |
 | speech-qa | Speech AlpacaEval | G-EVAL⬆️ | 67.97 | [22] | |

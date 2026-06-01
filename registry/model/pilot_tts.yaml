@@ -1,0 +1,39 @@
+# PilotTTS Model Configurations
+# Reference: https://github.com/AmapVoice/PilotTTS  (third_party/PilotTTS)
+# Weights: init_model/AmapVoice/PilotTTS
+
+# Base zero-shot voice cloning model (pilot_tts.pt)
+pilot_tts:
+  class: audio_evals.models.TTS.pilot_tts.PilotTTS
+  args:
+    path: init_model/AmapVoice/PilotTTS
+    repo_path: third_party/PilotTTS
+    checkpoint: pilot_tts.pt
+    config_path: configs/infer_pilot_tts.yaml
+    qwen_path: init_model/Qwen3-0.6B
+    w2v_path: init_model/w2v-bert-2.0
+    w2v_stats_path: init_model/AmapVoice/PilotTTS/wav2vec2bert_stats.pt
+    cosyvoice_path: init_model/FunAudioLLM/Fun-CosyVoice3-0.5B-2512
+    tokenizer_path: third_party/PilotTTS/tokenizer
+    language: zh
+    device: cuda
+    env_path: envs/PilotTTS
+    requirements_path: audio_evals/lib/PilotTTS/requirements.txt
+
+# Instruct model (emotion / paralanguage / dialect control)
+pilot_tts_instruct:
+  class: audio_evals.models.TTS.pilot_tts.PilotTTS
+  args:
+    path: init_model/AmapVoice/PilotTTS
+    repo_path: third_party/PilotTTS
+    checkpoint: pilot_tts_instruct.pt
+    config_path: configs/infer_pilot_tts_instruct.yaml
+    qwen_path: init_model/Qwen3-0.6B
+    w2v_path: init_model/w2v-bert-2.0
+    w2v_stats_path: init_model/AmapVoice/PilotTTS/wav2vec2bert_stats.pt
+    cosyvoice_path: init_model/FunAudioLLM/Fun-CosyVoice3-0.5B-2512
+    tokenizer_path: third_party/PilotTTS/tokenizer
+    language: zh
+    device: cuda
+    env_path: envs/PilotTTS
+    requirements_path: audio_evals/lib/PilotTTS/requirements.txt

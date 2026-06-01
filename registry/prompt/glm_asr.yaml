@@ -1,0 +1,28 @@
+# GLM-ASR (zai-org/GLM-ASR-Nano-2512) prompt configurations.
+#
+# The GLM-ASR model wrapper (audio_evals/models/asr/glm_asr.py) only
+# extracts the audio path from the prompt -- it does NOT use any text
+# instruction from the template.  The transcription target language is
+# controlled by the model's `language` argument (see registry/model/
+# glm_asr.yaml) which makes the subprocess call
+# ``GlmAsrProcessor.apply_transcription_request(language=...)`` directly.
+#
+# Therefore these prompts only need to wrap the audio entry.
+
+glm-asr-zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+
+glm-asr-en:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'

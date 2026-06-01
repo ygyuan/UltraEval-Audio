@@ -1,8 +1,19 @@
 # GLM-4-Voice Prompt Templates
-# Based on GLM-4-Voice instruction-following audio interaction style
-# NOTE: text_prompt is used as the system prompt in ultraeval_adapter_server.py
+# Based on GLM-4-Voice instruction-following audio interaction style.
+#
+# IMPORTANT (see ultraeval_adapter_server.py for details):
+#   * The OFFICIAL system prompt + ``streaming_transcription`` assistant
+#     metadata are hard-coded in the adapter server, exactly matching
+#     web_demo.py.  Do NOT try to override them here.
+#   * The user-side text below is appended AFTER the audio tokens inside
+#     the same user turn (web_demo style).  Phrase it as a chat-style
+#     command the model would have seen during training -- e.g. "please
+#     repeat the user's words" -- rather than a meta ASR instruction.
+#     Asking the model to ANSWER / EXPLAIN / SUMMARIZE confuses it.
+#   * For empty (audio-only) prompts the adapter falls back to plain
+#     spoken-QA (the default web_demo behaviour).
 
-glm4voice-asr-zh:
+glm-4-voice-asr-zh:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -11,9 +22,9 @@ glm4voice-asr-zh:
       - type: audio
         value: '{{WavPath}}'
       - type: text
-        value: 'User will provide you with a speech instruction. Do it step by step. First, think about the instruction and respond in a interleaved manner, with 13 text token followed by 26 audio tokens. Please transcribe the speech content in Chinese and output only the transcription result.'
+        value: '请原话复述我刚才说的中文话，一字不漏、不要改写、不要回答问题、不要补充说明。只输出原话文本。'
 
-glm4voice-asr-en:
+glm-4-voice-asr-en:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -22,9 +33,9 @@ glm4voice-asr-en:
       - type: audio
         value: '{{WavPath}}'
       - type: text
-        value: 'User will provide you with a speech instruction. Do it step by step. First, think about the instruction and respond in a interleaved manner, with 13 text token followed by 26 audio tokens. Please transcribe the English speech and output only the transcription.'
+        value: 'Repeat exactly what I just said in English, word for word, without paraphrasing, without answering, without adding anything. Only output the literal repeated words.'
 
-glm4voice-s2tt-zh2en:
+glm-4-voice-s2tt-zh2en:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -33,9 +44,9 @@ glm4voice-s2tt-zh2en:
       - type: audio
         value: '{{WavPath}}'
       - type: text
-        value: 'User will provide you with a speech instruction. Do it step by step. First, think about the instruction and respond in a interleaved manner, with 13 text token followed by 26 audio tokens. Please listen to the Chinese speech and translate it into English text, output only the translation.'
+        value: 'Translate the following Chinese speech into English text. Output only the English translation; do not include the original Chinese, do not add any commentary.'
 
-glm4voice-s2tt-en2zh:
+glm-4-voice-s2tt-en2zh:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -44,9 +55,9 @@ glm4voice-s2tt-en2zh:
       - type: audio
         value: '{{WavPath}}'
       - type: text
-        value: 'User will provide you with a speech instruction. Do it step by step. First, think about the instruction and respond in a interleaved manner, with 13 text token followed by 26 audio tokens. Please listen to the English speech and translate it into Chinese text, output only the translation.'
+        value: '请将下面的英文语音翻译为中文文本，只输出中文译文本身，不要输出原文也不要添加任何说明。'
 
-glm4voice-emotion:
+glm-4-voice-emotion:
   class: audio_evals.prompt.base.Prompt
   args:
     template:
@@ -55,4 +66,27 @@ glm4voice-emotion:
       - type: audio
         value: '{{WavPath}}'
       - type: text
-        value: 'User will provide you with a speech instruction. Do it step by step. First, think about the instruction and respond in a interleaved manner, with 13 text token followed by 26 audio tokens. Listen to the audio and identify the speaker emotion. The answer must be exactly one of [surprise, anger, neutral, joy, sadness, fear, disgust]. Output only the label.'
+        value: 'Listen to the following audio and identify the speaker emotion. Answer with exactly one label from [surprise, anger, neutral, joy, sadness, fear, disgust]. Output only the label, lowercase, with no extra text.'
+
+# ========== Spoken QA (S2S) ==========
+# Audio-only prompts. The GLM-4-Voice client treats empty text prompts
+# as S2S tasks: it persists the returned waveform to a wav file and
+# emits {"text": ..., "audio": "/path.wav"} so downstream
+# extract_audio + speech2text post-processing can pick it up.
+glm-4-voice-speech-qa:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+
+glm-4-voice-speech-choice-qa-zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'

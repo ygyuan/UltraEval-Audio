@@ -1,180 +1,188 @@
+"""GLM-4-Voice model client for UltraEval-Audio.
+
+This client talks to the FastAPI adapter server defined in
+``third_party/GLM-4-Voice/ultraeval_adapter_server.py`` (``/generate_stream``).
+
+The adapter expects ``{"prompt": <task instruction text>, "audio": <wav b64>}``
+and returns a JSON line with ``{"text": str, "audio": <float-list>, "sampleRate": int}``.
+
+For text-only tasks (ASR / S2TT / emotion) we just return ``text``.
+
+For S2S spoken-QA tasks (where the post-process pipeline relies on
+``extract_audio`` + ``speech2text``), we persist the returned waveform to a
+unique ``.wav`` file under ``$AUDIO_EVALS_OUTPUT_DIR/glm4voice_audio`` (falling
+back to the system tmp dir) and return a JSON string ``{"text": ..., "audio":
+"/abs/path.wav"}`` so the standard ``extract_audio`` post-processor can pick
+it up downstream.
+"""
+
 import json
 import logging
 import os
-import random
+import subprocess
 import tempfile
-from typing import Dict, List, Union
+import uuid
+from typing import Dict
 
+import numpy as np
 import requests
+import soundfile as sf
 
 from audio_evals.base import PromptStruct
 from audio_evals.models.model import APIModel
 from audio_evals.utils import get_base64_from_file
-import soundfile as sf
-import numpy as np
-from pydub import AudioSegment
-from pydub.silence import detect_silence
+
 
 logger = logging.getLogger(__name__)
 
 
-def cut_moshi_greetings(audio_file, output_file):
-    # 读取音频文件
-    audio = AudioSegment.from_file(audio_file)  # 替换为你的音频文件路径
-
-    # 检测沉默部分
-    silence_parts = detect_silence(audio, min_silence_len=1000, silence_thresh=-40)
-
-    # 打印沉默部分
-    print("检测到的沉默部分（单位：毫秒）：", audio_file, silence_parts)
-
-    # 如果有沉默部分，将其剪裁掉
-    if silence_parts:
-        non_silent_audio = audio[:1]  # 删除开场白
-        # 大于1s的沉默部分，用1s填充
-        for i in range(1, len(silence_parts)):
-            non_silent_audio += AudioSegment.silent(1000)
-            non_silent_audio += audio[silence_parts[i - 1][1]:silence_parts[i][0]]
-        non_silent_audio += AudioSegment.silent(1000)
-        non_silent_audio += audio[silence_parts[-1][1]:]  # 保留最后一个沉默后部分
-    else:
-        non_silent_audio = audio  # 如果没有检测到沉默，保留原始音频
-
-    # 保存处理后的音频
-    assert output_file.endswith(".wav"), "输出文件名必须以.wav结尾"
-    non_silent_audio.export(output_file, format="wav")  # 替换为目标文件名和格式
+# Tasks whose downstream post-processing requires a real wav file
+# (extract_audio + speech2text).  When the task instruction is empty (audio
+# only prompt template) we also assume S2S because the upstream prompt for
+# spoken-QA in registry/prompt/glm4voice.yaml has no text content.
+_S2S_KEYWORDS = (
+    "speech-qa",
+    "spoken qa",
+    "spoken-qa",
+    "speech qa",
+    "audio-only",
+)
 
 
-def save_audio_response(response, output_file, sample_rate, volume=1.0, cut_greeting=False):
-    """保存服务器返回的音频流为文件"""
-    if response.status_code == 200:
-        text = ""
-        audio_tensor = []
-        for chunk in response.iter_lines(decode_unicode=False, delimiter=b"\0"):
-            if chunk:
-                data = json.loads(chunk.decode())
-                text = data["text"]
-                token_id = data['audio']
-                if "sampleRate" in data:
-                    sample_rate = data["sampleRate"]
-                audio_tensor.append(np.array(token_id))
-        audio_tensor = np.concatenate(audio_tensor, axis=0)
-        # Handle both float32 waveform (range [-1.0, 1.0]) and int16 formats
-        if audio_tensor.dtype in (np.float32, np.float64) or (np.abs(audio_tensor).max() <= 1.0 + 1e-6 and len(audio_tensor) > 0):
-            audio_tensor = np.clip(audio_tensor, -1.0, 1.0).astype(np.float32)
-            audio_tensor *= float(volume)
-            audio_tensor = np.clip(audio_tensor, -32768, 32767).astype(np.int16)
-        else:
-            audio_tensor *= int(volume)
-            audio_tensor = np.array(audio_tensor, dtype=np.int16)
-        sf.write(output_file, audio_tensor, sample_rate)
-        if cut_greeting:
-            cut_moshi_greetings(output_file, output_file)
-        return output_file, text
-    else:
-        response_text = response.text.strip()
-        if response_text:
-            raise Exception(f"下载失败，状态码: {response.status_code}, 响应内容: {response_text[:500]}")
-        raise Exception(f"下载失败，状态码: {response.status_code}")
+def _looks_like_s2s(text_prompt: str) -> bool:
+    """Heuristic: empty prompt -> audio-only (spoken QA / choice) task."""
+    if not text_prompt or not text_prompt.strip():
+        return True
+    lowered = text_prompt.lower()
+    return any(k in lowered for k in _S2S_KEYWORDS)
 
 
-def prepare_audio_file(audio_file, target_sample_rate=24000):
-    _, file_extension = os.path.splitext(audio_file)
-    if file_extension.lower() == ".wav":
-        audio = AudioSegment.from_file(audio_file)
-        if audio.frame_rate == target_sample_rate and audio.channels == 1:
-            return None, audio_file
-    audio = AudioSegment.from_file(audio_file)
-    audio = audio.set_frame_rate(target_sample_rate).set_channels(1)
-    temp_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
-    temp_file.close()
-    audio.export(temp_file.name, format="wav")
-    return temp_file.name, temp_file.name
+def _ensure_wav(audio_file: str) -> tuple[str, bool]:
+    """Make sure the input is a 24kHz wav file expected by the GLM-4-Voice
+    speech tokenizer.  Returns (path, is_temp)."""
+    _, ext = os.path.splitext(audio_file)
+    if ext.lower() == ".wav":
+        return audio_file, False
+    tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+    tmp.close()
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", audio_file, "-ar", "24000", tmp.name],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return tmp.name, True
+
+
+def _save_waveform(waveform: np.ndarray, sample_rate: int, out_dir: str) -> str:
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, f"glm4voice_{uuid.uuid4().hex}.wav")
+    waveform = np.asarray(waveform, dtype=np.float32)
+    waveform = np.clip(waveform, -1.0, 1.0)
+    sf.write(path, waveform, sample_rate)
+    return path
+
+
+def _parse_streaming_response(response: requests.Response) -> dict:
+    """The adapter writes one JSON object terminated by ``\0``."""
+    for chunk in response.iter_lines(decode_unicode=False, delimiter=b"\0"):
+        if chunk:
+            return json.loads(chunk.decode("utf-8"))
+    raise RuntimeError("Empty response from GLM-4-Voice adapter server")
 
 
 class GLM4Voice(APIModel):
+    """Client for the GLM-4-Voice ultraeval adapter server."""
+
     def __init__(
         self,
-        url: Union[str, List[str]],
-        sr: int,
-        volume: float = 1.0,
-        cut_greeting: bool = False,
+        url: str = "http://127.0.0.1:10001/generate_stream",
         sample_params: Dict[str, any] = None,
-        *args,
-        env_path: str = None,
-        requirements_path: str = None,
-        asr_backend: str = "glm_native",
-        asr_model_path: str = "openai/whisper-large-v3",
-        asr_env_path: str = "envs/whisper",
-        asr_requirements_path: str = "audio_evals/lib/whisper/requirements.txt",
-        **kwargs,
+        audio_out_dir: str = None,
+        request_timeout: int = 1800,
     ):
         super().__init__(True, sample_params)
-        self.url = url if isinstance(url, list) else [url]
-        self.sr = sr
-        self.volume = volume
-        self.cut_greeting = cut_greeting
-        self.env_path = env_path
-        self.requirements_path = requirements_path
-        self.asr_backend = asr_backend
-        self.asr_model_path = asr_model_path
-        self.asr_env_path = asr_env_path
-        self.asr_requirements_path = asr_requirements_path
+        self.url = url
+        self.request_timeout = request_timeout
+        if audio_out_dir is None:
+            audio_out_dir = os.environ.get(
+                "GLM4VOICE_AUDIO_OUT_DIR",
+                os.path.join(tempfile.gettempdir(), "glm4voice_audio"),
+            )
+        self.audio_out_dir = audio_out_dir
 
-    def _looks_like_asr_prompt(self, text_prompt: str) -> bool:
-        normalized = text_prompt.strip().lower()
-        if not normalized:
-            return False
-        asr_keywords = [
-            "transcribe",
-            "transcription",
-            "请识别",
-            "识别这段",
-            "语音内容",
-            "转写",
-            "听写",
-        ]
-        return any(keyword in normalized for keyword in asr_keywords)
-
-    def _inference(self, prompt: PromptStruct, **kwargs) -> str:
-
-        audio_file = ""
-        text_prompt = ""
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _extract_audio_and_text(prompt: PromptStruct) -> tuple[str, str]:
+        audio_file, text_prompt = "", ""
         for content in prompt:
-            if content["role"] != "user":
+            if content.get("role") != "user":
                 continue
-            for line in content["contents"]:
-                if line["type"] == "audio" and not audio_file:
-                    audio_file = line["value"]
-                elif line["type"] == "text":
-                    text_prompt += line["value"]
+            for line in content.get("contents", []):
+                if line.get("type") == "audio" and not audio_file:
+                    audio_file = line.get("value", "")
+                elif line.get("type") == "text":
+                    if text_prompt:
+                        text_prompt = text_prompt + "\n" + line.get("value", "")
+                    else:
+                        text_prompt = line.get("value", "")
+        return audio_file, text_prompt
 
-        if self._looks_like_asr_prompt(text_prompt):
-            if self.asr_backend != "glm_native":
-                raise ValueError(
-                    f"Unsupported GLM4Voice ASR backend: {self.asr_backend}. "
-                    "Please use asr_backend='glm_native' to run native GLM-4-Voice token-based ASR."
-                )
-            logger.info(
-                "Routing GLM4Voice ASR prompt to the native GLM-4-Voice token pipeline via the adapter server."
+    # ------------------------------------------------------------------
+    # Inference
+    # ------------------------------------------------------------------
+    def _inference(self, prompt: PromptStruct, **kwargs) -> str:
+        audio_file, text_prompt = self._extract_audio_and_text(prompt)
+        if not audio_file:
+            raise ValueError("GLM-4-Voice prompt must contain an audio entry")
+
+        wav_path, is_temp = _ensure_wav(audio_file)
+        try:
+            audio_b64 = get_base64_from_file(wav_path)
+        finally:
+            if is_temp and os.path.exists(wav_path):
+                os.remove(wav_path)
+
+        # ``kwargs`` already merges ``self.sample_params`` with any per-call
+        # overrides, see ``Model.inference``.
+        payload = {
+            "prompt": text_prompt or "",
+            "audio": audio_b64,
+            "temperature": float(kwargs.get("temperature", 0.2)),
+            "top_p": float(kwargs.get("top_p", 0.8)),
+            "max_new_tokens": int(kwargs.get("max_new_tokens", 2000)),
+        }
+
+        response = requests.post(
+            self.url,
+            headers={"Content-Type": "application/json"},
+            data=json.dumps(payload),
+            stream=True,
+            timeout=self.request_timeout,
+        )
+        if response.status_code != 200:
+            raise RuntimeError(
+                f"GLM-4-Voice server {self.url} returned {response.status_code}: "
+                f"{response.text[:500]}"
             )
 
-        temp_audio_file = None
-        try:
-            temp_audio_file, normalized_audio_file = prepare_audio_file(audio_file)
-            audio_base64 = get_base64_from_file(normalized_audio_file)
-            headers = {
-                'Content-Type': 'application/json'
-            }
-            data = {
-                'prompt': text_prompt,
-                'audio': audio_base64
-            }
-            url = random.choice(self.url)
-            response = requests.post(url, headers=headers, data=json.dumps(data), stream=True)
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-                audio, text = save_audio_response(response, f.name, self.sr, self.volume, self.cut_greeting)
-                return json.dumps({"audio": audio, "text": text}, ensure_ascii=False)
-        finally:
-            if temp_audio_file and os.path.exists(temp_audio_file):
-                os.remove(temp_audio_file)
+        data = _parse_streaming_response(response)
+        text = (data.get("text") or "").strip()
+
+        if _looks_like_s2s(text_prompt):
+            waveform = data.get("audio") or []
+            sample_rate = int(data.get("sampleRate") or 22050)
+            if len(waveform) <= 1:
+                # Adapter returned a placeholder (no real audio); still emit a
+                # JSON dict so downstream extract_audio post-processing does
+                # not crash.  speech2text on a near-empty wav simply returns
+                # an empty string.
+                logger.warning(
+                    "GLM-4-Voice S2S response has no audio; writing 1-sample silent wav."
+                )
+            wav_out = _save_waveform(np.asarray(waveform, dtype=np.float32), sample_rate, self.audio_out_dir)
+            return json.dumps({"text": text, "audio": wav_out}, ensure_ascii=False)
+
+        return text

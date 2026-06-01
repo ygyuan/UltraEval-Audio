@@ -2,6 +2,19 @@ from audio_evals.evaluator.base import Evaluator
 from audio_evals.lib.wer import compute_wer
 
 
+def _is_blank_ref(label: str) -> bool:
+    """Return True if the reference is blank / whitespace only.
+
+    WER/CER is undefined when the reference token list is empty.  We
+    detect the obvious blank case here so we can raise a descriptive
+    error before ``compute_wer`` divides by zero; ``eval_task._run``
+    will catch the exception and skip the sample.  Edge cases where the
+    text is non-empty but the language-specific normalizer strips it to
+    empty are still handled defensively inside ``compute_wer``.
+    """
+    return label is None or not str(label).strip()
+
+
 class WER(Evaluator):
     def __init__(self, ignore_case: bool = False, lang="en"):
         self.ignore_case = ignore_case
@@ -11,6 +24,8 @@ class WER(Evaluator):
         pred, label = str(pred), str(label)
         if self.ignore_case:
             pred, label = pred.lower(), label.lower()
+        if _is_blank_ref(label):
+            raise ValueError("skip sample: empty reference for WER")
         return {
             "wer%": compute_wer([label], [pred], language=self.lang) * 100,
         }
@@ -24,6 +39,8 @@ class CER(Evaluator):
         pred, label = str(pred), str(label)
         if self.ignore_case:
             pred, label = pred.lower(), label.lower()
+        if _is_blank_ref(label):
+            raise ValueError("skip sample: empty reference for CER")
         return {"cer%": compute_wer([label], [pred], language="zh") * 100}
 
 
