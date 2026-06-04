@@ -12,8 +12,8 @@
 mimo-asr:
   class: audio_evals.models.asr.mimo_asr.MiMoASR
   args:
-    path: init_model/XiaomiMiMo/MiMo-V2.5-ASR
-    tokenizer_path: init_model/XiaomiMiMo/MiMo-Audio-Tokenizer
+    path: XiaomiMiMo/MiMo-V2.5-ASR
+    tokenizer_path: XiaomiMiMo/MiMo-Audio-Tokenizer
     env_path: envs/MiMo-V2.5-ASR
     requirements_path: audio_evals/lib/MiMo-V2.5-ASR/asr_requirements.txt
 
@@ -21,8 +21,8 @@ mimo-asr:
 mimo-asr-zh:
   class: audio_evals.models.asr.mimo_asr.MiMoASR
   args:
-    path: init_model/XiaomiMiMo/MiMo-V2.5-ASR
-    tokenizer_path: init_model/XiaomiMiMo/MiMo-Audio-Tokenizer
+    path: XiaomiMiMo/MiMo-V2.5-ASR
+    tokenizer_path: XiaomiMiMo/MiMo-Audio-Tokenizer
     language: zh
     env_path: envs/MiMo-V2.5-ASR
     requirements_path: audio_evals/lib/MiMo-V2.5-ASR/asr_requirements.txt
@@ -31,8 +31,8 @@ mimo-asr-zh:
 mimo-asr-en:
   class: audio_evals.models.asr.mimo_asr.MiMoASR
   args:
-    path: init_model/XiaomiMiMo/MiMo-V2.5-ASR
-    tokenizer_path: init_model/XiaomiMiMo/MiMo-Audio-Tokenizer
+    path: XiaomiMiMo/MiMo-V2.5-ASR
+    tokenizer_path: XiaomiMiMo/MiMo-Audio-Tokenizer
     language: en
     env_path: envs/MiMo-V2.5-ASR
     requirements_path: audio_evals/lib/MiMo-V2.5-ASR/asr_requirements.txt

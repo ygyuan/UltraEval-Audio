@@ -1,0 +1,39 @@
+# Mega-ASR isolated environment requirements.
+# Reference:
+#   third_party/Mega-ASR/requirements.txt
+#   audio_evals/lib/Qwen3-ASR/asr_requirements.txt
+#
+# Mega-ASR is built on top of Qwen3-ASR-1.7B; we therefore reuse the same
+# transformers / torch pinning that the Qwen3-ASR isolated environment
+# uses (transformers==4.57.6 / torch==2.6.0 cu124) -- this is required by
+# Qwen3-ASR's pyproject.toml and is the latest torch version still
+# runnable on CUDA driver 12.2 (driver 535.x).
+#
+# IMPORTANT: do NOT use the un-pinned torch==2.10.0 from
+# third_party/Mega-ASR/requirements.txt -- pip will pull cu130 wheels that
+# require driver >= 545 and abort with "NVIDIA driver on your system is
+# too old".
+torch==2.6.0
+torchaudio==2.6.0
+# Qwen3-ASR pyproject pins transformers==4.57.6
+transformers==4.57.6
+accelerate==1.12.0
+nagisa==0.2.11
+soynlp==0.0.493
+qwen-omni-utils
+qwen-asr
+librosa
+soundfile
+sox
+numpy
+scipy
+pytz
+# Mega-ASR additional dependencies
+peft
+safetensors
+psutil
+huggingface_hub
+whisper_normalizer
+editdistance
+sacrebleu==1.5.1
+zhconv

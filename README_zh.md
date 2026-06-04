@@ -33,6 +33,10 @@ UltraEval-Audio——全球首个同时支持语音理解和语音生成评估�
 
 # 更新日志🔥
 
+- [2026/06/03]
+  - 支持 **Mega-ASR** 评测：见 [Mega-ASR](replication/Mega-ASR.md)（`--model mega-asr-en` / `--model mega-asr-zh`）
+  - 支持 **Qwen3-ASR** 评测：见 [Qwen3-ASR](replication/Qwen3-ASR.md)（`--model qwen3-asr-en` / `--model qwen3-asr-zh`）
+  - 支持 **PilotTTS** 评测：见 [PilotTTS](replication/PilotTTS.md)（`--model pilot_tts`）
 - [2026/05/22]
   - 支持 **MiMo-V2.5-ASR** 评测：见 [mimo-asr](replication/mimo-asr.md)（`--model mimo-asr-en` / `--model mimo-asr-zh`）
 - [2026/05/19]

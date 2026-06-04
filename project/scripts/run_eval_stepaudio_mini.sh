@@ -1,5 +1,5 @@
-#!/bin/bash
-set -exo
+#!/usr/bin/env bash
+set -ex
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 current_dir=$(cd "${script_dir}/../.." && pwd)

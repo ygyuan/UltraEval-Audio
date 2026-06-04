@@ -33,6 +33,10 @@ UltraEval-Audio — The world's first open-source framework supporting both spee
 
 # Changelog🔥
 
+- [2026/06/03]
+  - Support **Mega-ASR** evaluation: see [Mega-ASR](replication/Mega-ASR.md) (`--model mega-asr-en` / `--model mega-asr-zh`)
+  - Support **Qwen3-ASR** evaluation: see [Qwen3-ASR](replication/Qwen3-ASR.md) (`--model qwen3-asr-en` / `--model qwen3-asr-zh`)
+  - Support **PilotTTS** evaluation: see [PilotTTS](replication/PilotTTS.md) (`--model pilot_tts`)
 - [2026/05/22]
   - Support **MiMo-V2.5-ASR** evaluation: see [mimo-asr](replication/mimo-asr.md) (`--model mimo-asr-en` / `--model mimo-asr-zh`)
 - [2026/05/19]

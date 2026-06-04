@@ -1,4 +1,5 @@
-set -exo
+#!/usr/bin/env bash
+set -ex
 current_dir=$(pwd)
 cd ${current_dir}
 #source ${current_dir}/.bashrc

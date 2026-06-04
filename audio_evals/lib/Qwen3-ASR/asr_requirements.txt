@@ -1,0 +1,25 @@
+# Qwen3-ASR isolated environment requirements.
+# Reference: third_party/Qwen3-ASR/pyproject.toml
+#
+# IMPORTANT: this host has CUDA driver 12.2 (NVIDIA-SMI 535.x), so torch is
+# pinned to the cu124 wheel that is the latest version still runnable on
+# driver 12.2.  Do NOT use torch>=2.7 unconstrained — pip will pull cu130
+# wheels that require driver >= 545 and abort with "NVIDIA driver on your
+# system is too old".
+torch==2.6.0
+torchaudio==2.6.0
+# Qwen3-ASR pyproject pins transformers==4.57.6
+transformers==4.57.6
+accelerate==1.12.0
+nagisa==0.2.11
+soynlp==0.0.493
+qwen-omni-utils
+librosa
+soundfile
+sox
+numpy
+scipy
+pytz
+# Install the local Qwen3-ASR python package (third_party/Qwen3-ASR) in
+# editable mode so the subprocess can ``from qwen_asr import Qwen3ASRModel``.
+-e ./third_party/Qwen3-ASR

@@ -1,4 +1,5 @@
-set -exo
+#!/usr/bin/env bash
+set -ex
 current_dir=$(pwd)
 cd ${current_dir}
 #source ${current_dir}/.bashrc
@@ -12,7 +13,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     for dataset in seed_tts_eval_en; do
         for model in pilot_tts; do
             for prompt in pilot-voice-clone-english; do
-                [ ! -d res/${model}/${dataset} ] && \
+                # [ ! -d res/${model}/${dataset} ] && \
                     python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 4 
             done
         done
@@ -20,7 +21,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     for dataset in seed_tts_eval_zh; do
         for model in pilot_tts; do
             for prompt in pilot-voice-clone-chinese; do
-                # [ ! -d res/${model}/${dataset} ] && \
+                [ ! -d res/${model}/${dataset} ] && \
                     python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 4 
             done
         done

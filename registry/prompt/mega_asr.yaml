@@ -1,0 +1,29 @@
+# Mega-ASR (zhifeixie/Mega-ASR) prompt configurations.
+#
+# The Mega-ASR model wrapper (audio_evals/models/asr/mega_asr.py) only
+# extracts the audio path from the prompt -- it does NOT use any text
+# instruction from the template.  The transcription target language is
+# controlled by the model's `language` argument (see
+# registry/model/mega_asr.yaml) which is forwarded through the isolated
+# subprocess to ``MegaASR.infer(language=...)`` to constrain the
+# output language.
+#
+# Therefore these prompts only need to wrap the audio entry.
+
+mega-asr-zh:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+
+mega-asr-en:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
