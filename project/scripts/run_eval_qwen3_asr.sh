@@ -5,8 +5,8 @@ cd ${current_dir}
 #source ${current_dir}/.bashrc
 #conda activate GPTSoVits
 
-stage=3
-stop_stage=3
+stage=4
+stop_stage=4
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     echo "start stage 1"
@@ -38,6 +38,17 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
         for model in qwen3-asr-zh; do
             for prompt in qwen3-asr-zh; do
                 CUDA_VISIBLE_DEVICES="0,1,2,3" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --post_process asr_strip_tags --use_model_pool --workers 4 
+            done
+        done
+    done
+fi
+
+if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
+    echo "start stage 4"
+    for dataset in asr_vid; do
+        for model in qwen3-asr; do
+            for prompt in qwen3-asr; do
+                CUDA_VISIBLE_DEVICES="0,1,2,3" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --task asr-mix --post_process asr_strip_tags --use_model_pool --workers 4
             done
         done
     done

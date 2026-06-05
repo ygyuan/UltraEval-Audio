@@ -65,3 +65,13 @@ asr-kr:
     post_process: ['json_content']
     evaluator: wer-kr
     agg: wer-kr
+
+asr-mix:
+  class: audio_evals.base.EvalTaskCfg
+  args:
+    dataset: KeSpeech
+    prompt: asr
+    model: qwen-audio
+    post_process: ['json_content']
+    evaluator: wer-mix
+    agg: wer-mix

@@ -61,6 +61,50 @@ class PracticeWER(AggPolicy):
         return {"wer(%)": compute_wer(refl, predl, self.lang) * 100}
 
 
+class MixedWER(AggPolicy):
+    """Aggregate WER/CER for a mixed-language ASR dataset.
+
+    For every sample we look at the reference: samples whose reference
+    contains any CJK character are evaluated with ``compute_wer(..., 'zh')``
+    (character level, reported as ``cer(%)``); the rest are evaluated with
+    ``compute_wer(..., 'en')`` (word level, reported as ``wer(%)``).  We
+    additionally report the overall character-level error rate so the value
+    stays comparable across the whole set.
+    """
+
+    def __init__(self, need_score_col: List[str] = None, ignore_case: bool = True):
+        super().__init__(need_score_col)
+        self.ignore_case = ignore_case
+
+    @staticmethod
+    def _is_zh(text: str) -> bool:
+        import re
+        return bool(re.search(r"[\u4e00-\u9fff]", text or ""))
+
+    def _agg(self, score_detail: List[Dict[str, any]]) -> Dict[str, float]:
+        zh_pred, zh_ref, en_pred, en_ref = [], [], [], []
+        for item in score_detail:
+            p, r = str(item["pred"]), str(item["ref"])
+            if self.ignore_case:
+                p, r = p.lower(), r.lower()
+            if self._is_zh(r):
+                zh_pred.append(p)
+                zh_ref.append(r)
+            else:
+                en_pred.append(p)
+                en_ref.append(r)
+
+        res: Dict[str, float] = {
+            "n_zh": len(zh_ref),
+            "n_en": len(en_ref),
+        }
+        if zh_ref:
+            res["cer(%)"] = compute_wer(zh_ref, zh_pred, "zh") * 100
+        if en_ref:
+            res["wer(%)"] = compute_wer(en_ref, en_pred, "en") * 100
+        return res
+
+
 class ACC(AggPolicy):
 
     def _agg(self, score_detail: List[Dict[str, any]]) -> Dict[str, float]:

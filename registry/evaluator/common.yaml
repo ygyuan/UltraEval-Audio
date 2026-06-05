@@ -19,6 +19,11 @@ wer:
   args:
     ignore_case: true
 
+wer-mix:
+  class: audio_evals.evaluator.wer.MixedWER
+  args:
+    ignore_case: true
+
 wer-jp:
   class: audio_evals.evaluator.wer.WER
   args:

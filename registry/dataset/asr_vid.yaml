@@ -1,0 +1,6 @@
+asr_vid:
+  class: audio_evals.dataset.huggingface.Huggingface
+  args:
+    default_task: asr-mix
+    name: zhifeixie/Voices-in-the-Wild-Bench
+    ref_col: answer

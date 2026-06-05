@@ -5,8 +5,8 @@ cd ${current_dir}
 #source ${current_dir}/.bashrc
 #conda activate GPTSoVits
 
-stage=1
-stop_stage=1
+stage=2
+stop_stage=2
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     echo "start stage ${stage}, stop stage ${stop_stage}"
@@ -30,7 +30,7 @@ fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     echo "start stage ${stage}, stop stage ${stop_stage}"
-    for dataset in cv3_zero_shot_en; do
+    for dataset in cv3_zero_shot_en cv3_zero_shot_hard_en; do
         for model in pilot_tts; do
             for prompt in pilot-voice-clone-english; do
                 [ ! -d res/${model}/${dataset} ] && \
@@ -38,7 +38,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
             done
         done
     done
-    for dataset in cv3_zero_shot_zh; do
+    for dataset in cv3_zero_shot_zh cv3_zero_shot_hard_zh; do
         for model in pilot_tts; do
             for prompt in pilot-voice-clone-chinese; do
                 [ ! -d res/${model}/${dataset} ] && \

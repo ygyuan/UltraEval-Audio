@@ -34,6 +34,11 @@ wer:
   class: audio_evals.agg.base.PracticeWER
   args: {}
 
+wer-mix:
+  class: audio_evals.agg.base.MixedWER
+  args:
+    ignore_case: true
+
 cer:
   class: audio_evals.agg.base.CER
   args: {}

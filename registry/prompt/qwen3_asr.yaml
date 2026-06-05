@@ -27,3 +27,14 @@ qwen3-asr-en:
       contents:
       - type: audio
         value: '{{WavPath}}'
+
+# Auto language detection variant (used by run_eval_qwen3_asr.sh stage 4
+# for code-switch / mixed-language datasets such as Voices-in-the-Wild-Bench).
+qwen3-asr:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
