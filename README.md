@@ -33,6 +33,8 @@ UltraEval-Audio — The world's first open-source framework supporting both spee
 
 # Changelog🔥
 
+- [2026/06/12]
+  - Update CV3 Zero-Shot & MiniMax TTS Multilingual evaluation results across TTS replication docs: [CosyVoice3](replication/CosyVoice3.md), [GLM-TTS](replication/GLM-TTS.md), [IndexTTS2](replication/IndexTTS2.md), [OmniVoice](replication/OmniVoice.md), [PilotTTS](replication/PilotTTS.md), [VibeVoice](replication/VibeVoice.md), [VoxCPM](replication/VoxCPM.md), [VoxCPM2](replication/VoxCPM2.md), [fish-speech](replication/fishspeech.md), [Qwen3-TTS](replication/qwen3_tts.md)
 - [2026/06/03]
   - Support **Mega-ASR** evaluation: see [Mega-ASR](replication/Mega-ASR.md) (`--model mega-asr-en` / `--model mega-asr-zh`)
   - Support **Qwen3-ASR** evaluation: see [Qwen3-ASR](replication/Qwen3-ASR.md) (`--model qwen3-asr-en` / `--model qwen3-asr-zh`)

@@ -66,10 +66,26 @@ class Paraformer(OfflineModel):
                     error_output = self.process.stderr.readline()
                     if error_output:
                         err = error_output.strip()
+                        # Empty / whitespace-only lines (e.g. tqdm carriage-return flushes)
+                        if not err:
+                            logger.debug(f"Paraformer stderr: {err}")
+                            continue
                         # Classify subprocess stderr by content level
-                        if any(kw in err for kw in ["INFO", "DEBUG"]):
+                        # tqdm progress bars and funasr timing dicts are noisy but harmless;
+                        # treat them as DEBUG to keep the log clean.
+                        progress_kws = [
+                            "it/s", "s/it", "%|", "rtf_avg",
+                            "'load_data'", "'extract_feat'", "'forward'", "'batch_size'",
+                        ]
+                        if any(kw in err for kw in progress_kws):
+                            logger.debug(f"Paraformer stderr: {err}")
+                        elif any(kw in err for kw in ["INFO", "DEBUG"]):
                             logger.debug(f"Paraformer stderr: {err}")
                         elif any(kw in err for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning"]):
                             logger.warning(f"Paraformer stderr: {err}")
-                        else:
+                        elif any(kw in err.lower() for kw in ["error", "traceback", "exception", "failed"]):
                             logger.error(f"Paraformer stderr: {err}")
+                        else:
+                            # Unknown but not obviously an error: downgrade to INFO
+                            # to avoid polluting the log with ERROR lines.
+                            logger.info(f"Paraformer stderr: {err}")

@@ -4,7 +4,7 @@ voxcpm1_5:
     path: openbmb/VoxCPM1.5
     vc_mode: True
     denoise: True
-    denoise_path: iic/speech_zipenhancer_ans_multiloss_16k_base
+    denoise_path: init_model/iic/speech_zipenhancer_ans_multiloss_16k_base
     env_path: envs/VoxCPM_1_5
     requirements_path: audio_evals/lib/VoxCPM1_5/requirements.txt
 

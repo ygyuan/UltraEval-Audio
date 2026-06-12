@@ -33,6 +33,8 @@ UltraEval-Audio——全球首个同时支持语音理解和语音生成评估�
 
 # 更新日志🔥
 
+- [2026/06/12]
+  - 更新各 TTS 复现文档的 CV3 Zero-Shot 与 MiniMax TTS Multilingual 基准评测结果：[CosyVoice3](replication/CosyVoice3.md)、[GLM-TTS](replication/GLM-TTS.md)、[IndexTTS2](replication/IndexTTS2.md)、[OmniVoice](replication/OmniVoice.md)、[PilotTTS](replication/PilotTTS.md)、[VibeVoice](replication/VibeVoice.md)、[VoxCPM](replication/VoxCPM.md)、[VoxCPM2](replication/VoxCPM2.md)、[fish-speech](replication/fishspeech.md)、[Qwen3-TTS](replication/qwen3_tts.md)
 - [2026/06/03]
   - 支持 **Mega-ASR** 评测：见 [Mega-ASR](replication/Mega-ASR.md)（`--model mega-asr-en` / `--model mega-asr-zh`）
   - 支持 **Qwen3-ASR** 评测：见 [Qwen3-ASR](replication/Qwen3-ASR.md)（`--model qwen3-asr-en` / `--model qwen3-asr-zh`）

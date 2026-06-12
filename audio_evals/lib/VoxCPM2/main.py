@@ -8,7 +8,35 @@ import tempfile
 import time
 
 import soundfile as sf
-from voxcpm import VoxCPM
+
+# IMPORTANT: configure torch inductor BEFORE importing voxcpm (which imports torch).
+# 1) Use a per-process inductor cache dir so multiple GPU instances do not share /tmp/torchinductor_root
+#    (which causes "Both events must be completed before calculating elapsed time" race during autotune).
+# 2) Disable cudagraphs to avoid the cudagraph-inside-autotune event timing bug entirely.
+_cuda_dev = os.environ.get("CUDA_VISIBLE_DEVICES", "x").replace(",", "_")
+_cache_dir = os.environ.get(
+    "TORCHINDUCTOR_CACHE_DIR",
+    os.path.join(tempfile.gettempdir(), f"torchinductor_voxcpm2_dev{_cuda_dev}_pid{os.getpid()}"),
+)
+os.makedirs(_cache_dir, exist_ok=True)
+os.environ["TORCHINDUCTOR_CACHE_DIR"] = _cache_dir
+# Triton also has its own cache; isolate it as well.
+os.environ.setdefault(
+    "TRITON_CACHE_DIR",
+    os.path.join(tempfile.gettempdir(), f"triton_voxcpm2_dev{_cuda_dev}_pid{os.getpid()}"),
+)
+os.makedirs(os.environ["TRITON_CACHE_DIR"], exist_ok=True)
+
+import torch  # noqa: E402  (must be after env vars above)
+
+try:
+    import torch._inductor.config as _inductor_cfg
+    # Disabling cudagraphs avoids the autotune RuntimeError observed under multi-instance warm-up.
+    _inductor_cfg.triton.cudagraphs = False
+except Exception:
+    pass
+
+from voxcpm import VoxCPM  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

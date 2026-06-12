@@ -100,13 +100,15 @@ qwen3-tts-0.6b-base:
     env_path: envs/qwen3_tts
     requirements_path: audio_evals/lib/Qwen3TTS/requirements.txt
     sample_params:
-      max_new_tokens: 2048
+      # Tuned for 0.6B base model to suppress hallucination / repetition
+      # observed on cv3_zero_shot_en (e.g. WER >100% outliers).
+      max_new_tokens: 1024
       do_sample: true
       top_k: 50
-      top_p: 1.0
-      temperature: 0.9
-      repetition_penalty: 1.05
+      top_p: 0.95
+      temperature: 0.8
+      repetition_penalty: 1.1
       subtalker_dosample: true
       subtalker_top_k: 50
-      subtalker_top_p: 1.0
-      subtalker_temperature: 0.9
+      subtalker_top_p: 0.95
+      subtalker_temperature: 0.8

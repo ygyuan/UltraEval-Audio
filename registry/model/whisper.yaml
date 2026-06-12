@@ -17,7 +17,7 @@ seed-tts-whisper:
 cv3-whisper:
   class: audio_evals.models.whisper.CV3WhisperModel
   args:
-    path: large-v3
+    path: init_model/whisper-large-v3/large-v3.pt
     env_path: envs/whisper
     requirements_path: audio_evals/lib/whisper/requirements.txt
     sample_params: {}

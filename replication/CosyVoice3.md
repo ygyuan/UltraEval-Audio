@@ -1,7 +1,7 @@
 # CosyVoice3 Evaluation Results
 
 **Model**: `cosyvoice3-latest` ([config](../registry/model/cosyvoice.yaml))
-**Evaluation Date**: 2025/12/17
+**Evaluation Date**: 2025/12/17 (CV3 / minimax_tts updated 2026/06/12)
 **Paper/Repo**: [FunAudioLLM/Fun-CosyVoice3-0.5B-2512](https://huggingface.co/FunAudioLLM/Fun-CosyVoice3-0.5B-2512)
 
 **Metrics Legend**:
@@ -29,10 +29,19 @@ Update (2025/12/17): results may change as [FunAudioLLM/CosyVoice](https://githu
 
 | task | dataset | WER/CER⬇️ | SIM⬆️ | P808_MOS⬆️ | eval_cli | note |
 |------|---------|-----------|-------|------------|----------|------|
-| tts | cv3_zero_shot_en | 5.01 | 74.44 | 3.84 | [3] | |
-| tts | cv3_zero_shot_zh | 4.06 | 79.99 | 3.88 | [4] | |
-| tts | cv3_zero_shot_hard_en | 11.05 | 74.33 | 3.99 | [5] | |
-| tts | cv3_zero_shot_hard_zh | 7.43 | 78.63 | 3.84 | [6] | |
+| tts | cv3_zero_shot_en | 3.56 | 74.41 | 3.82 | [3] | |
+| tts | cv3_zero_shot_zh | 4.05 | 79.96 | 3.86 | [4] | |
+| tts | cv3_zero_shot_hard_en | 6.64 | 74.69 | 3.93 | [5] | |
+| tts | cv3_zero_shot_hard_zh | 7.47 | 78.01 | 3.80 | [6] | |
+
+---
+
+## MiniMax TTS Multilingual Benchmark
+
+| task | dataset | WER/CER⬇️ | SIM-O⬆️ | eval_cli | note |
+|------|---------|-----------|---------|----------|------|
+| tts | minimax_tts_english | 2.53 (WER) | 83.35 | [11] | |
+| tts | minimax_tts_chinese | 1.53 (CER) | 80.68 | [12] | |
 
 ---
 
@@ -70,3 +79,6 @@ Update (2025/12/17): results may change as [FunAudioLLM/CosyVoice](https://githu
 [8] `python audio_evals/main.py --dataset long_tts_eval_zh --model cosyvoice3-latest --prompt cosyvoice3-tts`
 [9] `python audio_evals/main.py --dataset long_tts_eval_hard_en --model cosyvoice3-latest --prompt cosyvoice3-tts`
 [10] `python audio_evals/main.py --dataset long_tts_eval_hard_zh --model cosyvoice3-latest --prompt cosyvoice3-tts`
+
+[11] `python audio_evals/main.py --dataset minimax_tts_english --model cosyvoice3-latest --prompt cosyvoice3-vc`
+[12] `python audio_evals/main.py --dataset minimax_tts_chinese --model cosyvoice3-latest --prompt cosyvoice3-vc`

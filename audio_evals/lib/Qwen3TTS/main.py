@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import os
+import re
 import select
 import sys
 import tempfile
@@ -13,6 +14,101 @@ from qwen_tts import Qwen3TTSModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+# --------------------------------------------------------------------------
+# Hallucination / repetition guard
+# --------------------------------------------------------------------------
+# LLM-based TTS (especially smaller variants such as Qwen3-TTS-0.6B-Base)
+# occasionally fails to emit EOS at the right place and continues to
+# hallucinate or repeat the input text, producing audio many times longer
+# than the target sentence. We detect this by comparing the synthesized
+# audio duration against an estimate based on input text length, and retry
+# with progressively more conservative sampling parameters when triggered.
+
+# Languages whose unit is character-level (CJK + Thai). Others are treated
+# as space-separated word-level languages.
+_CJK_LANGS = {"chinese", "japanese", "korean", "thai", "zh", "ja", "ko", "th"}
+
+# Generous per-unit duration upper bounds (much larger than typical speech
+# rate) so that only true hallucinations are flagged.
+_SEC_PER_CHAR_CJK = 0.6     # ~100 char/min lower bound
+_SEC_PER_WORD_OTHER = 0.7   # ~85 word/min lower bound (English etc.)
+_MIN_DURATION_BUDGET = 8.0  # seconds, for very short sentences
+
+
+def _estimate_max_duration(text: str, language: str) -> float:
+    """Return a conservative upper bound on the expected audio duration."""
+    if not text:
+        return _MIN_DURATION_BUDGET
+    lang = (language or "").strip().lower()
+    if lang in _CJK_LANGS:
+        # Count non-whitespace chars (covers CJK + mixed punctuation).
+        n_units = len(re.sub(r"\s+", "", text))
+        budget = n_units * _SEC_PER_CHAR_CJK
+    else:
+        # Word-level languages: count whitespace-separated tokens.
+        tokens = [t for t in re.split(r"\s+", text) if t]
+        n_units = max(len(tokens), 1)
+        budget = n_units * _SEC_PER_WORD_OTHER
+    return max(_MIN_DURATION_BUDGET, budget)
+
+
+# Each retry tightens the sampling distribution to suppress runaway
+# generation. Keys override the user-supplied generation kwargs.
+_RETRY_OVERRIDES = [
+    {"temperature": 0.7, "top_p": 0.9, "repetition_penalty": 1.15,
+     "subtalker_temperature": 0.7, "subtalker_top_p": 0.9},
+    {"temperature": 0.5, "top_p": 0.85, "repetition_penalty": 1.2,
+     "subtalker_temperature": 0.5, "subtalker_top_p": 0.85, "do_sample": False,
+     "subtalker_dosample": False},
+]
+
+
+def _generate_with_guard(generate_fn, base_kwargs, text, language):
+    """Call ``generate_fn(**kwargs)`` with a hallucination guard.
+
+    Returns ``(wavs, sr, n_attempts)``. Falls back to the last attempt's
+    output even if it still exceeds the budget, so the pipeline never
+    aborts on a single bad sample.
+    """
+    max_dur = _estimate_max_duration(text, language)
+    last_wavs, last_sr = None, None
+    attempts = 1 + len(_RETRY_OVERRIDES)
+    for attempt in range(attempts):
+        kwargs = dict(base_kwargs)
+        if attempt > 0:
+            override = _RETRY_OVERRIDES[attempt - 1]
+            # Only override keys the caller actually supports (i.e. already
+            # present, or generation kwargs that the model accepts).
+            for k, v in override.items():
+                kwargs[k] = v
+            logger.warning(
+                "Hallucination guard: retry %d/%d with stricter params %s",
+                attempt, attempts - 1, override,
+            )
+        wavs, sr = generate_fn(**kwargs)
+        last_wavs, last_sr = wavs, sr
+        dur = len(wavs[0]) / sr if sr > 0 else 0.0
+        if dur <= max_dur:
+            if attempt > 0:
+                logger.info(
+                    "Hallucination guard: retry succeeded at attempt %d "
+                    "(dur=%.2fs, budget=%.2fs)",
+                    attempt, dur, max_dur,
+                )
+            return wavs, sr, attempt + 1
+        logger.warning(
+            "Hallucination guard: audio dur=%.2fs exceeds budget=%.2fs "
+            "(attempt %d/%d, text_len=%d)",
+            dur, max_dur, attempt + 1, attempts, len(text or ""),
+        )
+    logger.error(
+        "Hallucination guard: all %d attempts exceeded budget=%.2fs, "
+        "returning last attempt as-is.",
+        attempts, max_dur,
+    )
+    return last_wavs, last_sr, attempts
 
 
 if __name__ == "__main__":
@@ -120,33 +216,41 @@ if __name__ == "__main__":
                 if instruct:
                     generate_kwargs["instruct"] = instruct
                 logger.info(f"generate_custom_voice kwargs: {generate_kwargs}")
-                wavs, sr = model.generate_custom_voice(**generate_kwargs)
-                
+                wavs, sr, n_attempts = _generate_with_guard(
+                    model.generate_custom_voice, generate_kwargs, text, language,
+                )
+
             elif args.mode == "voice_design":
                 # Voice design generation
                 instruct = x.pop("instruct", "")
                 logger.info(f"voice_design: text: {text}, language: {language}, instruct: {instruct}, **x: {x}")
-                wavs, sr = model.generate_voice_design(
-                    text=text,
-                    language=language,
-                    instruct=instruct,
-                    **x,
+                generate_kwargs = {
+                    "text": text,
+                    "language": language,
+                    "instruct": instruct,
+                }
+                generate_kwargs.update(x)
+                wavs, sr, n_attempts = _generate_with_guard(
+                    model.generate_voice_design, generate_kwargs, text, language,
                 )
-                
+
             elif args.mode == "voice_clone":
                 # Voice clone generation
                 ref_audio = x.pop("prompt_audio")
                 ref_text = x.pop("prompt_text")
-                
+
                 if ref_audio is None:
                     raise ValueError("ref_audio is required for voice_clone mode")
                 logger.info(f"ref_audio: {ref_audio}, ref_text: {ref_text}, text: {text}, language: {language}, **x: {x}")
-                wavs, sr = model.generate_voice_clone(
-                    text=text,
-                    language=language,
-                    ref_audio=ref_audio,
-                    ref_text=ref_text,
-                    **x,
+                generate_kwargs = {
+                    "text": text,
+                    "language": language,
+                    "ref_audio": ref_audio,
+                    "ref_text": ref_text,
+                }
+                generate_kwargs.update(x)
+                wavs, sr, n_attempts = _generate_with_guard(
+                    model.generate_voice_clone, generate_kwargs, text, language,
                 )
             else:
                 raise ValueError(f"Unknown mode: {args.mode}")

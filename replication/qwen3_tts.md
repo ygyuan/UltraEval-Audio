@@ -1,7 +1,7 @@
 # Qwen3-TTS 复现文档与评测结果
 
 **模型**: [Qwen3-TTS](../registry/model/qwen3tts.yaml)  
-**评测日期**: 2026/02  
+**评测日期**: 2026/02（CV3 / minimax_tts 更新于 2026/06/12）
 
 **指标说明**:
 - **WER⬇️ / CER⬇️**: ASR 识别错误率（越低越好）
@@ -24,12 +24,23 @@
 
 ## CV3-Eval（Zero-shot Voice Clone）复现结果
 
-> CV3-Eval 在本项目中按 split 分开跑（`cv3_zero_shot_{en,zh}` 与 `cv3_zero_shot_hard_{en,zh}`），表格为汇总展示。
+> CV3-Eval 在本项目中按 split 分开跑（`cv3_zero_shot_{en,zh}` 与 `cv3_zero_shot_hard_{en,zh}`），下方汇总最新一次评测结果。
 
-| 模型 | zh CER/%⬇️ | en WER/%⬇️ | hard-zh CER/%⬇️ | hard-zh SIM/%⬆️ | hard-zh DNSMOS⬆️ | hard-en WER/%⬇️ | hard-en SIM/%⬆️ | hard-en DNSMOS⬆️ | eval_cli |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Qwen3-TTS-12Hz-1.7B-Base-official-infer-params | 3.12±0.07 | 3.77±0.19 | 11.33±1.43 | 70.13 | 3.83 | 7.90±1.77 | 66.06 | 3.91 | zh:[8] en:[7] hard-zh:[10] hard-en:[9] |
-| Qwen3-TTS-12Hz-0.6B-Base-official-infer-params | 3.40±0.09 | 33.91±13.06 | 10.70±1.06 | 69.72 | 3.82 | 10.70±2.90 | 67.04 | 3.88 | zh:[12] en:[11] hard-zh:[14] hard-en:[13] |
+| 模型 | en WER/%⬇️ | en SIM/%⬆️ | en P808⬆️ | zh CER/%⬇️ | zh SIM/%⬆️ | zh P808⬆️ | hard-en WER/%⬇️ | hard-en SIM/%⬆️ | hard-en P808⬆️ | hard-zh CER/%⬇️ | hard-zh SIM/%⬆️ | hard-zh P808⬆️ | eval_cli |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| Qwen3-TTS-12Hz-1.7B-Base-official-infer-params | 3.84 | 67.31 | 3.75 | 3.05 | 72.86 | 3.83 | 5.38 | 66.82 | 3.90 | 12.33 | 69.19 | 3.80 | en:[7] zh:[8] hard-en:[9] hard-zh:[10] |
+| Qwen3-TTS-12Hz-1.7B-Base-official-infer-params-xvec_only | 2.69 | 61.21 | 3.79 | 2.96 | 69.90 | 3.82 | 2.11 | 59.99 | 3.91 | 8.39 | 66.46 | 3.78 | en:[15] zh:[16] hard-en:[17] hard-zh:[18] |
+| Qwen3-TTS-12Hz-0.6B-Base-official-infer-params | 4.01 | 66.99 | 3.69 | 3.50 | 72.33 | 3.82 | 5.63 | 67.17 | 3.84 | 12.32 | 66.88 | 3.77 | en:[11] zh:[12] hard-en:[13] hard-zh:[14] |
+
+---
+
+## MiniMax TTS Multilingual Benchmark 复现结果
+
+| 模型 | en WER/%⬇️ | en SIM-O⬆️ | zh CER/%⬇️ | zh SIM-O⬆️ | eval_cli |
+|---|---:|---:|---:|---:|---|
+| Qwen3-TTS-12Hz-1.7B-Base-official-infer-params | 0.76 | 78.98 | 1.10 | 81.12 | en:[19] zh:[20] |
+| Qwen3-TTS-12Hz-1.7B-Base-official-infer-params-xvec_only | 0.68 | 66.16 | 0.74 | 76.12 | en:[21] zh:[22] |
+| Qwen3-TTS-12Hz-0.6B-Base-official-infer-params | 0.66 | 81.62 | 1.64 | 81.27 | en:[23] zh:[24] |
 
 ---
 
@@ -50,6 +61,16 @@
 [11] `python audio_evals/main.py --dataset cv3_zero_shot_en --model qwen3-tts-0.6b-base --prompt qwen3-tts-voice-clone-english --use_model_pool --workers 8`  
 [12] `python audio_evals/main.py --dataset cv3_zero_shot_zh --model qwen3-tts-0.6b-base --prompt qwen3-tts-voice-clone-chinese --use_model_pool --workers 8`  
 [13] `python audio_evals/main.py --dataset cv3_zero_shot_hard_en --model qwen3-tts-0.6b-base --prompt qwen3-tts-voice-clone-english --use_model_pool --workers 8`  
-[14] `python audio_evals/main.py --dataset cv3_zero_shot_hard_zh --model qwen3-tts-0.6b-base --prompt qwen3-tts-voice-clone-chinese --use_model_pool --workers 8`
+[14] `python audio_evals/main.py --dataset cv3_zero_shot_hard_zh --model qwen3-tts-0.6b-base --prompt qwen3-tts-voice-clone-chinese --use_model_pool --workers 8`  
 
+[15] `python audio_evals/main.py --dataset cv3_zero_shot_en --model qwen3-tts-12hz-1.7b-base-xvec_only --prompt qwen3-tts-voice-clone-english --use_model_pool --workers 8`  
+[16] `python audio_evals/main.py --dataset cv3_zero_shot_zh --model qwen3-tts-12hz-1.7b-base-xvec_only --prompt qwen3-tts-voice-clone-chinese --use_model_pool --workers 8`  
+[17] `python audio_evals/main.py --dataset cv3_zero_shot_hard_en --model qwen3-tts-12hz-1.7b-base-xvec_only --prompt qwen3-tts-voice-clone-english --use_model_pool --workers 8`  
+[18] `python audio_evals/main.py --dataset cv3_zero_shot_hard_zh --model qwen3-tts-12hz-1.7b-base-xvec_only --prompt qwen3-tts-voice-clone-chinese --use_model_pool --workers 8`  
 
+[19] `python audio_evals/main.py --dataset minimax_tts_english --model qwen3-tts-1.7b-base --prompt qwen3-tts-voice-clone-english --use_model_pool --workers 8`  
+[20] `python audio_evals/main.py --dataset minimax_tts_chinese --model qwen3-tts-1.7b-base --prompt qwen3-tts-voice-clone-chinese --use_model_pool --workers 8`  
+[21] `python audio_evals/main.py --dataset minimax_tts_english --model qwen3-tts-12hz-1.7b-base-xvec_only --prompt qwen3-tts-voice-clone-english --use_model_pool --workers 8`  
+[22] `python audio_evals/main.py --dataset minimax_tts_chinese --model qwen3-tts-12hz-1.7b-base-xvec_only --prompt qwen3-tts-voice-clone-chinese --use_model_pool --workers 8`  
+[23] `python audio_evals/main.py --dataset minimax_tts_english --model qwen3-tts-0.6b-base --prompt qwen3-tts-voice-clone-english --use_model_pool --workers 8`  
+[24] `python audio_evals/main.py --dataset minimax_tts_chinese --model qwen3-tts-0.6b-base --prompt qwen3-tts-voice-clone-chinese --use_model_pool --workers 8`  

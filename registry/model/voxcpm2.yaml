@@ -13,5 +13,6 @@ voxcpm2-denoise:
   args:
     path: openbmb/VoxCPM2
     denoise: True
+    denoise_path: init_model/iic/speech_zipenhancer_ans_multiloss_16k_base
     env_path: envs/VoxCPM2
     requirements_path: audio_evals/lib/VoxCPM2/requirements.txt

@@ -1,7 +1,7 @@
 # VibeVoice Evaluation Results
 
 **Model**: `vibevioce_tts` / `vibevoice-asr-en` / `vibevoice-asr-zh` ([config](../registry/model/vibevoice.yaml))
-**Evaluation Date**: 2026/05
+**Evaluation Date**: 2026/05 (CV3 / minimax_tts updated 2026/06/12)
 
 **Metrics Legend**:
 - **WER⬇️**: Word Error Rate (lower is better)
@@ -16,6 +16,26 @@
 |------|---------|-----------|-------|----------|------|
 | tts | seed_tts_eval_en | 4.87 (WER) | 59.62 | [1] | |
 | tts | seed_tts_eval_zh | 2.58 (CER) | 68.88 | [2] | |
+
+---
+
+## TTS (CV3 Benchmark, Zero-Shot) — `vibevioce_tts`
+
+| task | dataset | WER/CER⬇️ | SIM⬆️ | P808_MOS⬆️ | eval_cli | note |
+|------|---------|-----------|-------|------------|----------|------|
+| tts | cv3_zero_shot_en | 8.27 | 58.27 | 3.67 | [14] | |
+| tts | cv3_zero_shot_zh | 5.93 | 64.88 | 3.74 | [15] | |
+| tts | cv3_zero_shot_hard_en | 8.43 | 60.32 | 3.77 | [16] | |
+| tts | cv3_zero_shot_hard_zh | 18.73 | 61.84 | 3.65 | [17] | |
+
+---
+
+## TTS (MiniMax TTS Multilingual Benchmark) — `vibevioce_tts`
+
+| task | dataset | WER/CER⬇️ | SIM-O⬆️ | eval_cli | note |
+|------|---------|-----------|---------|----------|------|
+| tts | minimax_tts_english | 1.66 (WER) | 79.46 | [18] | |
+| tts | minimax_tts_chinese | 1.31 (CER) | 78.19 | [19] | |
 
 ---
 
@@ -59,3 +79,11 @@
 [11] `python audio_evals/main.py --dataset asr_shipinhao_long --model vibevoice-asr-zh`
 [12] `python audio_evals/main.py --dataset asr_shipinhao_fangyan --model vibevoice-asr-zh`
 [13] `python audio_evals/main.py --dataset asr_badcase --model vibevoice-asr-zh`
+
+[14] `python audio_evals/main.py --dataset cv3_zero_shot_en --model vibevioce_tts`
+[15] `python audio_evals/main.py --dataset cv3_zero_shot_zh --model vibevioce_tts`
+[16] `python audio_evals/main.py --dataset cv3_zero_shot_hard_en --model vibevioce_tts`
+[17] `python audio_evals/main.py --dataset cv3_zero_shot_hard_zh --model vibevioce_tts`
+
+[18] `python audio_evals/main.py --dataset minimax_tts_english --model vibevioce_tts`
+[19] `python audio_evals/main.py --dataset minimax_tts_chinese --model vibevioce_tts`

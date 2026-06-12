@@ -50,7 +50,7 @@ class VoxCPM2(OfflineModel):
             prompt["text"] = f"({instruction}){prompt['text']}"
 
         while True:
-            _, wlist, _ = select.select([], [self.process.stdin], [], 180)
+            _, wlist, _ = select.select([], [self.process.stdin], [], 600)
             if wlist:
                 self.process.stdin.write(
                     f"{prefix}{json.dumps(prompt, ensure_ascii=False)}\n"
@@ -61,10 +61,10 @@ class VoxCPM2(OfflineModel):
 
         while True:
             rlist, _, _ = select.select(
-                [self.process.stdout, self.process.stderr], [], [], 180
+                [self.process.stdout, self.process.stderr], [], [], 600
             )
             if not rlist:
-                err_msg = "Read timeout after 180 seconds"
+                err_msg = "Read timeout after 600 seconds"
                 logger.error(err_msg)
                 raise RuntimeError(err_msg)
 
@@ -85,6 +85,15 @@ class VoxCPM2(OfflineModel):
                     elif stream == self.process.stderr:
                         err = self.process.stderr.readline().strip()
                         if err:
-                            logger.error(f"Process stderr: {err}")
+                            # Classify subprocess stderr by content level (aligned with VoxCPM v1)
+                            if any(kw in err for kw in ["Traceback", "Error:", "RuntimeError", "Exception", "CUDA error", "OutOfMemory"]):
+                                logger.error(f"Process stderr: {err}")
+                            elif any(kw in err for kw in ["WARNING", "FutureWarning", "UserWarning", "DeprecationWarning", "deprecated", "pkg_resources"]):
+                                logger.warning(f"Process stderr: {err}")
+                            elif any(kw in err for kw in ["INFO", "DEBUG", "Loading", "Loaded", "Building", "loading", "building", "done", "loaded", "Running on device", "Warm up", "%|", "it/s]"]):
+                                logger.debug(f"Process stderr: {err}")
+                            else:
+                                # Unknown content: keep visible but at INFO level instead of ERROR
+                                logger.info(f"Process stderr: {err}")
             except BlockingIOError as e:
                 logger.error(f"BlockingIOError occurred: {str(e)}")
