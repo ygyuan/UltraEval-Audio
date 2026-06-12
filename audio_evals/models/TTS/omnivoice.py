@@ -87,6 +87,19 @@ class OmniVoiceTTS(OfflineModel):
                 f"Expected 'text' in prompt to be string, but got: {type(text)}"
             )
 
+        # Make sure the subprocess is alive (auto-restart on crash).
+        # Without this, once the OmniVoice subprocess dies (e.g. import
+        # error, OOM, segfault), every subsequent sample would write to a
+        # broken pipe and fail with a misleading "stdin pipe is broken"
+        # error, while the real root-cause stderr is lost until shutdown.
+        if hasattr(self, "ensure_process_alive"):
+            self.ensure_process_alive()
+        elif self.process.poll() is not None:
+            raise RuntimeError(
+                "OmniVoice subprocess has exited with code "
+                f"{self.process.returncode}."
+            )
+
         uid = str(uuid.uuid4())
         prefix = f"{uid}->"
 

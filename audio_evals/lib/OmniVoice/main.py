@@ -6,14 +6,36 @@ import select
 import sys
 import tempfile
 import time
+import traceback
 
 import torch
 import torchaudio
 
-from omnivoice.models.omnivoice import OmniVoice
-
-logging.basicConfig(level=logging.INFO)
+# logging is configured here so that stderr output from the imports below
+# can also surface in the parent process log. Use stderr explicitly and
+# force-flush after each emit, otherwise an early ImportError in
+# ``omnivoice`` would bubble up before any logging handler is attached and
+# the parent process would only see "ModuleNotFoundError" with no context.
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stderr,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
+
+try:
+    from omnivoice.models.omnivoice import OmniVoice
+except Exception as exc:  # noqa: BLE001 - we really want to catch ImportError too
+    # Surface the full traceback to stderr immediately so the parent
+    # process / log file can show the root cause without waiting for
+    # subprocess cleanup.
+    sys.stderr.write(
+        "[OmniVoice] Failed to import omnivoice: "
+        f"{type(exc).__name__}: {exc}\n"
+    )
+    traceback.print_exc(file=sys.stderr)
+    sys.stderr.flush()
+    sys.exit(1)
 
 
 if __name__ == "__main__":
@@ -48,9 +70,18 @@ if __name__ == "__main__":
     logger.info(f"Using device: {device}")
     logger.info(f"Loading OmniVoice model from {args.path}")
 
-    model = OmniVoice.from_pretrained(
-        args.path, device_map=device, dtype=torch.float16
-    )
+    try:
+        model = OmniVoice.from_pretrained(
+            args.path, device_map=device, dtype=torch.float16
+        )
+    except Exception as exc:  # noqa: BLE001
+        sys.stderr.write(
+            "[OmniVoice] Failed to load model from "
+            f"{args.path!r}: {type(exc).__name__}: {exc}\n"
+        )
+        traceback.print_exc(file=sys.stderr)
+        sys.stderr.flush()
+        sys.exit(1)
     logger.info("OmniVoice model successfully loaded")
 
     # Read ENABLE_RTF setting from environment variable, default is 0
@@ -141,4 +172,9 @@ if __name__ == "__main__":
                     )
 
         except Exception as e:
+            # Print the prefixed error to stdout so the parent client can
+            # pick it up via the existing "Error:" channel, and also dump
+            # the full traceback to stderr for log-based diagnosis.
             print(f"Error: {str(e)}", flush=True)
+            traceback.print_exc(file=sys.stderr)
+            sys.stderr.flush()
