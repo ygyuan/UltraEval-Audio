@@ -35,6 +35,8 @@ UltraEval-Audio——全球首个同时支持语音理解和语音生成评估�
 
 - [2026/06/12]
   - 更新各 TTS 复现文档的 CV3 Zero-Shot 与 MiniMax TTS Multilingual 基准评测结果：[CosyVoice3](replication/CosyVoice3.md)、[GLM-TTS](replication/GLM-TTS.md)、[IndexTTS2](replication/IndexTTS2.md)、[OmniVoice](replication/OmniVoice.md)、[PilotTTS](replication/PilotTTS.md)、[VibeVoice](replication/VibeVoice.md)、[VoxCPM](replication/VoxCPM.md)、[VoxCPM2](replication/VoxCPM2.md)、[fish-speech](replication/fishspeech.md)、[Qwen3-TTS](replication/qwen3_tts.md)
+- [2026/06/10]
+  - 支持 **[Qwen3-ASR](replication/qwen3_asr.md)** 评测（`qwen3-asr-1.7b`, `qwen3-asr-0.6b`），提供英文、中文和中文方言 ASR Benchmark 的复现结果与命令。
 - [2026/06/03]
   - 支持 **Mega-ASR** 评测：见 [Mega-ASR](replication/Mega-ASR.md)（`--model mega-asr-en` / `--model mega-asr-zh`）
   - 支持 **Qwen3-ASR** 评测：见 [Qwen3-ASR](replication/Qwen3-ASR.md)（`--model qwen3-asr-en` / `--model qwen3-asr-zh`）
@@ -214,6 +216,9 @@ python audio_evals/main.py --dataset llama-questions-s2t --model gpt4o_speech
 export GOOGLE_API_KEY=$your-key
 python audio_evals/main.py --dataset sample --model gemini-pro
 
+# 测试 Qwen3-ASR 语音识别能力
+CUDA_VISIBLE_DEVICES=0 python audio_evals/main.py --dataset librispeech-test-clean --model qwen3-asr-1.7b --prompt simple-asr
+# 完整复现结果和命令见：replication/qwen3_asr.md
 
 # 测试qwen2-audio-offline语音理解能力
 CUDA_VISIBLE_DEVICES=0 python audio_evals/main.py --dataset sample --model qwen2-audio-chat

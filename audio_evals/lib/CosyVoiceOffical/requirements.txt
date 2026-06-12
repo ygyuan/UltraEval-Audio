@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 conformer==0.3.2
 deepspeed==0.15.1; sys_platform == 'linux'
 diffusers==0.29.0
@@ -40,3 +41,8 @@ uvicorn==0.30.0
 wetext==0.0.4
 wget==3.2
 ruamel.yaml<0.18.0
+=======
+-r ../../../third_party/CosyVoice/requirements.txt
+ruamel.yaml<0.18.0
+x_transformers
+>>>>>>> upstream/main

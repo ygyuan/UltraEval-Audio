@@ -10,6 +10,8 @@
 - **BLEU⬆️**: BLEU Score (higher is better)
 - **ACC⬆️**: Accuracy (higher is better)
 
+**Note**: Performance format: `reproduced_result(official_result)` - values in parentheses are official results from the paper.
+
 ---
 
 ## ASR (English)

@@ -125,6 +125,8 @@ def isolated(
             cublas_lib = f"{nvidia_pkg_base}/cublas/lib"
             cufft_lib = f"{nvidia_pkg_base}/cufft/lib"
 
+            cuda_runtime_lib = f"{env_path}/lib/python{major_minor}/site-packages/nvidia/cuda_runtime/lib"
+
             # 构建命令行参数
             command_args = getattr(self, command_args_attr, {})
             args_str = " ".join(
