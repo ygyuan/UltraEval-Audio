@@ -101,9 +101,26 @@ class WavLM(OfflineModel):
                         logger.error(f"Error writing to subprocess: {e}")
                         raise
 
-            # Read response with timeout (simo.py retries 3 times with 3s each = ~12s max)
-            max_wait_time = 120  # generous timeout for slow GPU inference
+            # Read response with timeout. simo.py now retries 3 times with 1s
+            # each (~3s max) on the close-signal handshake; the parent-side
+            # ceiling stays generous to absorb cold cache / NFS jitter.
+            max_wait_time = 120
             start_time = time.time()
+
+            # Keywords that classify a stderr line as benign noise rather
+            # than a real error. ``warnings.warn`` and bare ``warnings.warn(``
+            # are continuation lines from the Python warning stack that do
+            # NOT carry the ``UserWarning`` / ``DeprecationWarning`` keyword
+            # of the previous line, so without this list they used to be
+            # logged at ERROR level. ``not found close signal`` is simo.py's
+            # normal protocol-retry message.
+            STDERR_DEBUG_KWS = ("INFO:", "DEBUG:", "successfully loaded")
+            STDERR_WARN_KWS = (
+                "WARNING:", "FutureWarning", "UserWarning",
+                "DeprecationWarning", "warnings.warn",
+                "is deprecated", "not found close signal",
+                "The similarity score between two audios",
+            )
 
             while time.time() - start_time < max_wait_time:
                 rlist, _, _ = select.select(
@@ -125,14 +142,18 @@ class WavLM(OfflineModel):
                             elif result.startswith("Error:"):
                                 raise RuntimeError("wav lm failed: {}".format(result))
                             else:
-                                logger.info(result)
+                                # Stale stdout (e.g. residual retry print or
+                                # legacy banner). Demote to DEBUG so it does
+                                # not look like a real eval result, and keep
+                                # reading until the prefixed answer arrives.
+                                logger.debug(f"wavlm stdout (non-prefixed): {result}")
                         elif stream == self.process.stderr:
                             err = self.process.stderr.readline().strip()
                             if err:
                                 # Classify subprocess stderr by content level
-                                if any(kw in err for kw in ["INFO:", "DEBUG:"]):
+                                if any(kw in err for kw in STDERR_DEBUG_KWS):
                                     logger.debug(f"Process stderr: {err}")
-                                elif any(kw in err for kw in ["WARNING:", "FutureWarning", "UserWarning", "DeprecationWarning"]):
+                                elif any(kw in err for kw in STDERR_WARN_KWS):
                                     logger.warning(f"Process stderr: {err}")
                                 else:
                                     logger.error(f"Process stderr: {err}")

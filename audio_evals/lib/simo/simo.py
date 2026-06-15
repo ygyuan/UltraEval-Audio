@@ -55,11 +55,18 @@ def verification(wav1, wav2, model=None, wav2_cut_wav1=False, device="cuda:0"):
         emb2 = model(wav2)
 
     sim = F.cosine_similarity(emb1, emb2)
+    # NOTE: This message is informational only. We deliberately route it to
+    # stderr so that stdout stays a clean request/response channel between
+    # this subprocess and the parent (audio_evals/models/wavlm.py). Writing
+    # it to stdout used to pollute the parent's prefix-matching read loop
+    # and could trigger a 5s x N retry storm in the close-signal handshake
+    # below (see log/app-2026-06-15_15-00-43.log).
     print(
         "The similarity score between two audios is {:.4f} (-1.0, 1.0).".format(
             sim[0].item()
         ),
         flush=True,
+        file=sys.stderr,
     )
     return sim[0].item()
 
@@ -77,7 +84,12 @@ if __name__ == "__main__":
     model = init_model(model_name, checkpoint)
     model = model.cuda("cuda:0").eval()
 
-    print(f"successfully loaded wavlm_large model from {checkpoint}", flush=True)
+    # Boot banner -> stderr (see verification() comment above for rationale).
+    print(
+        f"successfully loaded wavlm_large model from {checkpoint}",
+        flush=True,
+        file=sys.stderr,
+    )
 
     while True:
         try:
@@ -94,10 +106,15 @@ if __name__ == "__main__":
             prefix = prompt[:anchor].strip() + "->"
             wavs = prompt[anchor + 2 :].split(",")
             sim = verification(wavs[0], wavs[1], model=model)
-            retry = 10
+            # Aligned with audio_evals/lib/whisper/seed_tts_eval.py: shorter
+            # per-iteration timeout (1s) and fewer retries (3). The previous
+            # 5s x 10 = 50s ceiling caused multi-minute stalls when the
+            # parent's stdout reader hadn't yet consumed an earlier banner
+            # line, even though the score had already been computed.
+            retry = 3
             while retry:
                 print("{}{}".format(prefix, str(sim)), flush=True)
-                rlist, _, _ = select.select([sys.stdin], [], [], 5)
+                rlist, _, _ = select.select([sys.stdin], [], [], 1)
                 if rlist:
                     finish = sys.stdin.readline().strip()
                     if finish == "{}close".format(prefix):

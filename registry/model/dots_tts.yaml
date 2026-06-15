@@ -1,0 +1,78 @@
+# dots.tts (rednote-hilab) zero-shot voice cloning TTS.
+# Reference: https://github.com/rednote-hilab/dots.tts
+# Three checkpoints share the same backbone, differ in alignment/distillation:
+#   * dots.tts-base : pretrained checkpoint (num_steps 10-32)
+#   * dots.tts-soar : self-corrective-aligned, best voice cloning (num_steps 10-32)
+#   * dots.tts-mf   : MeanFlow-distilled student of -soar (num_steps 4)
+#
+# NOTE on precision (Plan A: stability first):
+#   third_party/dots.tts/src/dots_tts/runtime.py only casts ``self.model.core``
+#   to the requested dtype while the speaker encoder / vocoder remain in
+#   float32. With precision=bfloat16 we have repeatedly hit dtype-mismatch
+#   RuntimeErrors at multiple internal Conv/Linear boundaries inside ``core``
+#   that the speaker_encoder feeds (fp32) into a bf16 core, e.g.
+#       RuntimeError: mat1 and mat2 must have the same dtype, but got Float and BFloat16
+#       RuntimeError: Input type (float) and bias type (c10::BFloat16) should be the same
+#   Patching individual boundaries (xvec_proj only / full-tree forward_pre_hook)
+#   has each fixed the immediate trace but exposed another hidden boundary
+#   (see log/app-2026-06-15_09-35-35.log, 09-51-48.log, 09-57-57.log,
+#   14-28-58.log). To stop chasing dtype edges and ship a reliable evaluator,
+#   we explicitly fall back to float32 here. The 4-worker parallel pool still
+#   gives a ~4x speedup over the original 1-worker fp32 baseline.
+#
+# NOTE on optimize:
+#   ``optimize=True`` enables ``DotsTtsModel.run_warmup`` + torch.compile,
+#   which in theory adds another ~1.5-2x steady-state speedup. With fp32 it
+#   should not trigger the dtype mismatches above, but warmup costs ~30-90s
+#   per worker and the inductor cache is sensitive to even minor model-side
+#   changes. We therefore default to False here. Flip to True once the fp32
+#   path has been validated end-to-end and you want the extra speedup.
+
+dots-tts-soar:
+  class: audio_evals.models.TTS.dots_tts.DotsTTS
+  args:
+    path: init_model/rednote-hilab/dots.tts-soar
+    precision: float32
+    optimize: False
+    max_generate_length: 500
+    num_steps: 10
+    guidance_scale: 1.2
+    speaker_scale: 1.5
+    ode_method: euler
+    template_name: tts
+    seed: 42
+    env_path: envs/DotsTTS
+    requirements_path: audio_evals/lib/DotsTTS/requirements.txt
+
+dots-tts-base:
+  class: audio_evals.models.TTS.dots_tts.DotsTTS
+  args:
+    path: init_model/rednote-hilab/dots.tts-base
+    precision: float32
+    optimize: False
+    max_generate_length: 500
+    num_steps: 10
+    guidance_scale: 1.2
+    speaker_scale: 1.5
+    ode_method: euler
+    template_name: tts
+    seed: 42
+    env_path: envs/DotsTTS
+    requirements_path: audio_evals/lib/DotsTTS/requirements.txt
+
+dots-tts-mf:
+  class: audio_evals.models.TTS.dots_tts.DotsTTS
+  args:
+    path: init_model/rednote-hilab/dots.tts-mf
+    precision: float32
+    optimize: False
+    max_generate_length: 500
+    # MeanFlow-distilled student: 4 steps recommended.
+    num_steps: 4
+    guidance_scale: 1.2
+    speaker_scale: 1.5
+    ode_method: euler
+    template_name: tts
+    seed: 42
+    env_path: envs/DotsTTS
+    requirements_path: audio_evals/lib/DotsTTS/requirements.txt
