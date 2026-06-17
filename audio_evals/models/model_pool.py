@@ -168,6 +168,20 @@ class IsolatedModelPool:
             logger.info(f"Creating model instance {i} on GPU(s) {gpu_id}")
             try:
                 model = model_factory(**kwargs)
+                # Optional warmup hook: models backed by an HTTP server that
+                # boots asynchronously (e.g. Voxtral / vllm-omni) implement
+                # ``wait_until_ready`` to block until the server has handshaken.
+                # Calling it here makes pool construction *fail-fast*: a vllm
+                # OOM or version-mismatch surfaces immediately instead of
+                # silently poisoning thousands of downstream dataset samples
+                # with ``launcher exited early`` errors.
+                warmup = getattr(model, "wait_until_ready", None)
+                if callable(warmup):
+                    logger.info(
+                        f"Warming up model instance {i} on GPU(s) {gpu_id} "
+                        f"(waiting for backend to become ready)..."
+                    )
+                    warmup()
                 self._models.append(model)
                 self._pool.put(model)
                 logger.info(

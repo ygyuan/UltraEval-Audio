@@ -1,0 +1,167 @@
+# Voxtral 4B TTS 2603 prompt templates (preset voices).
+# Reference: https://huggingface.co/mistralai/Voxtral-4B-TTS-2603
+
+# ---------------- Generic / multilingual ----------------
+voxtral-casual-male:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "casual_male"
+
+voxtral-casual-female:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "casual_female"
+
+voxtral-neutral-male:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "neutral_male"
+
+voxtral-neutral-female:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "neutral_female"
+
+voxtral-cheerful-female:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "cheerful_female"
+
+# ---------------- Per-language preset voices ----------------
+# English (default voices: casual_male / casual_female / neutral_*)
+voxtral-en-male:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "casual_male"
+
+voxtral-en-female:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "casual_female"
+
+# French
+voxtral-fr-male:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "fr_male"
+
+voxtral-fr-female:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "fr_female"
+
+# Spanish
+voxtral-es-male:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "es_male"
+
+voxtral-es-female:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "es_female"
+
+# German
+voxtral-de-male:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "de_male"
+
+voxtral-de-female:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "de_female"
+
+# Italian
+voxtral-it-male:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "it_male"
+
+voxtral-it-female:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "it_female"
+
+# Portuguese
+voxtral-pt-male:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "pt_male"
+
+voxtral-pt-female:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "pt_female"
+
+# Dutch
+voxtral-nl-male:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "nl_male"
+
+voxtral-nl-female:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "nl_female"
+
+# Arabic (only ar_male provided in voice_embedding/)
+voxtral-ar-male:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "ar_male"
+
+# Hindi
+voxtral-hi-male:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "hi_male"
+
+voxtral-hi-female:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      voice: "hi_female"

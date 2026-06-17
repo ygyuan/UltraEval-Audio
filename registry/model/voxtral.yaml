@@ -1,0 +1,24 @@
+# Voxtral 4B TTS 2603 served via vllm-omni.
+# Reference: https://huggingface.co/mistralai/Voxtral-4B-TTS-2603
+#
+# Voxtral exposes 20 preset voices (e.g. casual_male, casual_female,
+# neutral_male, neutral_female, cheerful_female, ar_male, de_male/female,
+# es_male/female, fr_male/female, hi_male/female, it_male/female,
+# nl_male/female, pt_male/female ...) and supports 9 languages: English,
+# French, Spanish, German, Italian, Portuguese, Dutch, Arabic, Hindi.
+#
+# Note: Voxtral does not natively support Chinese.
+
+voxtral-4b-tts:
+  class: audio_evals.models.TTS.voxtral_tts.VoxtralTTS
+  args:
+    path: init_model/mistralai/Voxtral-4B-TTS-2603
+    dtype: bfloat16
+    tensor_parallel_size: 1
+    startup_timeout: 1800
+    request_timeout: 1800
+    env_path: envs/voxtral
+    requirements_path: audio_evals/lib/Voxtral/requirements.txt
+    sample_params:
+      response_format: wav
+      voice: casual_male

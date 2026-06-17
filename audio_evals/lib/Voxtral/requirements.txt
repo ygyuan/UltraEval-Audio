@@ -1,0 +1,17 @@
+requests
+soundfile
+# Voxtral 4B TTS 2603 needs `vllm serve --omni` (vllm-omni). However:
+# 1. vllm-omni 0.22.0 imports `vllm.entrypoints.utils` which was removed in
+#    vllm>=0.23.0, so the major/minor must match.
+# 2. vllm 0.20.x/0.22.x both pull torch==2.11.0 built against CUDA 13 (cu130),
+#    which fails on hosts with NVIDIA driver 535.x (CUDA 12.2 max native) with
+#    "RuntimeError: The NVIDIA driver on your system is too old (found 12020)".
+# 3. vllm 0.18.1 pulls torch==2.10.0, for which a cu128 wheel is available and
+#    is known to work on driver 535.x.
+# Therefore we pin to the 0.18.x line. Bump these together when the host
+# CUDA driver is upgraded or when a cu12.x build of vllm 0.22.x is published.
+torch==2.10.0
+torchaudio==2.10.0
+vllm==0.18.1
+vllm-omni==0.18.0
+mistral_common>=1.10.0
