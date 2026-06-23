@@ -32,7 +32,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
         for model in dots-tts-mf; do
             for prompt in ""; do
                 echo "dataset: ${dataset}, model: ${model}, prompt: ${prompt}"
-                # [ ! -d res/${model}/${dataset} ] && \
+                [ ! -d res/${model}/${dataset} ] && \
                 CUDA_VISIBLE_DEVICES="3" python3 audio_evals/main.py --dataset ${dataset} --model ${model}
             done
         done

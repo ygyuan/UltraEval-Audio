@@ -48,3 +48,43 @@ qwen3-asr-en:
     language: en
     env_path: envs/Qwen3-ASR
     requirements_path: audio_evals/lib/Qwen3-ASR/asr_requirements.txt
+
+qwen3-asr-06b:
+  class: audio_evals.models.asr.qwen3_asr.Qwen3ASR
+  args:
+    path: Qwen/Qwen3-ASR-0.6B
+    dtype: bfloat16
+    device: cuda:0
+    attn_implementation: auto
+    max_inference_batch_size: 32
+    max_new_tokens: 512
+    env_path: envs/Qwen3-ASR
+    requirements_path: audio_evals/lib/Qwen3-ASR/asr_requirements.txt
+
+# Chinese-constrained variant (used by run_eval_qwen3_asr.sh stage 1/3).
+qwen3-asr-zh-06b:
+  class: audio_evals.models.asr.qwen3_asr.Qwen3ASR
+  args:
+    path: Qwen/Qwen3-ASR-0.6B
+    dtype: bfloat16
+    device: cuda:0
+    attn_implementation: auto
+    max_inference_batch_size: 32
+    max_new_tokens: 512
+    language: zh
+    env_path: envs/Qwen3-ASR
+    requirements_path: audio_evals/lib/Qwen3-ASR/asr_requirements.txt
+
+# English-constrained variant (used by run_eval_qwen3_asr.sh stage 2).
+qwen3-asr-en-06b:
+  class: audio_evals.models.asr.qwen3_asr.Qwen3ASR
+  args:
+    path: Qwen/Qwen3-ASR-0.6B
+    dtype: bfloat16
+    device: cuda:0
+    attn_implementation: auto
+    max_inference_batch_size: 32
+    max_new_tokens: 512
+    language: en
+    env_path: envs/Qwen3-ASR
+    requirements_path: audio_evals/lib/Qwen3-ASR/asr_requirements.txt

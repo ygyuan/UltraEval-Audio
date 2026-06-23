@@ -1,0 +1,51 @@
+# Higgs Audio v3 (bosonai/higgs-audio-v3-tts-4b) is served via vllm-omni's
+# OpenAI-compatible /v1/audio/speech endpoint.
+#
+# === Why we don't run inside a fresh isolate venv ===
+#
+# Driver/torch/vllm is a tight 3-way version constraint on this host:
+#
+#   * Host NVIDIA driver = 535.161.08  (CUDA 12.2)
+#   * vLLM 0.21+ pin `torch==2.11.0` in their wheel METADATA, and the
+#     PyPI `torch==2.11.0` wheel is a CUDA 13 build (needs driver >= 580).
+#   * The only torch that works on driver 535 is a `cu12` build
+#     (e.g. torch 2.9.1+cu128, which is what the local conda env
+#     `qwen3-tts` already has).
+#   * `vllm-omni` checked out at commit 82e74ce9 (the commit that introduces
+#     `HiggsMultimodalQwen3ForConditionalGeneration`, the v3 model class)
+#     does NOT pin torch / vllm in its requirements -- it leaves that to the
+#     parent environment. Its CLI still imports the vLLM-0.22 path
+#     `from vllm.entrypoints.utils import VLLM_SUBCMD_PARSER_EPILOG`,
+#     so it is compatible with vllm 0.22.0 (which is what the upstream
+#     recipe `recipes/BosonAI/Higgs-Audio-V3-TTS.md` recommends).
+#
+# === The setup we use ===
+#
+# 1. The launcher's `env_path` points at a CONDA env (cloned from
+#    `qwen3-tts`, see `registry/model/higgs_audio_v3.yaml`). This conda env
+#    already provides:
+#      - python 3.12, transformers 4.51.3
+#      - torch 2.9.1+cu128, torchaudio 2.9.1, flash-attn 2.8.3
+#      - all nvidia-*-cu12 runtime libs
+#    All of those are CUDA-12 builds that run on driver 535.x.
+# 2. This requirements file installs ONLY the packages that the conda env
+#    is missing, and never re-touches torch / nvidia-* (so we don't risk
+#    pulling cu13 wheels).
+# 3. `vllm==0.22.0` is installed with `--no-deps` so pip doesn't try to
+#    "fix" torch up to 2.11.0+cu13. vllm 0.22.0's compiled extensions are
+#    `cp38-abi3` (stable ABI) wheels and load against the existing torch.
+#
+# IMPORTANT: the `--no-deps` flag is honoured because `audio_evals/isolate.py`
+# was extended with a `pre_command` that injects it for the vllm install
+# step (see `pre_command` for HiggsAudioV3TTS).
+
+requests
+soundfile
+httpx
+# vllm-omni from the local checkout (third_party/vllm-omni). The leading `-e`
+# enables editable installs; the path is resolved relative to the repo root
+# (which is the CWD when the isolate launcher runs `pip install -r ...`).
+# The checkout MUST be on commit 82e74ce9 (or any sibling commit that still
+# imports `from vllm.entrypoints.utils import VLLM_SUBCMD_PARSER_EPILOG`),
+# i.e. NOT on the `main` branch which already moved to vllm 0.23 imports.
+-e ./third_party/vllm-omni

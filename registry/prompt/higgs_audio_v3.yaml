@@ -1,0 +1,25 @@
+# Higgs Audio v3 TTS prompt configurations for zero-shot voice cloning.
+# Reference: https://huggingface.co/bosonai/higgs-audio-v3-tts-4b
+#
+# v3 voice cloning needs both a reference audio (`prompt_audio`) and the
+# transcript of that reference audio (`prompt_text`). Both fields come
+# directly from the dataset metadata (e.g. seed_tts_eval, cv3_zero_shot,
+# minimax_tts).
+
+higgs-audio-v3-voice-clone-chinese:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      prompt_audio: "{{WavPath}}"
+      prompt_text: "{{prompt_text}}"
+      language: "zh"
+
+higgs-audio-v3-voice-clone-english:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      text: "{{text}}"
+      prompt_audio: "{{WavPath}}"
+      prompt_text: "{{prompt_text}}"
+      language: "en"

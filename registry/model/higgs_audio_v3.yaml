@@ -1,0 +1,41 @@
+# Higgs Audio v3 TTS served via vllm-omni (OpenAI-compatible
+# /v1/audio/speech endpoint).
+#
+# Reference:
+#   https://huggingface.co/bosonai/higgs-audio-v3-tts-4b
+#   third_party/vllm-omni/recipes/BosonAI/Higgs-Audio-V3-TTS.md
+#
+# === env_path is a CONDA env, not an isolate venv ===
+#
+# This host's NVIDIA driver (535.x / CUDA 12.2) cannot run torch 2.11.0+cu13
+# (which is what `pip install vllm` would drag in). The work-around is to
+# clone the existing `qwen3-tts` conda env (which already provides
+# torch 2.9.1+cu128, transformers 4.51.3, flash-attn 2.8.3, all the
+# nvidia-*-cu12 runtime libs) and run vllm-omni inside it.
+#
+# Set up once on the host:
+#
+#   conda create --name higgs_v3 --clone qwen3-tts --yes
+#
+# Then `audio_evals/isolate.py` activates this env and adds:
+#   - vllm==0.22.0          (via pre_command, with --no-deps to keep torch 2.9)
+#   - vllm-omni (editable)  (via requirements.txt; checked out at commit
+#                            82e74ce9 which still imports the vllm-0.22 CLI
+#                            path and contains the v3 model class)
+
+higgs-audio-v3-tts:
+  class: audio_evals.models.TTS.higgs_audio_v3.HiggsAudioV3TTS
+  args:
+    path: init_model/bosonai/higgs-audio-v3-tts-4b
+    dtype: bfloat16
+    tensor_parallel_size: 1
+    startup_timeout: 1800
+    request_timeout: 1800
+    max_new_tokens: 2048
+    seed: 42
+    # IMPORTANT: must be a conda env directory (with bin/activate + bin/python)
+    # cloned from `qwen3-tts`. See the comment block above.
+    env_path: /apdcephfs_qy3/share_301069248/users/yougenyuan/backup/miniconda3/envs/higgs_v3
+    requirements_path: audio_evals/lib/HiggsAudioV3/requirements.txt
+    sample_params:
+      response_format: wav

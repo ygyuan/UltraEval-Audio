@@ -124,6 +124,14 @@ def isolated(
             cudnn_lib = f"{nvidia_pkg_base}/cudnn/lib"
             cublas_lib = f"{nvidia_pkg_base}/cublas/lib"
             cufft_lib = f"{nvidia_pkg_base}/cufft/lib"
+            # CUDA 13 unified pip layout: nvidia-cu13 ships all CUDA 13 runtime
+            # libraries (libcudart.so.13, libcublas.so.13, libnvJitLink.so.13,
+            # libcupti.so.13, libnvrtc.so.13, ...) under a single ``cu13/lib``
+            # directory. Newer vllm wheels (>=0.22) compiled against CUDA 13
+            # depend on these SONAMEs. Adding this directory is harmless for
+            # CUDA 12 stacks because the SONAMEs do not collide
+            # (e.g. libcudart.so.12 vs libcudart.so.13).
+            cu13_lib = f"{nvidia_pkg_base}/cu13/lib"
 
             cuda_runtime_lib = f"{env_path}/lib/python{major_minor}/site-packages/nvidia/cuda_runtime/lib"
 
@@ -146,7 +154,7 @@ def isolated(
             command = (
                 f"source {env_path}/bin/activate && "
                 f"{cuda_env}"
-                f"export LD_LIBRARY_PATH={lib_path}:{cuda_runtime_lib}:{cudnn_lib}:{cublas_lib}:{cufft_lib}:$LD_LIBRARY_PATH && "
+                f"export LD_LIBRARY_PATH={lib_path}:{cuda_runtime_lib}:{cudnn_lib}:{cublas_lib}:{cufft_lib}:{cu13_lib}:$LD_LIBRARY_PATH && "
                 f"export PYTORCH_NVML_BASED_CUDA_CHECK=0 && "
                 f"{env_path}/bin/python -u {script_path} {args_str}"
             )
