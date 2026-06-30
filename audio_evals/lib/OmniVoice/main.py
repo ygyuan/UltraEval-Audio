@@ -175,6 +175,36 @@ if __name__ == "__main__":
             # Print the prefixed error to stdout so the parent client can
             # pick it up via the existing "Error:" channel, and also dump
             # the full traceback to stderr for log-based diagnosis.
-            print(f"Error: {str(e)}", flush=True)
+            err_str = str(e)
+            print(f"Error: {err_str}", flush=True)
             traceback.print_exc(file=sys.stderr)
             sys.stderr.flush()
+
+            # Fatal CUDA/runtime errors corrupt this process's CUDA
+            # context — every subsequent ``model.generate`` will keep
+            # failing with the same error.  Exit so the parent's
+            # ``ensure_process_alive`` can launch a fresh subprocess.
+            fatal_keywords = (
+                "CUDA error",
+                "CUDA out of memory",
+                "out of memory",
+                "device-side assert",
+                "an illegal memory access",
+                "CUBLAS_STATUS",
+                "CUDNN_STATUS",
+                "NCCL",
+                "no kernel image is available",
+                "Driver error",
+            )
+            if any(kw in err_str for kw in fatal_keywords):
+                logger.error(
+                    "Fatal CUDA/runtime error detected, exiting subprocess "
+                    "so parent can restart: %s",
+                    err_str,
+                )
+                try:
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                except Exception:
+                    pass
+                os._exit(1)

@@ -5,8 +5,8 @@ cd ${current_dir}
 #source ${current_dir}/.bashrc
 #conda activate GPTSoVits
 
-stage=3
-stop_stage=3
+stage=4
+stop_stage=4
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     echo "start stage ${stage}, stop stage ${stop_stage}"
@@ -16,7 +16,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
         for model in MiniCPMo4_5-audio; do
             for prompt in mini-cpm-omni-asr-zh; do
                 [ ! -d res/${model}/${dataset} ] && \
-                    CUDA_VISIBLE_DEVICES="0,1,2,3,4,5" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 6
+                    CUDA_VISIBLE_DEVICES="0,1,2,3" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 4
                 # exit 0
             done
         done
@@ -25,7 +25,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
         for model in MiniCPMo4_5-audio; do
             for prompt in mini-cpm-omni-asr-en; do
                 [ ! -d res/${model}/${dataset} ] && \
-                    CUDA_VISIBLE_DEVICES="0,1,2,3,4,5" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 6
+                    CUDA_VISIBLE_DEVICES="0,1,2,3" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 4
             done
         done
     done
@@ -37,7 +37,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
         for model in MiniCPMo4_5-audio; do
             for prompt in mini-cpm-omni-s2tt-zh2en; do
                 [ ! -d res/${model}/${dataset} ] && \
-                    CUDA_VISIBLE_DEVICES="0,1,2,3,4,5" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 6
+                    CUDA_VISIBLE_DEVICES="0,1,2,3" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 4
             done
         done
     done
@@ -45,7 +45,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
         for model in MiniCPMo4_5-audio; do
             for prompt in mini-cpm-omni-s2tt-en2zh; do
                 [ ! -d res/${model}/${dataset} ] && \
-                    CUDA_VISIBLE_DEVICES="0,1,2,3,4,5" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 6
+                    CUDA_VISIBLE_DEVICES="0,1,2,3" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 4
             done
         done
     done
@@ -57,7 +57,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
         for model in MiniCPMo4_5-audio; do
             for prompt in mini-cpm-omni-emotion_analysis; do
                 [ ! -d res/${model}/${dataset} ] && \
-                    CUDA_VISIBLE_DEVICES="0,1,2,3,4,5" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 6
+                    CUDA_VISIBLE_DEVICES="0,1,2,3" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 4
             done
         done
     done
@@ -65,7 +65,19 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
         for model in MiniCPMo4_5-speech; do
             for prompt in ""; do
                 # [ ! -d res/${model}/${dataset} ] && \
-                    CUDA_VISIBLE_DEVICES="0,1,2,3,4,5" python audio_evals/main.py --dataset ${dataset} --model ${model} --use_model_pool --workers 6
+                    CUDA_VISIBLE_DEVICES="0,1,2,3" python audio_evals/main.py --dataset ${dataset} --model ${model} --use_model_pool --workers 4
+            done
+        done
+    done
+fi
+
+if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
+    echo "start stage ${stage}, stop stage ${stop_stage}"
+    for dataset in asc-moan; do
+        for model in MiniCPMo4_5-audio; do
+            for prompt in mini-cpm-omni-asc_moan_analysis; do
+                # [ ! -d res/${model}/${dataset} ] && \
+                    CUDA_VISIBLE_DEVICES="0,1,2,3" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 4
             done
         done
     done

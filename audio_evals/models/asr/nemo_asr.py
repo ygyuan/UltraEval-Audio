@@ -1,18 +1,26 @@
-"""
-VibeVoice ASR model wrapper for UltraEval-Audio.
+"""NVIDIA NeMo ASR model wrapper for UltraEval-Audio.
 
-Wraps the VibeVoice-ASR model (Microsoft Research) so it can be used as an
-offline ASR model in the UltraEval-Audio framework.
+Wraps NVIDIA NeMo ASR models so they can be used as offline ASR models
+in the UltraEval-Audio framework.
+
+Supported architectures (auto-detected from the checkpoint path):
+    * ``parakeet-tdt-0.6b-v3``  (EncDecRNNTBPEModel — multilingual TDT)
+    * ``canary-1b-v2``          (EncDecMultiTaskModel — multitask ASR+AST)
+
+The actual model runs in an isolated subprocess (managed by the
+``@isolated`` decorator) so its heavy / version-specific dependencies
+(nemo_toolkit[asr], torch, pytorch-lightning, ...) do not pollute the
+main UltraEval-Audio environment.
 
 Reference:
-    https://github.com/microsoft/VibeVoice
+    https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3
+    https://huggingface.co/nvidia/canary-1b-v2
 """
 
 import json
 import logging
 import os
 import select
-import sys
 import uuid
 from typing import Any, Dict, Optional
 
@@ -23,24 +31,17 @@ from audio_evals.models.model import OfflineModel
 logger = logging.getLogger(__name__)
 
 
-@isolated("audio_evals/lib/VibeVoice/asr_main.py")
-class VibeVoiceASR(OfflineModel):
-    """
-    VibeVoice ASR model wrapper.
-
-    The actual model runs in an isolated subprocess (managed by the
-    ``@isolated`` decorator) so that its heavy / version-specific
-    dependencies do not pollute the main UltraEval-Audio environment.
-    """
+@isolated("audio_evals/lib/NeMo-ASR/asr_main.py")
+class NemoASR(OfflineModel):
+    """NVIDIA NeMo ASR model wrapper (parakeet / canary)."""
 
     def __init__(
         self,
-        path: str,
-        language_model_pretrained_name: str = "Qwen/Qwen2.5-7B",
+        path: str = "init_model/nvidia/parakeet-tdt-0.6b-v3",
+        model_class: str = "auto",
         dtype: str = "bfloat16",
-        device: str = "cuda",
-        attn_implementation: str = "auto",
-        max_new_tokens: int = 32768,
+        device: str = "cuda:0",
+        max_new_tokens: int = 512,
         language: Optional[str] = None,
         sample_params: Optional[Dict[str, Any]] = None,
         *args,
@@ -48,29 +49,37 @@ class VibeVoiceASR(OfflineModel):
     ):
         """
         Args:
-            path: Path or HuggingFace ID of the VibeVoice-ASR checkpoint.
-            language_model_pretrained_name: Tokenizer / language model name
-                used by ``VibeVoiceASRProcessor`` (default: ``Qwen/Qwen2.5-7B``).
+            path: Local path (preferred) or HF repo id of the NeMo
+                ASR checkpoint directory / ``.nemo`` file.
+            model_class: ``"auto"`` / ``"multitask"`` / ``"rnnt"`` / ``"ctc"``.
+                ``"auto"`` infers from the directory name: ``canary`` →
+                ``multitask``; ``parakeet`` → ``rnnt``.
             dtype: ``"float16"`` / ``"bfloat16"`` / ``"float32"``.
-            device: e.g. ``"cuda"``, ``"cuda:0"``, ``"cpu"``.
-            attn_implementation: ``"flash_attention_2"`` / ``"sdpa"`` /
-                ``"eager"`` / ``"auto"``.
-            max_new_tokens: Default max tokens for each generation.
-            language: Target transcription language (``"zh"`` / ``"en"``).
-                When set, a language-specific ``context_info`` hint is passed
-                to the processor to constrain the output language.
+            device: e.g. ``"cuda"`` / ``"cuda:0"`` / ``"cpu"``.
+            max_new_tokens: Maximum tokens to generate per chunk (only
+                used by multitask / canary models).
+            language: Default target transcription language (short code
+                e.g. ``"en"`` / ``"zh"`` / ``"de"``).  Canary requires
+                a language to be set — defaults to ``"en"`` when unset.
             sample_params: Optional sampling parameters forwarded to the
                 subprocess at inference time.
         """
         if not os.path.exists(path):
-            path = self._download_model(path)
+            try:
+                path = self._download_model(path)
+            except Exception as e:
+                logger.warning(
+                    "NeMo-ASR path %s does not exist locally; the "
+                    "subprocess will attempt HuggingFace cache resolution. "
+                    "Original error: %s",
+                    path, e,
+                )
 
         self.command_args = {
             "path": path,
-            "language_model_pretrained_name": language_model_pretrained_name,
+            "model_class": model_class,
             "dtype": dtype,
             "device": device,
-            "attn_implementation": attn_implementation,
             "max_new_tokens": str(max_new_tokens),
         }
         if language:
@@ -102,18 +111,17 @@ class VibeVoiceASR(OfflineModel):
                             )
                         return {"audio": audio}
         raise ValueError(
-            f"Cannot find audio path in prompt for VibeVoice-ASR: {prompt}"
+            f"Cannot find audio path in prompt for NemoASR: {prompt}"
         )
 
     def _inference(self, prompt: PromptStruct, **kwargs) -> str:
         prompt = self._process_prompt(prompt)
 
-        # Make sure the subprocess is alive (auto-restart on crash).
         if hasattr(self, "ensure_process_alive"):
             self.ensure_process_alive()
         elif self.process.poll() is not None:
             raise RuntimeError(
-                "VibeVoiceASR subprocess has exited with code "
+                "NemoASR subprocess has exited with code "
                 f"{self.process.returncode}."
             )
 
@@ -122,7 +130,6 @@ class VibeVoiceASR(OfflineModel):
 
         prompt["kwargs"] = kwargs
 
-        # Send request.
         while True:
             _, wlist, _ = select.select([], [self.process.stdin], [], 60)
             if wlist:
@@ -130,17 +137,16 @@ class VibeVoiceASR(OfflineModel):
                     f"{prefix}{json.dumps(prompt, ensure_ascii=False)}\n"
                 )
                 self.process.stdin.flush()
-                logger.debug("VibeVoiceASR prompt written to stdin")
+                logger.debug("NemoASR prompt written to stdin")
                 break
 
-        # Read response.
         while True:
             rlist, _, _ = select.select(
                 [self.process.stdout, self.process.stderr], [], [], 1
             )
             if not rlist and self.process.poll() is not None:
                 raise RuntimeError(
-                    "VibeVoiceASR subprocess exited unexpectedly with code "
+                    "NemoASR subprocess exited unexpectedly with code "
                     f"{self.process.returncode}."
                 )
 
@@ -154,76 +160,51 @@ class VibeVoiceASR(OfflineModel):
                             self.process.stdin.write(f"{prefix}close\n")
                             self.process.stdin.flush()
                             payload = result[len(prefix):]
-                            # The subprocess returns a JSON string.
                             try:
                                 obj = json.loads(payload)
                                 return obj.get("content", payload)
                             except json.JSONDecodeError:
                                 return payload
                         elif result.startswith("Error:"):
-                            err_msg = f"VibeVoiceASR failed: {result}"
-                            # If the subprocess reports a fatal CUDA /
-                            # runtime error its CUDA context is corrupted
-                            # and *every* following request to this worker
-                            # would return the same error (observed:
-                            # 76% fail rate on asr_lianghui).  Kill the
-                            # subprocess here so the next ``_inference``
-                            # call's ``ensure_process_alive`` can restart
-                            # a fresh one with a clean GPU context.
-                            fatal_keywords = (
-                                "CUDA error",
-                                "CUDA out of memory",
-                                "out of memory",
-                                "device-side assert",
-                                "an illegal memory access",
-                                "CUBLAS_STATUS",
-                                "CUDNN_STATUS",
-                                "NCCL",
-                                "no kernel image is available",
-                                "Driver error",
-                            )
-                            if any(kw in result for kw in fatal_keywords):
-                                logger.error(
-                                    "Fatal subprocess error detected, "
-                                    "killing worker for restart: %s",
-                                    result,
-                                )
-                                try:
-                                    self.process.kill()
-                                    self.process.wait(timeout=10)
-                                except Exception as kill_err:
-                                    logger.warning(
-                                        "Failed to kill subprocess cleanly: %s",
-                                        kill_err,
-                                    )
-                            raise RuntimeError(err_msg)
+                            raise RuntimeError(f"NemoASR failed: {result}")
                         else:
                             logger.info(result)
                     elif stream is self.process.stderr:
                         err = self.process.stderr.readline().strip()
                         if not err:
                             continue
+                        # Order matters: check ERROR-ish keywords FIRST so
+                        # that lines like "RuntimeError: ..." are not later
+                        # swallowed by INFO/config heuristics.
                         if any(
                             kw in err
                             for kw in [
-                                "INFO",
-                                "DEBUG",
-                                "Loading",
-                                "Building",
-                                "loading",
-                                "building",
-                                "done",
-                                "loaded",
-                                "%|",
-                                "it/s]",
-                                # Old protocol re-emit notice; harmless
-                                # under high concurrency, do not surface
-                                # as an error.
-                                "not found close signal",
-                                "close signal not received",
+                                "Traceback (most recent call last):",
+                                "Error:",
+                                "ERROR",
+                                "CRITICAL",
+                                "FATAL",
+                                "Segmentation fault",
+                                "[NeMo E",
+                                "NeMo E ",
+                                "Exception:",
+                                "RuntimeError",
+                                "ValueError",
+                                "TypeError",
+                                "KeyError",
+                                "AttributeError",
+                                "ImportError",
+                                "ModuleNotFoundError",
+                                "FileNotFoundError",
+                                "OSError",
+                                "AssertionError",
+                                "OutOfMemoryError",
+                                "CUDA error",
+                                "CUDA out of memory",
+                                "killed",
                             ]
                         ):
-                            logger.debug(f"Process stderr: {err}")
+                            logger.error(f"Process stderr: {err}")
                         elif any(
                             kw in err
                             for kw in [
@@ -231,14 +212,20 @@ class VibeVoiceASR(OfflineModel):
                                 "FutureWarning",
                                 "UserWarning",
                                 "DeprecationWarning",
+                                "RuntimeWarning",
                                 "deprecated",
                                 "pkg_resources",
-                                "attention_mask",
-                                "pad token",
+                                "warnings.warn",
+                                "[NeMo W",
+                                "NeMo W ",
                             ]
                         ):
                             logger.warning(f"Process stderr: {err}")
                         else:
-                            logger.error(f"Process stderr: {err}")
+                            # Default everything else (NeMo INFO, train/val
+                            # config dumps, tqdm progress bars, bashrc echoes,
+                            # node version banners, ...) to INFO so the log
+                            # is not flooded with bogus ERROR entries.
+                            logger.info(f"Process stderr: {err}")
             except BlockingIOError as e:
                 logger.error(f"BlockingIOError occurred: {e}")

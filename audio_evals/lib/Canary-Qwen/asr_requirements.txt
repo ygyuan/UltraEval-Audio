@@ -1,0 +1,42 @@
+# NVIDIA Canary-Qwen-2.5B (SALM) isolated environment requirements.
+#
+# Canary-Qwen-2.5B is a Speech-Augmented Language Model (SALM) that combines
+# a Canary speech encoder with a Qwen LLM decoder.
+#
+# IMPORTANT: this host has CUDA driver 12.2 (NVIDIA-SMI 535.x), so torch is
+# pinned to the cu124 wheel.
+
+# --- Build-time helpers ---------------------------------------------------
+# Some legacy nemo sub-deps ship sdists that need Cython / wheel / packaging
+# at install time (without declaring them in pyproject.toml).  Install them
+# up-front so PEP 517 build isolation always succeeds.
+Cython>=0.29.36
+wheel
+packaging
+# -------------------------------------------------------------------------
+
+torch==2.6.0
+torchaudio==2.6.0
+# NeMo toolkit (ASR collection) — needed for SALM model loading.
+nemo_toolkit[asr]>=2.0.0
+# Canary-Qwen uses Qwen as the LM backbone, so transformers is required for
+# the LLM tokenizer / decoder code paths.
+transformers>=4.45.0,<4.58.0
+accelerate>=0.30.0
+huggingface_hub>=0.24.0
+# Audio / signal processing dependencies.
+librosa
+soundfile
+sox
+numpy
+scipy
+# NeMo collection dependencies.
+einops
+omegaconf
+hydra-core
+pytorch-lightning>=2.2.0
+sentencepiece
+# NOTE: ``youtokentome`` intentionally removed — it is only needed by
+# nemo_toolkit's NMT collection (not ASR / SALM), and its sdist build
+# fails inside PEP 517 isolation due to a missing Cython build-time
+# declaration.

@@ -1,0 +1,35 @@
+# NVIDIA NeMo ASR prompt configurations.
+#
+# The NeMo ASR wrappers (audio_evals/models/asr/nemo_asr.py) only extract
+# the audio path from the prompt — they do NOT use any text instruction
+# from the template.  The transcription target language is controlled by
+# the model's ``language`` argument (see registry/model/nemo_asr.yaml).
+#
+# Therefore these prompts only need to wrap the audio entry.
+
+parakeet-tdt:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+
+canary:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'
+
+canary-qwen:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+      - type: audio
+        value: '{{WavPath}}'

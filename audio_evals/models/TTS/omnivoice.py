@@ -205,6 +205,42 @@ class OmniVoiceTTS(OfflineModel):
                                 self.process.stdin.flush()
                                 return response_line
                             elif result.startswith("Error:"):
+                                # If the subprocess reports a fatal CUDA /
+                                # runtime error its CUDA context is
+                                # corrupted and every subsequent request to
+                                # this worker would keep returning the same
+                                # error.  Kill the subprocess here so the
+                                # next ``_inference`` call's
+                                # ``ensure_process_alive`` can restart a
+                                # fresh one with a clean GPU context.
+                                fatal_keywords = (
+                                    "CUDA error",
+                                    "CUDA out of memory",
+                                    "out of memory",
+                                    "device-side assert",
+                                    "an illegal memory access",
+                                    "CUBLAS_STATUS",
+                                    "CUDNN_STATUS",
+                                    "NCCL",
+                                    "no kernel image is available",
+                                    "Driver error",
+                                )
+                                if any(kw in result for kw in fatal_keywords):
+                                    logger.error(
+                                        "Fatal subprocess error detected, "
+                                        "killing OmniVoice worker for "
+                                        "restart: %s",
+                                        result,
+                                    )
+                                    try:
+                                        self.process.kill()
+                                        self.process.wait(timeout=10)
+                                    except Exception as kill_err:
+                                        logger.warning(
+                                            "Failed to kill subprocess "
+                                            "cleanly: %s",
+                                            kill_err,
+                                        )
                                 raise RuntimeError(
                                     f"OmniVoice failed: {result}"
                                 )

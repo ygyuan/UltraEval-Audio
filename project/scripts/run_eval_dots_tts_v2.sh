@@ -23,7 +23,7 @@ export TORCHINDUCTOR_CACHE_DIR=/tmp/torchinductor_dots_tts_$$
 # regression and uneven GPU usage in practice; single-process is more
 # predictable here.
 
-stage=1
+stage=2
 stop_stage=3
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then

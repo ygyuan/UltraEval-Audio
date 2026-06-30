@@ -1,6 +1,8 @@
 import logging
 logging.getLogger("huggingface_hub.utils._http").setLevel(logging.WARNING)
 import os
+import socket
+from contextlib import contextmanager
 os.environ["HF_HUB_MAX_RETRY"] = "1"  # 只重试1次
 os.environ["HF_HUB_DOWNLOAD_TIMEOUT"] = "10"  # 超时10秒
 from typing import Dict, List, Optional
@@ -12,6 +14,69 @@ from audio_evals.constants import DEFAULT_MODEL_PATH
 from audio_evals.dataset.dataset import Dataset as BaseDataset
 
 logger = logging.getLogger(__name__)
+
+
+# Cache the network reachability check result so that the (already slow)
+# probe is only paid once per process — subsequent dataset loads reuse it.
+_HF_HUB_REACHABLE: Optional[bool] = None
+
+
+def _hf_hub_reachable(timeout: float = 2.0) -> bool:
+    """Probe whether ``huggingface.co`` is reachable on this host.
+
+    A quick TCP connect on port 443 is far cheaper than letting
+    ``huggingface_hub`` go through its 5-step exponential backoff
+    (~23s wall time) for every single ``load_dataset`` call.
+    """
+    global _HF_HUB_REACHABLE
+    if _HF_HUB_REACHABLE is not None:
+        return _HF_HUB_REACHABLE
+
+    # Respect explicit user override: if any of the standard offline env
+    # vars is set we should skip the probe and treat the hub as down.
+    if (
+        os.environ.get("HF_HUB_OFFLINE") == "1"
+        or os.environ.get("HF_DATASETS_OFFLINE") == "1"
+        or os.environ.get("TRANSFORMERS_OFFLINE") == "1"
+    ):
+        _HF_HUB_REACHABLE = False
+        return False
+
+    try:
+        with socket.create_connection(("huggingface.co", 443), timeout=timeout):
+            _HF_HUB_REACHABLE = True
+    except (OSError, socket.timeout):
+        _HF_HUB_REACHABLE = False
+        logger.info(
+            "huggingface.co is not reachable (offline environment detected); "
+            "future dataset loads will skip Hub lookups and use local "
+            "fallbacks under %s.",
+            DEFAULT_MODEL_PATH,
+        )
+    return _HF_HUB_REACHABLE
+
+
+@contextmanager
+def _force_hf_offline():
+    """Temporarily set the HF offline environment flags.
+
+    ``load_dataset(path=<local-dir>)`` still tries to HEAD the README on
+    the hub by default, which costs ~23s of retries on offline machines.
+    Setting these flags short-circuits that behaviour for the duration
+    of the ``with`` block.
+    """
+    keys = ("HF_HUB_OFFLINE", "HF_DATASETS_OFFLINE", "TRANSFORMERS_OFFLINE")
+    saved = {k: os.environ.get(k) for k in keys}
+    for k in keys:
+        os.environ[k] = "1"
+    try:
+        yield
+    finally:
+        for k, v in saved.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
 
 
 def save_audio_to_local(ds: Dataset, save_path: str):
@@ -129,23 +194,57 @@ def load_audio_hf_dataset(name, subset=None, split="", local_path="", col_aliase
             load_args["name"] = subset
         if split:
             load_args["split"] = split
-        try:
-            ds = load_dataset(**load_args, trust_remote_code=True)
-        except Exception as e:
-            logger.warning(f"load args is {load_args} load dataset from Hub failed: {e}")
-            # Fallback: try loading from local init_model directory
-            local_fallback = os.path.join(DEFAULT_MODEL_PATH, name)
-            if os.path.exists(local_fallback):
-                logger.info(f"Falling back to local dataset path: {local_fallback}")
-                fallback_args = {**load_args, "path": local_fallback}
-                try:
-                    ds = load_dataset(**fallback_args, trust_remote_code=True)
-                except Exception as e2:
-                    logger.error(f"Local fallback also failed: {e2}")
-                    raise e2
-            else:
-                logger.error(f"No local fallback found at {local_fallback}")
-                raise e
+
+        # ----------------------------------------------------------------
+        # Fast-path for offline / air-gapped environments.
+        #
+        # Previously this function always tried ``load_dataset(path=<repo>)``
+        # first, which on an offline host wastes ~23 seconds inside
+        # ``huggingface_hub``'s urllib3 retry loop before raising
+        # ``LocalEntryNotFoundError`` and falling back. Then the fallback
+        # call ``load_dataset(path=<local-dir>)`` ALSO tries to HEAD the
+        # README on the Hub, costing another ~23 seconds.
+        #
+        # We now:
+        #   1. Probe ``huggingface.co`` once with a 2 s TCP connect.
+        #   2. If unreachable AND a local fallback exists under
+        #      ``init_model/<repo>``, skip the Hub call entirely and load
+        #      the local copy with HF_HUB_OFFLINE=1 set so datasets does
+        #      not retry the README HEAD either.
+        # ----------------------------------------------------------------
+        local_fallback = os.path.join(DEFAULT_MODEL_PATH, name)
+        local_fallback_exists = os.path.exists(local_fallback)
+
+        if local_fallback_exists and not _hf_hub_reachable():
+            logger.info(
+                "Hub unreachable, loading dataset directly from local path: %s",
+                local_fallback,
+            )
+            fallback_args = {**load_args, "path": local_fallback}
+            with _force_hf_offline():
+                ds = load_dataset(**fallback_args, trust_remote_code=True)
+        else:
+            try:
+                ds = load_dataset(**load_args, trust_remote_code=True)
+            except Exception as e:
+                logger.warning(f"load args is {load_args} load dataset from Hub failed: {e}")
+                # Fallback: try loading from local init_model directory
+                if local_fallback_exists:
+                    logger.info(f"Falling back to local dataset path: {local_fallback}")
+                    fallback_args = {**load_args, "path": local_fallback}
+                    try:
+                        # Force offline mode so the fallback does not
+                        # repeat the 5-step retry storm.
+                        with _force_hf_offline():
+                            ds = load_dataset(
+                                **fallback_args, trust_remote_code=True
+                            )
+                    except Exception as e2:
+                        logger.error(f"Local fallback also failed: {e2}")
+                        raise e2
+                else:
+                    logger.error(f"No local fallback found at {local_fallback}")
+                    raise e
 
     for k, v in col_aliases.items():
         if v in ds.column_names:

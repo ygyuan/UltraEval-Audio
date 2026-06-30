@@ -33,3 +33,12 @@ desed_sound_analysis:
     model: qwen-audio-chat
     evaluator: prefix-match
     agg: acc
+
+asc_moan_analysis:
+  class: audio_evals.base.EvalTaskCfg
+  args:
+    dataset: asc-moan
+    prompt: asc_moan_analysis
+    model: qwen-audio-chat
+    evaluator: prefix-match
+    agg: acc

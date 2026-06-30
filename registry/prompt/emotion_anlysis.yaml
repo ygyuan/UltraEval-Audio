@@ -54,3 +54,14 @@ sound_analysis:
             value: "listen the audio and judge the sound, the answer must be one of ['Speech', 'Frying', 'Dishes',
             'Running_water', 'Blender', 'Electric_shaver_toothbrush', 'Cat',
             'Alarm_bell_ringing', 'Dog', 'Vacuum_cleaner'], answer without explain"
+
+asc_moan_analysis:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      - role: user
+        contents:
+          - type: audio
+            value: "{{WavPath}}"
+          - type: text
+            value: "listen the audio and judge whether it contains moaning sounds (sexual/pornographic content). The answer must be one of [normal, porn]. Answer porn if the audio contains moaning or sexually explicit sounds, otherwise answer normal. Answer without explain."

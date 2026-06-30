@@ -1,5 +1,18 @@
 import argparse
 import json
+import os
+
+# Disable tqdm progress bars and transformers verbose logging at import time.
+# tqdm uses \r (carriage return) instead of \n; when its output is captured
+# by ``subprocess.PIPE``, the parent process cannot split the stream into
+# lines and the OS pipe buffer (default 64KB) fills up, blocking
+# ``print(..., flush=True)`` calls on stdout — which is precisely how this
+# subprocess signals readiness to the parent. Silence all of it preemptively.
+os.environ.setdefault("TQDM_DISABLE", "1")
+os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
+os.environ.setdefault("TRANSFORMERS_NO_ADVISORY_WARNINGS", "1")
+
 import select
 import signal
 import sys

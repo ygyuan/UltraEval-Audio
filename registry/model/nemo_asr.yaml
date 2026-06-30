@@ -1,0 +1,87 @@
+# NVIDIA NeMo ASR model configurations.
+#
+# Supported models (loaded inside an isolated subprocess via
+# audio_evals/lib/NeMo-ASR/asr_main.py):
+#   * parakeet-tdt-0.6b-v3  — Multilingual (25+ EU langs) RNNT/TDT model.
+#   * canary-1b-v2          — Multitask (ASR + AST) model for 25 langs.
+#
+# The heavy / version-specific dependencies (nemo_toolkit[asr], torch,
+# pytorch-lightning, ...) live in a dedicated virtualenv at
+# ``envs/NeMo-ASR`` so they do not pollute the main UltraEval-Audio env.
+
+# Parakeet-TDT 0.6B v3 — multilingual (default: auto-detect / English).
+parakeet-tdt-0.6b-v3:
+  class: audio_evals.models.asr.nemo_asr.NemoASR
+  args:
+    path: init_model/nvidia/parakeet-tdt-0.6b-v3
+    model_class: rnnt
+    dtype: bfloat16
+    device: cuda:0
+    max_new_tokens: 512
+    env_path: envs/NeMo-ASR
+    requirements_path: audio_evals/lib/NeMo-ASR/asr_requirements.txt
+
+# English-constrained Parakeet variant.
+parakeet-tdt-0.6b-v3-en:
+  class: audio_evals.models.asr.nemo_asr.NemoASR
+  args:
+    path: init_model/nvidia/parakeet-tdt-0.6b-v3
+    model_class: rnnt
+    dtype: bfloat16
+    device: cuda:0
+    max_new_tokens: 512
+    language: en
+    env_path: envs/NeMo-ASR
+    requirements_path: audio_evals/lib/NeMo-ASR/asr_requirements.txt
+
+# Canary-1B v2 — multitask ASR/AST, defaults to English ASR.
+canary-1b-v2:
+  class: audio_evals.models.asr.nemo_asr.NemoASR
+  args:
+    path: init_model/nvidia/canary-1b-v2
+    model_class: multitask
+    dtype: bfloat16
+    device: cuda:0
+    max_new_tokens: 512
+    language: en
+    env_path: envs/NeMo-ASR
+    requirements_path: audio_evals/lib/NeMo-ASR/asr_requirements.txt
+
+# Canary-1B v2 — explicit German ASR.
+canary-1b-v2-de:
+  class: audio_evals.models.asr.nemo_asr.NemoASR
+  args:
+    path: init_model/nvidia/canary-1b-v2
+    model_class: multitask
+    dtype: bfloat16
+    device: cuda:0
+    max_new_tokens: 512
+    language: de
+    env_path: envs/NeMo-ASR
+    requirements_path: audio_evals/lib/NeMo-ASR/asr_requirements.txt
+
+# Canary-1B v2 — explicit French ASR.
+canary-1b-v2-fr:
+  class: audio_evals.models.asr.nemo_asr.NemoASR
+  args:
+    path: init_model/nvidia/canary-1b-v2
+    model_class: multitask
+    dtype: bfloat16
+    device: cuda:0
+    max_new_tokens: 512
+    language: fr
+    env_path: envs/NeMo-ASR
+    requirements_path: audio_evals/lib/NeMo-ASR/asr_requirements.txt
+
+# Canary-1B v2 — explicit Russian ASR.
+canary-1b-v2-ru:
+  class: audio_evals.models.asr.nemo_asr.NemoASR
+  args:
+    path: init_model/nvidia/canary-1b-v2
+    model_class: multitask
+    dtype: bfloat16
+    device: cuda:0
+    max_new_tokens: 512
+    language: ru
+    env_path: envs/NeMo-ASR
+    requirements_path: audio_evals/lib/NeMo-ASR/asr_requirements.txt

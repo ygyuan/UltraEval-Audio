@@ -28,6 +28,8 @@ class Qwen3Omni(OfflineModel):
         path: str = "Qwen/Qwen3-Omni-30B-A3B-Instruct",
         speech: bool = False,
         speaker: str = "Ethan",
+        thinker_max_new_tokens: int = 1024,
+        talker_max_new_tokens: int = 512,
         sample_params: Dict = None,
         *args,
         **kwargs,
@@ -38,6 +40,8 @@ class Qwen3Omni(OfflineModel):
         self.command_args = {
             "path": path,
             "speaker": speaker,
+            "thinker_max_new_tokens": str(thinker_max_new_tokens),
+            "talker_max_new_tokens": str(talker_max_new_tokens),
         }
         if speech:
             self.command_args["speech"] = ""

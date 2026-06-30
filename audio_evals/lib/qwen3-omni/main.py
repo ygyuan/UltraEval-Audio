@@ -49,6 +49,23 @@ if __name__ == "__main__":
         default="Ethan",
         help="Speaker name for speech generation",
     )
+    parser.add_argument(
+        "--thinker_max_new_tokens",
+        type=int,
+        default=1024,
+        help=(
+            "Max new tokens for the thinker stage. The official default is "
+            "very small (256), which is easily exhausted by Qwen3-Omni's "
+            "internal <think>...</think> stream and yields an empty final "
+            "answer; bump it to 1024 by default."
+        ),
+    )
+    parser.add_argument(
+        "--talker_max_new_tokens",
+        type=int,
+        default=512,
+        help="Max new tokens for the talker (audio) stage.",
+    )
     config = parser.parse_args()
     model, processor = load_model(config.path)
     print("Model loaded from checkpoint: {}".format(config.path), flush=True)
@@ -74,7 +91,7 @@ if __name__ == "__main__":
 
             text = processor.apply_chat_template(
                 conversation, add_generation_prompt=True, tokenize=False,
-                enable_thinking=False,
+                enable_thinking=True,
             )
             audios, images, videos = process_mm_info(
                 conversation, use_audio_in_video=USE_AUDIO_IN_VIDEO
@@ -96,8 +113,8 @@ if __name__ == "__main__":
                     **inputs,
                     speaker=config.speaker,
                     use_audio_in_video=USE_AUDIO_IN_VIDEO,
-                    thinker_max_new_tokens=256,
-                    talker_max_new_tokens=512,
+                    thinker_max_new_tokens=config.thinker_max_new_tokens,
+                    talker_max_new_tokens=config.talker_max_new_tokens,
                 )
                 text = processor.batch_decode(
                     text_ids[:, inputs["input_ids"].shape[1] :],
@@ -140,14 +157,33 @@ if __name__ == "__main__":
                     **inputs,
                     use_audio_in_video=USE_AUDIO_IN_VIDEO,
                     return_audio=False,
-                    thinker_max_new_tokens=256,
-                    talker_max_new_tokens=512,
+                    thinker_max_new_tokens=config.thinker_max_new_tokens,
+                    talker_max_new_tokens=config.talker_max_new_tokens,
                 )
+                generated = output_ids[:, inputs["input_ids"].shape[1]:]
                 text = processor.batch_decode(
-                    output_ids[:, inputs["input_ids"].shape[1] :],
+                    generated,
                     skip_special_tokens=True,
                     clean_up_tokenization_spaces=False,
                 )
+                if not text or not text[0].strip():
+                    # Empty decode usually means the thinker budget was
+                    # exhausted before any visible answer was produced.
+                    raw = processor.batch_decode(
+                        generated,
+                        skip_special_tokens=False,
+                        clean_up_tokenization_spaces=False,
+                    )
+                    print(
+                        "Warning: empty decoded text. generated_len={}, "
+                        "thinker_max_new_tokens={}, raw_with_special={!r}".format(
+                            generated.shape[-1],
+                            config.thinker_max_new_tokens,
+                            (raw[0] if raw else "")[:500],
+                        ),
+                        file=sys.stderr,
+                        flush=True,
+                    )
                 retry = 3
                 while retry:
                     retry -= 1

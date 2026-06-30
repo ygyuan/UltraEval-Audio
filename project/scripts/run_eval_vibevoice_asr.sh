@@ -32,7 +32,8 @@ fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
     echo "start stage 3"
-    for dataset in asr_lianghui asr_shipinhao_fangyan asr_qunliao_eyi asr_shipinhao_long asr_badcase; do
+    # for dataset in asr_lianghui asr_shipinhao_fangyan asr_qunliao_eyi asr_shipinhao_long asr_badcase; do
+    for dataset in asr_lianghui; do
         for model in vibevoice-asr-zh; do
             for prompt in vibevoice-asr-zh; do
                 CUDA_VISIBLE_DEVICES="0,1,2,3" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --post_process asr_strip_tags --use_model_pool --workers 4 

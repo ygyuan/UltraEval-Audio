@@ -1,0 +1,19 @@
+# NVIDIA Canary-Qwen-2.5B (SALM) model configurations.
+#
+# Loaded inside an isolated subprocess via
+# audio_evals/lib/Canary-Qwen/asr_main.py.
+#
+# Canary-Qwen-2.5B is a Speech-Augmented Language Model: a Canary speech
+# encoder fused with a Qwen LLM decoder.  Heavy / version-specific
+# dependencies live in a dedicated virtualenv at ``envs/Canary-Qwen``.
+
+canary-qwen-2.5b:
+  class: audio_evals.models.asr.canary_qwen.CanaryQwen
+  args:
+    path: init_model/nvidia/canary-qwen-2.5b
+    dtype: bfloat16
+    device: cuda:0
+    max_new_tokens: 512
+    prompt_text: "Transcribe the following:"
+    env_path: envs/Canary-Qwen
+    requirements_path: audio_evals/lib/Canary-Qwen/asr_requirements.txt

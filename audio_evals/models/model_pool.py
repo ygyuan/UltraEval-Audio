@@ -136,6 +136,42 @@ class IsolatedModelPool:
         if not gpu_ids:
             raise ValueError("gpu_ids cannot be empty")
 
+        # Fail-fast validation: confirm every requested GPU index is
+        # actually visible on this machine. Without this check, requesting
+        # e.g. GPU 4/5 on a 4-GPU host silently spawns isolated workers
+        # that crash with "RuntimeError: No CUDA GPUs are available"
+        # only at model-load time, after wasting tens of seconds per
+        # worker on env activation and import.
+        try:
+            import subprocess
+
+            smi = subprocess.run(
+                ["nvidia-smi", "--query-gpu=index", "--format=csv,noheader"],
+                capture_output=True,
+                text=True,
+            )
+            if smi.returncode == 0:
+                physical_ids = {
+                    int(x.strip())
+                    for x in smi.stdout.strip().split("\n")
+                    if x.strip()
+                }
+                missing = [g for g in gpu_ids if g not in physical_ids]
+                if missing:
+                    raise ValueError(
+                        f"Requested gpu_ids={gpu_ids} but the following GPU "
+                        f"indices are not visible to nvidia-smi on this host: "
+                        f"{missing}. Visible GPUs: {sorted(physical_ids)}. "
+                        f"Adjust CUDA_VISIBLE_DEVICES / --workers in your "
+                        f"launch script to match the available hardware."
+                    )
+        except FileNotFoundError:
+            # nvidia-smi not installed; skip validation.
+            logger.warning(
+                "nvidia-smi not available, skipping gpu_ids physical "
+                "existence check."
+            )
+
         if num_instances is None:
             num_instances = len(gpu_ids)
 

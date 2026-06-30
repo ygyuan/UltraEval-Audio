@@ -1,0 +1,49 @@
+# NeMo ASR isolated environment requirements for NVIDIA models:
+#   - nvidia/parakeet-tdt-0.6b-v3
+#   - nvidia/canary-1b-v2
+#
+# IMPORTANT: this host has CUDA driver 12.2 (NVIDIA-SMI 535.x), so torch is
+# pinned to the cu124 wheel that is the latest version still runnable on
+# driver 12.2.  Do NOT use torch>=2.7 unconstrained.
+
+# --- Build-time helpers ---------------------------------------------------
+# Some legacy sub-deps of nemo_toolkit ship only sdists (e.g. webdataset
+# old releases, sox, ...) and need Cython / wheel / packaging available at
+# install time.  We install them up-front so PEP 517 builds succeed even
+# when individual packages forget to declare them in pyproject.toml.
+Cython>=0.29.36
+wheel
+packaging
+# -------------------------------------------------------------------------
+
+torch==2.6.0
+torchaudio==2.6.0
+# NeMo toolkit (ASR collection) — pulls in lightning, hydra, omegaconf,
+# huggingface_hub, sentencepiece, librosa, soundfile, etc.
+# 2.x supports the latest parakeet-tdt-0.6b-v3 / canary-1b-v2 checkpoints.
+nemo_toolkit[asr]>=2.0.0
+# Pin transformers to a range that is compatible with both nemo_toolkit 2.x
+# and the canary tokenizer (uses HF AutoTokenizer under the hood).
+transformers>=4.40.0,<4.58.0
+huggingface_hub>=0.24.0
+# Audio / signal processing dependencies (NeMo lists them as optional but
+# parakeet / canary inference requires them at runtime).
+librosa
+soundfile
+sox
+numpy
+scipy
+# Misc utilities used by nemo collections.
+einops
+omegaconf
+hydra-core
+pytorch-lightning>=2.2.0
+sentencepiece
+# NOTE: ``youtokentome`` is intentionally NOT listed here.
+#   * parakeet-tdt-0.6b-v3 and canary-1b-v2 both use ``sentencepiece``
+#     (BPE/SPE tokenization), not YouTokenToMe.
+#   * youtokentome's old setup.py imports Cython at *import time* without
+#     declaring it in pyproject.toml, which makes pip's PEP 517 build
+#     isolation fail with ``ModuleNotFoundError: No module named 'Cython'``.
+#   * It is only an optional dependency of nemo_toolkit's NMT collection,
+#     not the ASR collection we use here.

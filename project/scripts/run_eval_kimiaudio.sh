@@ -5,8 +5,8 @@ cd ${current_dir}
 #source ${current_dir}/.bashrc
 #conda activate GPTSoVits
 
-stage=3
-stop_stage=3
+stage=4
+stop_stage=4
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     echo "start stage ${stage}, stop stage ${stop_stage}"
@@ -57,6 +57,22 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
                 # [ ! -d res/${model}/${dataset} ] && \
                     # CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7" python audio_evals/main.py --dataset ${dataset} --model ${model} --use_model_pool --workers 8      
                     python audio_evals/main.py --dataset ${dataset} --model ${model}
+            done
+        done
+    done
+fi
+
+if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
+    echo "start stage ${stage}, stop stage ${stop_stage}"
+    for dataset in asc-moan; do
+        for model in kimiaudio; do
+            for prompt in ""; do
+                # Single GPU, single worker, model_pool explicitly disabled —
+                # the most conservative configuration. Use this first to
+                # verify the inference path works end-to-end before scaling
+                # out to multiple GPUs / workers.
+                # [ ! -d res/${model}/${dataset} ] && \
+                    CUDA_VISIBLE_DEVICES="0" python audio_evals/main.py --dataset ${dataset} --model ${model} --use_model_pool off --workers 1
             done
         done
     done

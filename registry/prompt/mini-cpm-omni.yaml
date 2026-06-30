@@ -185,3 +185,19 @@ mini-cpm-omni-s2tt-en2zh:
         value: '{{WavPath}}'
       - type: text
         value: 'Listen to the provided English speech and produce a translation in Chinese text.'
+
+mini-cpm-omni-asc_moan_analysis:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+        - type: text
+          value: '
+            listen the audio and judge whether it contains moaning sounds (sexual/pornographic
+            content). The answer must be one of [normal, porn]. Answer porn if the
+            audio contains moaning or sexually explicit sounds, otherwise answer
+            normal. Answer without explain.
+            '
+        - type: audio
+          value: '{{WavPath}}'

@@ -604,7 +604,47 @@ def main():
             import traceback
 
             traceback.print_exc()
-            print(f"Error: {str(e)}", flush=True)
+            err_str = str(e)
+            print(f"Error: {err_str}", flush=True)
+            sys.stdout.flush()
+            sys.stderr.flush()
+
+            # Some errors corrupt the CUDA context (e.g. "CUDA error:
+            # unspecified launch failure", "device-side assert triggered",
+            # "out of memory") and *every* subsequent kernel launch in this
+            # process will keep failing with the same error.  In that
+            # situation the worker has to die so the parent's
+            # ``ensure_process_alive`` can spawn a fresh subprocess with a
+            # clean CUDA context.  Otherwise the worker turns into a
+            # "zombie" that returns the same error for thousands of
+            # downstream samples (observed: 76% fail rate on
+            # vibevoice-asr-zh / asr_lianghui).
+            fatal_keywords = (
+                "CUDA error",
+                "CUDA out of memory",
+                "out of memory",
+                "device-side assert",
+                "an illegal memory access",
+                "CUBLAS_STATUS",
+                "CUDNN_STATUS",
+                "NCCL",
+                "no kernel image is available",
+                "Driver error",
+            )
+            if any(kw in err_str for kw in fatal_keywords):
+                logger.error(
+                    "Fatal CUDA/runtime error detected, exiting subprocess "
+                    "so parent can restart with a clean context: %s",
+                    err_str,
+                )
+                # Best-effort GPU cleanup; ignore any further failures
+                # (CUDA context is already broken at this point).
+                try:
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                except Exception:
+                    pass
+                os._exit(1)
 
 
 if __name__ == "__main__":

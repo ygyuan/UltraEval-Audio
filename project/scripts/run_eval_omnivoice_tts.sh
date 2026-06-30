@@ -10,7 +10,7 @@ export MODELSCOPE_OFFLINE=1
 #source ${current_dir}/.bashrc
 #conda activate GPTSoVits
 
-stage=2
+stage=3
 stop_stage=3
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
@@ -63,7 +63,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
         for model in omnivoice; do
             for prompt in omnivoice-voice-clone-english; do
                 echo "dataset: ${dataset}, model: ${model}, prompt: ${prompt}"
-                # [ ! -d res/${model}/${dataset} ] && \
+                [ ! -d res/${model}/${dataset} ] && \
                     python audio_evals/main.py --dataset ${dataset} --model ${model} --use_model_pool --workers 4
             done
         done

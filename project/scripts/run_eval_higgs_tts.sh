@@ -28,8 +28,8 @@ export ULTRAEVAL_AUDIO_ROOT="${current_dir}"
 #   https://huggingface.co/bosonai/higgs-audio-v3-tts-4b
 #   https://sgl-project.github.io/sglang-omni/cookbook/higgs_tts.html
 
-stage=1
-stop_stage=3
+stage=2
+stop_stage=2
 
 # Each Higgs v3 instance hosts its own sgl-omni HTTP server on a single GPU,
 # so we run exactly ONE instance per visible GPU (workers == #GPUs in

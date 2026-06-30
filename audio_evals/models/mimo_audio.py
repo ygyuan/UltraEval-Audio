@@ -59,12 +59,44 @@ class MiMoAudio(OfflineModel):
         return role_content
 
     def _check_process_alive(self):
-        """Check if the subprocess is still running, raise if it has exited."""
-        if self.process.poll() is not None:
-            exit_code = self.process.returncode
-            raise RuntimeError(
-                f"Subprocess exited unexpectedly with code {exit_code}"
-            )
+        """Check if the subprocess is still running.
+
+        If the subprocess has terminated unexpectedly, try to restart it via
+        the ``ensure_process_alive`` hook installed by ``@isolated``. When the
+        restart succeeds we reset ``self._ready`` so that the caller will
+        re-enter ``_wait_for_ready`` and wait for the new subprocess to
+        finish loading the model. When the restart hook is unavailable or
+        also fails, propagate ``RuntimeError`` so the outer evaluation loop
+        can record the failure.
+        """
+        if self.process.poll() is None:
+            return
+
+        exit_code = self.process.returncode
+        # Prefer the auto-restart helper provided by @isolated. It also
+        # enforces a hard cap on consecutive restarts so a persistently
+        # broken worker eventually surfaces as an error.
+        ensure_alive = getattr(self, "ensure_process_alive", None)
+        if callable(ensure_alive):
+            try:
+                ensure_alive()
+                # Newly-spawned subprocess still needs to load the model.
+                self._ready = False
+                logger.warning(
+                    "MiMo-Audio subprocess restarted (previous exit code: %d); "
+                    "will wait for the new instance to load the model.",
+                    exit_code,
+                )
+                return
+            except Exception as restart_err:
+                raise RuntimeError(
+                    f"Subprocess exited unexpectedly with code {exit_code} "
+                    f"and auto-restart failed: {restart_err}"
+                ) from restart_err
+
+        raise RuntimeError(
+            f"Subprocess exited unexpectedly with code {exit_code}"
+        )
 
     def _wait_for_ready(self):
         """Wait for the subprocess to finish loading the model."""
@@ -96,6 +128,48 @@ class MiMoAudio(OfflineModel):
                         logger.debug("Subprocess stderr (loading): %s", err.strip())
 
     def _inference(self, prompt: PromptStruct, **kwargs):
+        try:
+            return self._do_inference(prompt)
+        except (RuntimeError, TimeoutError) as e:
+            # Try to recover from subprocess crash / hang by forcibly
+            # restarting the worker once and retrying the same request.
+            # This protects long-running evaluations (e.g. asc-moan with
+            # ~74k samples) from hanging forever when a single sample
+            # crashes the subprocess.
+            should_restart = (
+                isinstance(e, TimeoutError)
+                or "exited unexpectedly" in str(e)
+                or "auto-restart failed" in str(e)
+            )
+            restart_fn = getattr(self, "restart_process", None)
+            if not (should_restart and callable(restart_fn)):
+                raise
+
+            logger.error(
+                "MiMo-Audio subprocess needs forced restart after inference "
+                "failure: %s",
+                e,
+            )
+            try:
+                # Kill the (possibly hung) subprocess and spawn a fresh one.
+                if self.process.poll() is None:
+                    try:
+                        self.process.terminate()
+                        self.process.wait(timeout=10)
+                    except Exception:
+                        try:
+                            self.process.kill()
+                        except Exception:
+                            pass
+                restart_fn()
+                self._ready = False
+                return self._do_inference(prompt)
+            except Exception as restart_err:
+                raise RuntimeError(
+                    f"Inference failed after subprocess restart: {restart_err}"
+                ) from e
+
+    def _do_inference(self, prompt: PromptStruct):
         self._wait_for_ready()
         conversation = [self._parse_role_content(item) for item in prompt]
 

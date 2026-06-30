@@ -1,0 +1,7 @@
+asc-moan:
+  class: audio_evals.dataset.asc.ASCDataset
+  args:
+    name: Yougen/asc_testset
+    split: test_p1
+    default_task: asc_moan_analysis
+    ref_col: label_str
