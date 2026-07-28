@@ -83,3 +83,52 @@ class RelativePath(JsonlFile):
             df[item] = df[item].progress_apply(abs_path)
         df = self.add_col_alias(df)
         return df.to_dict(orient="records")
+
+
+class AudioListJsonl(JsonlFile):
+    """Jsonl dataset whose audio path is stored inside a list column.
+
+    Many training-oriented jsonl formats (e.g. ms-swift chat data) put the
+    audio path(s) inside an ``audios`` list next to the ``messages`` field.
+    Downstream prompts in this repo use the ``{{WavPath}}`` placeholder, so
+    we flatten the (usually single) audio path from that list into a top
+    level ``WavPath`` column.
+    """
+
+    def __init__(
+        self,
+        f_name: str,
+        default_task: str,
+        ref_col: str,
+        audio_col: str = "audios",
+        audio_index: int = 0,
+        target_col: str = "WavPath",
+        col_aliases=None,
+    ):
+        super().__init__(f_name, default_task, ref_col, col_aliases)
+        self.audio_col = audio_col
+        self.audio_index = audio_index
+        self.target_col = target_col
+
+    def load(self, limit=0) -> List[Dict[str, any]]:
+        df = pd.read_json(self.f_name, lines=True)
+        if limit > 0:
+            df = df[:limit]
+
+        if self.audio_col not in df.columns:
+            raise KeyError(
+                f"audio_col '{self.audio_col}' not found in jsonl columns: "
+                f"{list(df.columns)}"
+            )
+
+        def _pick(x):
+            if isinstance(x, (list, tuple)):
+                if len(x) == 0:
+                    return ""
+                idx = self.audio_index if self.audio_index < len(x) else 0
+                return x[idx]
+            return x
+
+        df[self.target_col] = df[self.audio_col].apply(_pick)
+        df = self.add_col_alias(df)
+        return df.to_dict(orient="records")

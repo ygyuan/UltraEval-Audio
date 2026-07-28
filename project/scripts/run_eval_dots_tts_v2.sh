@@ -23,7 +23,7 @@ export TORCHINDUCTOR_CACHE_DIR=/tmp/torchinductor_dots_tts_$$
 # regression and uneven GPU usage in practice; single-process is more
 # predictable here.
 
-stage=2
+stage=3
 stop_stage=3
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
@@ -77,7 +77,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
             for prompt in ""; do
                 echo "dataset: ${dataset}, model: ${model}, prompt: ${prompt}"
                 # [ ! -d res/${model}/${dataset} ] && \
-                CUDA_VISIBLE_DEVICES="3" python3 audio_evals/main.py --dataset ${dataset} --model ${model}
+                CUDA_VISIBLE_DEVICES="7" python3 audio_evals/main.py --dataset ${dataset} --model ${model}
             done
         done
     done
@@ -86,7 +86,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
             for prompt in ""; do
                 echo "dataset: ${dataset}, model: ${model}, prompt: ${prompt}"
                 # [ ! -d res/${model}/${dataset} ] && \
-                CUDA_VISIBLE_DEVICES="3" python3 audio_evals/main.py --dataset ${dataset} --model ${model}
+                CUDA_VISIBLE_DEVICES="7" python3 audio_evals/main.py --dataset ${dataset} --model ${model}
             done
         done
     done

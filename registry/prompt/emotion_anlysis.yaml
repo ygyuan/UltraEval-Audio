@@ -65,3 +65,14 @@ asc_moan_analysis:
             value: "{{WavPath}}"
           - type: text
             value: "listen the audio and judge whether it contains moaning sounds (sexual/pornographic content). The answer must be one of [normal, porn]. Answer porn if the audio contains moaning or sexually explicit sounds, otherwise answer normal. Answer without explain."
+
+asc_multi_analysis:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+      - role: user
+        contents:
+          - type: audio
+            value: "{{WavPath}}"
+          - type: text
+            value: "listen the audio and classify the dominant audio scene. The answer must be exactly one of [speech, music, noise, porn, song]. Use 'speech' for human speech (e.g. mandarin / spoken voice), 'music' for instrumental or background music, 'noise' for environmental noise or non-speech non-music sounds, 'porn' if the audio contains moaning or sexually explicit sounds, and 'song' for singing voice. Answer without explain."

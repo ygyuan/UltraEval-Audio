@@ -201,3 +201,14 @@ mini-cpm-omni-asc_moan_analysis:
             '
         - type: audio
           value: '{{WavPath}}'
+
+mini-cpm-omni-asc_multi_analysis:
+  class: audio_evals.prompt.base.Prompt
+  args:
+    template:
+    - role: user
+      contents:
+        - type: text
+          value: "listen the audio and classify the dominant audio scene. The answer must be exactly one of [speech, music, noise, porn, song]. Use 'speech' for human speech (e.g. mandarin / spoken voice), 'music' for instrumental or background music, 'noise' for environmental noise or non-speech non-music sounds, 'porn' if the audio contains moaning or sexually explicit sounds, and 'song' for singing voice. Answer without explain."
+        - type: audio
+          value: '{{WavPath}}'

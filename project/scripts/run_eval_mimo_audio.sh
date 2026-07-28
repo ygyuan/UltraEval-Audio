@@ -70,10 +70,10 @@ fi
 
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     echo "start stage ${stage}, stop stage ${stop_stage}"
-    for dataset in asc-moan; do
+    for dataset in asc-moan asc-multi; do
         for model in mimo-audio; do
             for prompt in ""; do
-                #[ ! -d res/${model}/${dataset} ] && \
+                [ ! -d res/${model}/${dataset} ] && \
                     CUDA_VISIBLE_DEVICES="0,1,2,3" python audio_evals/main.py --dataset ${dataset} --model ${model} --use_model_pool --workers 4
             done
         done

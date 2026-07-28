@@ -1,4 +1,5 @@
 import argparse
+import gc
 import json
 import select
 import sys
@@ -11,6 +12,48 @@ from qwen_omni_utils import process_mm_info
 
 
 device = "cuda"
+
+
+# Names of per-request intermediate objects we want to drop from the loop's
+# local scope after each iteration. Anything holding a CUDA tensor should be
+# listed here; missing names are silently ignored.
+_PER_REQUEST_LOCALS = (
+    "inputs",
+    "audios",
+    "images",
+    "videos",
+    "output_ids",
+    "generated",
+    "text_ids",
+    "audio",
+    "raw",
+)
+
+
+def _release_cuda_memory(local_scope):
+    """Best-effort release of per-request tensors and CUDA cache.
+
+    We do this after every request (success or failure) so that long-running
+    evaluations do not accumulate fragmentation / stale allocations in the
+    caching allocator, which was the root cause of the 66 GiB creeping usage
+    and eventual OOM observed on 30k+ samples.
+    """
+    for name in _PER_REQUEST_LOCALS:
+        if name in local_scope:
+            try:
+                del local_scope[name]
+            except Exception:
+                pass
+    try:
+        gc.collect()
+    except Exception:
+        pass
+    if torch.cuda.is_available():
+        try:
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
+        except Exception:
+            pass
 
 
 def load_model(path, **kwargs):
@@ -71,6 +114,10 @@ if __name__ == "__main__":
     print("Model loaded from checkpoint: {}".format(config.path), flush=True)
 
     while True:
+        # Prefix used by the parent to correlate request/response; declared
+        # outside the try so we can still emit a well-formed error line if
+        # anything goes wrong after we managed to parse it.
+        prefix = None
         try:
             prompt = input()
 
@@ -109,13 +156,14 @@ if __name__ == "__main__":
 
             # Inference: Generation of the output text and audio
             if config.speech:
-                text_ids, audio = model.generate(
-                    **inputs,
-                    speaker=config.speaker,
-                    use_audio_in_video=USE_AUDIO_IN_VIDEO,
-                    thinker_max_new_tokens=config.thinker_max_new_tokens,
-                    talker_max_new_tokens=config.talker_max_new_tokens,
-                )
+                with torch.inference_mode():
+                    text_ids, audio = model.generate(
+                        **inputs,
+                        speaker=config.speaker,
+                        use_audio_in_video=USE_AUDIO_IN_VIDEO,
+                        thinker_max_new_tokens=config.thinker_max_new_tokens,
+                        talker_max_new_tokens=config.talker_max_new_tokens,
+                    )
                 text = processor.batch_decode(
                     text_ids[:, inputs["input_ids"].shape[1] :],
                     skip_special_tokens=True,
@@ -153,13 +201,14 @@ if __name__ == "__main__":
                                 break
                         print("not found close signal, will emit again", flush=True)
             else:
-                output_ids = model.generate(
-                    **inputs,
-                    use_audio_in_video=USE_AUDIO_IN_VIDEO,
-                    return_audio=False,
-                    thinker_max_new_tokens=config.thinker_max_new_tokens,
-                    talker_max_new_tokens=config.talker_max_new_tokens,
-                )
+                with torch.inference_mode():
+                    output_ids = model.generate(
+                        **inputs,
+                        use_audio_in_video=USE_AUDIO_IN_VIDEO,
+                        return_audio=False,
+                        thinker_max_new_tokens=config.thinker_max_new_tokens,
+                        talker_max_new_tokens=config.talker_max_new_tokens,
+                    )
                 generated = output_ids[:, inputs["input_ids"].shape[1]:]
                 text = processor.batch_decode(
                     generated,
@@ -194,8 +243,38 @@ if __name__ == "__main__":
                         if finish == "{}close".format(prefix):
                             break
                     print("not found close signal, will emit again", flush=True)
+        except torch.cuda.OutOfMemoryError as e:
+            # Dedicated OOM branch: do NOT kill the subprocess. Report the
+            # failure back to the parent for this single sample and let the
+            # loop continue with a freshly-cleaned allocator so the next
+            # request has a chance to succeed.
+            import traceback
+
+            traceback.print_exc()
+            err_msg = "CUDA OOM: {}".format(str(e).splitlines()[0] if str(e) else "unknown")
+            if prefix is not None:
+                # Reply on the same prefix so the parent unblocks its read
+                # loop; we send an Error: line which the parent recognises
+                # as a per-sample failure.
+                print("Error:" + err_msg, flush=True)
+            else:
+                print("Error:" + err_msg, flush=True)
         except Exception as e:
             import traceback
 
             traceback.print_exc()
-            print("Error:" + str(e))
+            msg = str(e)
+            # Some CUDA OOMs surface as plain RuntimeError instead of the
+            # dedicated OutOfMemoryError type; treat them the same way so we
+            # do not tear down the subprocess.
+            lowered = msg.lower()
+            if "out of memory" in lowered or "cuda oom" in lowered:
+                print("Error: CUDA OOM: {}".format(msg.splitlines()[0] if msg else "unknown"), flush=True)
+            else:
+                print("Error:" + msg, flush=True)
+        finally:
+            # Always release per-request tensors and empty the CUDA cache.
+            # Doing this on every iteration (success or failure) is what
+            # keeps the process's GPU memory footprint bounded over tens of
+            # thousands of samples.
+            _release_cuda_memory(locals())

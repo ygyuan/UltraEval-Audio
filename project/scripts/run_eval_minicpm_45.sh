@@ -76,7 +76,15 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     for dataset in asc-moan; do
         for model in MiniCPMo4_5-audio; do
             for prompt in mini-cpm-omni-asc_moan_analysis; do
-                # [ ! -d res/${model}/${dataset} ] && \
+                [ ! -d res/${model}/${dataset} ] && \
+                    CUDA_VISIBLE_DEVICES="0,1,2,3" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 4
+            done
+        done
+    done
+    for dataset in asc-multi; do
+        for model in MiniCPMo4_5-audio; do
+            for prompt in mini-cpm-omni-asc_multi_analysis; do
+                [ ! -d res/${model}/${dataset} ] && \
                     CUDA_VISIBLE_DEVICES="0,1,2,3" python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt} --use_model_pool --workers 4
             done
         done

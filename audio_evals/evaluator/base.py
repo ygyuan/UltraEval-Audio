@@ -10,7 +10,14 @@ class Evaluator(ABC):
 
     def __call__(self, pred, ref, **kwargs) -> Dict[str, any]:
         res = {"pred": pred, "ref": ref}
-        eval_kwargs = {k: v for k, v in kwargs.items() if k not in ["pred", "ref"]}
+        # Exclude keys that would collide with the positional parameters of
+        # ``_eval(self, pred, label, **kwargs)`` when a full ``doc`` dict is
+        # forwarded here as ``**kwargs``.  Without this, datasets whose
+        # ``ref_col`` (or any other column) happens to be named ``label`` /
+        # ``pred`` / ``ref`` would raise ``TypeError: _eval() got multiple
+        # values for argument 'label'``.
+        _RESERVED = {"pred", "ref", "label", "self"}
+        eval_kwargs = {k: v for k, v in kwargs.items() if k not in _RESERVED}
         res.update(self._eval(pred, ref, **eval_kwargs))
         return res
 
@@ -66,6 +73,16 @@ class PrefixMatch(Evaluator):
         if self.ignore_case:
             pred = pred.lower().strip()
             label = str(label).lower().strip()
+
+        # Preserve the full model output so the recorded ``pred`` field is
+        # always human-readable (e.g. "speech"/"noise"/"music").  Historically
+        # this method returned ``pred[:len(label)]``, which produced misleading
+        # truncated tokens like "speec"/"nois"/"musi" whenever the label was
+        # shorter than the prediction (typical for multi-class labels of
+        # different length such as asc-multi's [speech, music, noise, porn,
+        # song]).
+        pred_full = pred
+
         n = len(label)
         m = 1 if pred[:n] == label else 0
         if m == 0 and " " in label and " " not in pred:
@@ -73,8 +90,14 @@ class PrefixMatch(Evaluator):
             n = len(label)
             m = 1 if pred[:n] == label else 0
 
+        # ``ACC`` aggregator computes ``accuracy_score(refl, predl)`` by direct
+        # string equality between the reported ``pred`` and ``ref``.  To keep
+        # the accuracy value identical to the previous truncation-based
+        # behaviour, canonicalise ``pred`` to ``label`` on match and keep the
+        # full string on mismatch.
         return {
             "match": m,
-            "pred": pred[:n],
+            "pred": label if m == 1 else pred_full,
+            "pred_full": pred_full,
             "ref": label,
         }

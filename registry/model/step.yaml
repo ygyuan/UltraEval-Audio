@@ -16,6 +16,24 @@ Step-Audio-2-mini:
     sample_params:
       max_new_tokens: 2048
 
+# Step-Audio-2-mini_sft model configuration
+Step-Audio-2-mini_sft:
+  class: audio_evals.models.step_audio_2_mini.StepAudio2Mini
+  args:
+    env_path: envs/step-audio-2-mini
+    requirements_path: audio_evals/lib/StepAudio/requirements.txt
+    model_path: Yougen/Step-Audio-2-mini_sft3  # HuggingFace model path
+    start_port: 9999
+    tensor_parallel_size: 4  # Reduced for mini version
+    max_model_len: 16384
+    max_num_seqs: 32
+    gpu_memory_utilization: 0.85
+    startup_timeout: 600
+    extract_thinking: true
+    speech: false
+    sample_params:
+      max_new_tokens: 2048
+
 # Step-Audio-R1.1 transformers inference (recommended)
 step-audio-r1.1:
   class: audio_evals.models.step_audio_r1_transformers.StepAudioR1Transformers

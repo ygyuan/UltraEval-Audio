@@ -80,6 +80,14 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
             done
         done
     done
+    for dataset in asc-multi; do
+        for model in MiniCPMo2_6-audio; do
+            for prompt in mini-cpm-omni-asc_multi_analysis; do
+                [ ! -d res/${model}/${dataset} ] && \
+                    python audio_evals/main.py --dataset ${dataset} --model ${model} --prompt ${prompt}
+            done
+        done
+    done
 fi
 
 echo "success on `date`"

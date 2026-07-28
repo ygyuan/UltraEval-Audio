@@ -83,7 +83,7 @@ fi
 
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     echo "start stage ${stage}, stop stage ${stop_stage}"
-    for dataset in asc-moan; do
+    for dataset in asc-moan asc-multi; do
         for model in funaudio_chat; do
             for prompt in ""; do
                 [ ! -d res/${model}/${dataset} ] && \

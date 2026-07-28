@@ -5,3 +5,13 @@ asc-moan:
     split: test_p1
     default_task: asc_moan_analysis
     ref_col: label_str
+
+asc-multi:
+  class: audio_evals.dataset.dataset.AudioListJsonl
+  args:
+    f_name: project/scripts/val.jsonl
+    default_task: asc_multi_analysis
+    ref_col: label
+    audio_col: audios
+    audio_index: 0
+    target_col: WavPath
