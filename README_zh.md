@@ -7,8 +7,10 @@ Evaluation of Audio Foundation Models
 <p>
         <b>中文</b> | <a href="README.md">English</a> |
 <a href="https://discord.gg/Qrsbft4e" target="_blank">💬Discord</a>|
-<a href="https://arxiv.org/abs/2601.01373">UltraEval-Audio Paper</a>
+<a href="https://aclanthology.org/2026.acl-demo.56/">UltraEval-Audio Paper</a>
  </h4>
+
+> 🎉 恭喜 **UltraEval-Audio 论文在 ACL 2026 正式发表**！欢迎前往 [ACL Anthology](https://aclanthology.org/2026.acl-demo.56/) 阅读论文。
 
 # v1.1 亮点
 
@@ -33,6 +35,14 @@ UltraEval-Audio——全球首个同时支持语音理解和语音生成评估�
 
 # 更新日志🔥
 
+- [2026/07/31]
+  - 支持 **[MOSS-TTS-v1.5](replication/moss-tts-v1.5.md)** 评测（`moss-tts-v1.5`），覆盖 Seed-TTS-Eval、CV3 zero-shot 以及 MiniMax 多语言 TTS Benchmark（22 种语言）
+- [2026/07/27]
+  - 支持 **[VoxCPM2](replication/VoxCPM2.md)** 评测（`voxcpm2`, `voxcpm2-denoise`），覆盖 Seed-TTS-Eval、CV3-Eval zero-shot 以及 MiniMax 多语言 TTS Benchmark
+- [2026/07/13]
+  - 支持 **[InstructTTSEval](replication/InstructTTSEval.md)**，用于评测 TTS 系统对复杂自然语言指令的遵循能力
+  - 支持中英文子集，使用 Gemini 评测细粒度声学控制（APS）、描述性风格遵循（DSD）以及角色扮演/场景风格遵循（RP）
+  - 提供参考音频对齐结果及集成基准的一键评测示例
 - [2026/06/12]
   - 更新各 TTS 复现文档的 CV3 Zero-Shot 与 MiniMax TTS Multilingual 基准评测结果：[CosyVoice3](replication/CosyVoice3.md)、[GLM-TTS](replication/GLM-TTS.md)、[IndexTTS2](replication/IndexTTS2.md)、[OmniVoice](replication/OmniVoice.md)、[PilotTTS](replication/PilotTTS.md)、[VibeVoice](replication/VibeVoice.md)、[VoxCPM](replication/VoxCPM.md)、[VoxCPM2](replication/VoxCPM2.md)、[fish-speech](replication/fishspeech.md)、[Qwen3-TTS](replication/qwen3_tts.md)
 - [2026/06/10]
@@ -263,16 +273,32 @@ python audio_evals/main.py --dataset <dataset_name> --model <model_name>
 
 # 工作引用
 
-如果觉得UltraEval-Audio有助于您的工作，请引用我们的论文：[UltraEval-Audio](https://arxiv.org/abs/2601.01373)
+如果觉得UltraEval-Audio有助于您的工作，请引用我们的论文：[UltraEval-Audio](https://aclanthology.org/2026.acl-demo.56/)
 
-```txt
-@article{ultraevalaudio,
-      title={UltraEval-Audio: A Unified Framework for Comprehensive Evaluation of Audio Foundation Models},
-      author={Qundong Shi and Jie Zhou and Biyuan Lin and Junbo Cui and Guoyang Zeng and Yixuan Zhou and Ziyang Wang and Xin Liu and Zhen Luo and Yudong Wang and Zhiyuan Liu},
-      year={2026},
-      eprint={2601.01373},
-      archivePrefix={arXiv},
-      primaryClass={cs.SD},
-      url={https://arxiv.org/abs/2601.01373},
+```bibtex
+@inproceedings{shi-etal-2026-ultraeval,
+    title = "{U}ltra{E}val-Audio: A Unified Framework for Comprehensive Evaluation of Audio Foundation Models",
+    author = "Shi, Qundong  and
+      Zhou, Jie  and
+      Lin, Biyuan  and
+      Cui, Junbo  and
+      Zeng, Guoyang  and
+      Zhou, Yixuan  and
+      Wang, Ziyang  and
+      Liu, Xin  and
+      Luo, Zhen  and
+      Wang, Yudong  and
+      Liu, Zhiyuan",
+    editor = "Durrett, Greg  and
+      Jian, Ping",
+    booktitle = "Proceedings of the 64th Annual Meeting of the {A}ssociation for {C}omputational {L}inguistics (Volume 3: System Demonstrations)",
+    month = jul,
+    year = "2026",
+    address = "San Diego, California, United States",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2026.acl-demo.56/",
+    doi = "10.18653/v1/2026.acl-demo.56",
+    pages = "566--577",
+    ISBN = "979-8-89176-392-0",
 }
 ```
